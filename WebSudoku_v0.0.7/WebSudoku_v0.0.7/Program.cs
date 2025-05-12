@@ -1,3 +1,6 @@
+using Microsoft.EntityFrameworkCore;
+using WebSudoku_v0._0._7.Data;
+
 var AllowAllOrigins = "_allowAllOrigins";
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +14,12 @@ builder.Services.AddCors(options =>
                     .AllowAnyHeader();
         });
 });
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+builder.Services.AddSingleton<ConfigurationManager>(builder.Configuration);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
