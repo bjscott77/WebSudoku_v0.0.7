@@ -1,25 +1,16 @@
-﻿
-using System.Collections;
-
-namespace WebSudoku_v0._0._7.Models
+﻿namespace WebSudoku_v0._0._7.Models
 {
-    public class DtoSudokuPuzzleList : List<EntityBase>
+    public class DtoSudokuPuzzleList
     {
-        public List<EntityBase> Puzzles { get; set; } = new List<EntityBase>();
+        public List<IDtoSudokuPuzzle> Puzzles { get; set; } = new List<IDtoSudokuPuzzle>();
 
         public DtoSudokuPuzzleList()
         {
         }
 
-        public DtoSudokuPuzzleList(IEnumerable<EntityBase> collection) : base(collection)
+        public DtoSudokuPuzzleList(IEnumerable<IDtoSudokuPuzzle> collection)
         {
-            Puzzles.AddRange(collection);
+            Puzzles.AddRange(collection);            
         }
-
-        public DtoSudokuPuzzleList(int capacity) : base(capacity)
-        {
-        }
-
-        ///on base HERE is GetIdAsString().  Access via this.GetIdAsString()
     }
 }
