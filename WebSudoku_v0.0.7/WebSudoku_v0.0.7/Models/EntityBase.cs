@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace WebSudoku_v0._0._7.Models
+﻿namespace WebSudoku_v0._0._7.Models
 {
     public abstract class EntityBase : IDisposable
     {
