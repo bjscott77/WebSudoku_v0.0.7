@@ -1,0 +1,6 @@
+@Web_Core_SudokuSolver_v0._0._1_HostAddress = http://localhost:5047
+
+GET {{Web_Core_SudokuSolver_v0._0._1_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
