@@ -2,15 +2,14 @@
 {
     public class DtoSudokuPuzzleList
     {
-        public List<IDtoSudokuPuzzle> Puzzles { get; set; } = new List<IDtoSudokuPuzzle>();
-
+        public DtoSudokuPuzzle[] Puzzles { get; set; } = new DtoSudokuPuzzle[] { };
         public DtoSudokuPuzzleList()
         {
         }
 
-        public DtoSudokuPuzzleList(IEnumerable<IDtoSudokuPuzzle> collection)
+        public DtoSudokuPuzzleList(DtoSudokuPuzzle[] collection)
         {
-            Puzzles.AddRange(collection);            
+            Puzzles.ToList().AddRange(collection);            
         }
     }
 }

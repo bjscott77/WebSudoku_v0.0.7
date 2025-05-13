@@ -6,7 +6,7 @@ namespace WebSudoku_v0._0._7.Data
 {
     public class AppDbContext(IConfigurationManager? _configuration) : DbContext, IDisposable   
     {
-        public DbSet<IEnumerable<DtoSudokuPuzzle>> Puzzles { get; set; }
+        public DbSet<DtoSudokuPuzzle[]> Puzzles { get; set; }
         public AppDbContext() : this(null) { }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
