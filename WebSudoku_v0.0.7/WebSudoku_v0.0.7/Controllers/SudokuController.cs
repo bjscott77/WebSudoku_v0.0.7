@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
-using WebSudoku_v0._0._7.Data;
 using WebSudoku_v0._0._7.Models;
 using WebSudoku_v0._0._7.Repositories;
 

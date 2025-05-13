@@ -2,13 +2,9 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
-
+var selectedPuzzle;
 window.onload = function () {
     this.getAllPuzzles();
-    //  MOCK DATA inline testing
-    //var json = "{\"boardValues\":\"010096830930200040824703100005900000600085429208004061700030080000800003001049207\", \"id\":0, \"difficulty\":0}";
-    //this.addPuzzle(JSON.parse(json));
-    //this.deletePuzzle("1EE9E35B-FB51-4BBB-914B-11EA33846E2B");
 };
 
 function getAllPuzzles() {
@@ -16,12 +12,15 @@ function getAllPuzzles() {
         .then(res => res.json())
         .then((rawData) => {
             var data = translateResponseData(rawData);
+            data.selectedPuzzle = selectedPuzzle;
             hydrateSelectElem(data);
+            hydrateRootElem(data);
         })
         .catch(err => console.log(err));
 }
 
 function addPuzzle(puzzle) {
+    selectedPuzzle = puzzle;
     fetch("api/sudoku/addpuzzle", {
         method: 'POST',
         headers: {
@@ -62,13 +61,34 @@ function translateResponseData(puzzles) {
     return data;
 }
 
-function hydrateSelectElem(puzzle) {
+function hydrateSelectElem(puzzles) {
     var select = document.getElementById("puzzleSelect");
+
     select.innerHTML = "";
     var puzzleInnerHTML = select.innerHTML;
 
-    for (var i = 0; i < puzzle.length; i++) {
-        puzzleInnerHTML += "<option>" + puzzle[i].boardValues + "</option>\r\n";
+    if (puzzles.includes(puzzles.selectedPuzzle))
+        puzzles = swapArrayElements(puzzles, 0, puzzles.indexOf(puzzles.selectedPuzzle));
+
+    for (var i = 0; i < puzzles.length; i++) {
+        puzzleInnerHTML += "<option>" + puzzles[i].boardValues + "</option>\r\n";
     }
     select.innerHTML = puzzleInnerHTML;
 }
+
+function hydrateRootElem(puzzles) {
+    var select = document.getElementById("puzzleSelect");
+    var root = document.getElementById("root");
+    var rootInnerHTML = "";
+    var puzzle = puzzles[0];
+
+    for (var i = 0; i < puzzle.boardValues.length; i++) {
+        rootInnerHTML += "<div class='cell'>" + puzzle.boardValues[i] + "</div>";
+    }
+    root.innerHTML = rootInnerHTML;
+}
+
+function swapArrayElements(array, index1, index2) {
+    [array[index1], array[index2]] = [array[index2], array[index1]];
+    return array;
+};
