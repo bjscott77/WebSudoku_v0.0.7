@@ -5,6 +5,9 @@
 
 window.onload = function () {
     this.getAllPuzzles();
+    //var puzzle = "{\"boardValues\": \"568000019000000000302915080006071543800040600403056098704008261600000000019004035\", \"difficulty\": 0, \"id\": 0 }"; 
+    //var jsonPuzzle = JSON.parse(puzzle);
+    //this.addPuzzle(jsonPuzzle);
 };
 
 function getAllPuzzles() {
@@ -15,6 +18,25 @@ function getAllPuzzles() {
             hydrateSelectElem(data);
         })
         .catch(err => console.log(err));
+}
+
+
+function addPuzzle(puzzle) {
+    fetch("api/sudoku/addpuzzle/", {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'            
+        },
+        body: JSON.stringify(puzzle)
+    })
+        .then(response => {
+            response.json();
+        })
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch(error => console.error('Error:', error));
 }
 
 function translateResponseData(puzzles) {
