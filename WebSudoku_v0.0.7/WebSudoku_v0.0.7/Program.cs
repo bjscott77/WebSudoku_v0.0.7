@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WebSudoku_v0._0._7.Data;
+using WebSudoku_v0._0._7.Repositories;
 
 var AllowAllOrigins = "_allowAllOrigins";
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddSingleton<ConfigurationManager>(builder.Configuration);
+
+builder.Services.AddScoped<ISudokuRepository,SudokuPuzzlesRepository>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
