@@ -4,30 +4,31 @@
 // Write your JavaScript code.
 
 window.onload = function () {
+    this.getAllPuzzles();
+};
+
+function getAllPuzzles() {
     fetch("api/sudoku/getallpuzzles")
         .then(res => res.json())
         .then((rawData) => {
-            hydrateSelectElem(translateResponseData(rawData));
+            var data = translateResponseData(rawData);
+            hydrateSelectElem(data);
         })
         .catch(err => console.log(err));
-};
-
-function translateResponseData(rawData) {
-    var data = [""];
-    var splitData = rawData.toString().split(",");
-    for (var i = 0; i < splitData.length; i++) {
-        data[i] = splitData[i].replace("[\"", "").replace("\"", "").replace("\"]", "").replace("\"", "")
-    }
-    return data;
 }
 
-function hydrateSelectElem(data) {
+function translateResponseData(puzzles) {
+    var data = JSON.parse(puzzles);
+    return data.Puzzles;
+}
+
+function hydrateSelectElem(puzzle) {
     var select = document.getElementById("puzzleSelect");
     select.innerHTML = "";
     var puzzleInnerHTML = select.innerHTML;
 
-    for (var i = 0; i < data.length; i++) {
-        puzzleInnerHTML += "<option>" + data[i] + "</option>\r\n";
+    for (var i = 0; i < puzzle.length; i++) {
+        puzzleInnerHTML += "<option>" + puzzle[i].boardValues + "</option>\r\n";
     }
     select.innerHTML = puzzleInnerHTML;
 }
