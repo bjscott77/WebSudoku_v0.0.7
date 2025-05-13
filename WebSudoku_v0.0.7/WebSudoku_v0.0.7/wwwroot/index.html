@@ -1,20 +1,27 @@
-﻿@{
-    ViewData["Title"] = "Sudoku Solver";
-}
-<div>
-    <h1>Welcome to the @ViewData["Title"]</h1>
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <title>Welcome to My Site!</title>
+    <link rel="stylesheet" href="/styles/site.css">
+</head>
+<body>
+    <h1>Welcome to the Sudoku Solver</h1>
 
     <label for="puzzles">Select a puzzle:</label>
-    <select name="puzzle" id="puzzleSelect">
+    <select name="puzzles" id="puzzles">
         <!--Sudoku puzzle list selection is generated here via javascript-->
     </select>
 
+    <input type="text" name="puzzle" accept="" id="puzzle" placeholder="Enter Sudoku puzzle here" />
     <button for="puzzle" type="submit" class="btn btn-secondary" onclick="addAndUpdatePuzzle()">Load Selected Puzzle</button>
     <button type="button" class="btn btn-primary" onclick="getSolved();">Show Solution</button>
-
+    
     <div id="root" class="container">
         <!--Sudoku puzzle is generated here via javascript-->
     </div>
 
     <script src="scripts/site.js"></script>
-</div>
+</body>
+</html>

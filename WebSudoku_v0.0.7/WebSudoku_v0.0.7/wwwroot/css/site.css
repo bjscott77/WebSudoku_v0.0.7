@@ -1,31 +1,53 @@
-html {
-  font-size: 14px;
+﻿body {
 }
 
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+.btn {
+    font-size: 16pt;
+    border: 1px solid darkslateblue;
+    background-color: aquamarine;
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    .btn:hover {
+        cursor: pointer;
+        background-color: lightslategray;
+        color: white;
+    }
+
+.cell {
+    border: 2px solid darkslateblue;
+    color: darkslateblue;
+    text-align: center;
+    font-size: 32pt;
 }
 
-html {
-  position: relative;
-  min-height: 100%;
+    .cell:hover {
+        cursor: pointer;
+        background-color: lightslategray;
+    }
+
+.cell-highlite {
+    background-color: aquamarine;
 }
 
-body {
-  margin-bottom: 60px;
+.container {
+    height: 100%;
+    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(9, 10%);
+    grid-template-rows: repeat(9, 10%);
+    grid-row-gap: 2px;
+    grid-column-gap: 2px;
+    margin: 5% 10%;
 }
 
-.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
-  color: var(--bs-secondary-color);
-  text-align: end;
+h1 {
+    text-align: center;
 }
 
-.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
-  text-align: start;
+#puzzle {
+    height: 40px;
+    width: 95%;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid darkslateblue;
 }
