@@ -2,17 +2,16 @@ using Microsoft.EntityFrameworkCore;
 using WebSudoku_v0._0._7.Data;
 using WebSudoku_v0._0._7.Repositories;
 
-var AllowAllOrigins = "_allowAllOrigins";
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: AllowAllOrigins,
-        policy => 
+    options.AddDefaultPolicy(
+        builder =>
         {
-            policy.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
+            builder.WithOrigins("*")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod();
         });
 });
 
@@ -37,11 +36,11 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseCors(AllowAllOrigins);
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors();
 
 app.UseAuthorization();
 

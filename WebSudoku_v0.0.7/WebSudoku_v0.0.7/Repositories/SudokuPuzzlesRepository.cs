@@ -5,28 +5,38 @@ namespace WebSudoku_v0._0._7.Repositories
 {
     public class SudokuPuzzlesRepository(ApplicationDbContext _appDbContext) : ISudokuRepository
     {
-        public List<DtoSudokuPuzzle> AddPuzzle(DtoSudokuPuzzle puzzle)
+        public List<SudokuPuzzledto> AddPuzzle(SudokuPuzzledto puzzle)
         {
-            var newPuzzle = new DtoSudokuPuzzle
+            var testList = _appDbContext.Puzzle.ToList();   
+            if (testList != null && testList.Count > 0)
             {
-                Id = Guid.NewGuid(),
-                Difficulty = puzzle.Difficulty,
-                BoardValues = puzzle.BoardValues
-            };
-            _appDbContext.Puzzle.Add(newPuzzle);
+                var test = testList.Where(t => t.BoardValues == puzzle.BoardValues);
+                if (test != null)
+                    return null;
+            }
+
+            _appDbContext.Puzzle.Add(puzzle);
             _appDbContext.SaveChanges();
             return GetAllPuzzles();
         }
 
-        public List<DtoSudokuPuzzle> DeletePuzzle(DtoSudokuPuzzle puzzle)
+        public List<SudokuPuzzledto> DeletePuzzle(SudokuPuzzledto puzzle)
         {
-            throw new NotImplementedException();
+            var test = _appDbContext.Puzzle.Find(puzzle.Id);
+            if (test == null)
+            {
+                return null;
+            }
+
+            _appDbContext.Puzzle.Remove(puzzle);
+            _appDbContext.SaveChanges();
+            return GetAllPuzzles();
         }
 
-        public List<DtoSudokuPuzzle> GetAllPuzzles()
+        public List<SudokuPuzzledto> GetAllPuzzles()
         {
             var puzzles = _appDbContext.Puzzle.ToList();
-            var model = puzzles.Select(p => new DtoSudokuPuzzle
+            var model = puzzles.Select(p => new SudokuPuzzledto
             {
                 Id = p.Id,
                 Difficulty = p.Difficulty,
@@ -35,11 +45,11 @@ namespace WebSudoku_v0._0._7.Repositories
             return model;
         }
 
-        public List<DtoSudokuPuzzle> GetEmptyListReturnModel()
+        public List<SudokuPuzzledto> GetEmptyListReturnModel()
         {
-            return new List<DtoSudokuPuzzle>
+            return new List<SudokuPuzzledto>
                 {
-                    new DtoSudokuPuzzle
+                    new SudokuPuzzledto
                     {
                         Id = Guid.Empty,
                         Difficulty = int.MinValue,
@@ -48,17 +58,31 @@ namespace WebSudoku_v0._0._7.Repositories
                 };
         }
 
-        public DtoSudokuPuzzle GetEmptyReturnModel()
+        public SudokuPuzzledto GetEmptyReturnModel()
         {
-            throw new NotImplementedException();
+            return new SudokuPuzzledto
+            {
+                Id = Guid.Empty,
+                Difficulty = int.MinValue,
+                BoardValues = string.Empty
+            };
         }
 
-        public List<DtoSudokuPuzzle> GetSelectedPuzzle()
+        public List<SudokuPuzzledto> GetSelectedPuzzle()
         {
-            throw new NotImplementedException();
+            //Ignored
+            return new List<SudokuPuzzledto>
+            {
+                new SudokuPuzzledto
+                {
+                    Id = Guid.Empty,
+                    Difficulty = int.MinValue,
+                    BoardValues = string.Empty
+                }
+            };
         }
 
-        public List<DtoSudokuPuzzle> UpdatePuzzle(DtoSudokuPuzzle puzzle)
+        public List<SudokuPuzzledto> UpdatePuzzle(SudokuPuzzledto puzzle)
         {
             throw new NotImplementedException();
         }

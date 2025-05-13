@@ -4,8 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace WebSudoku_v0._0._7.Models
 {
-    [JsonSerializable(typeof(DtoSudokuPuzzle))]
-    public class DtoSudokuPuzzle : EntityBase
+    [JsonSerializable(typeof(SudokuPuzzledto))]
+    public class SudokuPuzzledto : EntityBase
     {
         [Required]
         [Display(Name = "Difficulty")]
@@ -22,37 +22,37 @@ namespace WebSudoku_v0._0._7.Models
         public string BoardValues { get; set; }
 
         #region Constructors
-        public DtoSudokuPuzzle() : base()
+        public SudokuPuzzledto() : base()
         {
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
         }
-        public DtoSudokuPuzzle(Guid id) : base(id)
+        public SudokuPuzzledto(Guid id) : base(id)
         {
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
         }
-        public DtoSudokuPuzzle(string id) : base(id)
+        public SudokuPuzzledto(string id) : base(id)
         {
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
         }
-        public DtoSudokuPuzzle(string id, int difficulty) : base(id)
+        public SudokuPuzzledto(string id, int difficulty) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = string.Empty;
         }
-        public DtoSudokuPuzzle(Guid id, int difficulty) : base(id)
+        public SudokuPuzzledto(Guid id, int difficulty) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = string.Empty;
         }
-        public DtoSudokuPuzzle(string id, int difficulty, string boardValues) : base(id)
+        public SudokuPuzzledto(string id, int difficulty, string boardValues) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = boardValues;
         }
-        public DtoSudokuPuzzle(Guid id, int difficulty, string boardValues) : base(id)
+        public SudokuPuzzledto(Guid id, int difficulty, string boardValues) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = boardValues;

@@ -15,7 +15,7 @@ namespace WebSudoku_v0._0._7.Data
         {
         }
 
-        public virtual DbSet<DtoSudokuPuzzle> Puzzle { get; set; } = null!; 
+        public virtual DbSet<SudokuPuzzledto> Puzzle { get; set; } = null!; 
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -27,20 +27,20 @@ namespace WebSudoku_v0._0._7.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<DtoSudokuPuzzle>()
+            modelBuilder.Entity<SudokuPuzzledto>()
                 .HasKey(p => p.Id)
                 .HasName("PK_SudokuPuzzle");
 
-            modelBuilder.Entity<DtoSudokuPuzzle>()
+            modelBuilder.Entity<SudokuPuzzledto>()
                 .Property(p => p.Difficulty)
                 .IsRequired();
 
-            modelBuilder.Entity<DtoSudokuPuzzle>()
+            modelBuilder.Entity<SudokuPuzzledto>()
                 .Property(p => p.BoardValues)
                 .IsRequired()
                 .HasMaxLength(81);
 
-            modelBuilder.Entity<DtoSudokuPuzzle>()
+            modelBuilder.Entity<SudokuPuzzledto>()
                 .ToTable("SudokuPuzzles");
         }
     }
