@@ -19,7 +19,7 @@ function getAllPuzzles() {
 
 function translateResponseData(puzzles) {
     var data = JSON.parse(puzzles);
-    return data.Puzzles;
+    return data;
 }
 
 function hydrateSelectElem(puzzle) {

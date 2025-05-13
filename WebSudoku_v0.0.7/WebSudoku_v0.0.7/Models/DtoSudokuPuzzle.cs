@@ -4,18 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace WebSudoku_v0._0._7.Models
 {
-    [JsonSerializable(typeof(DtoSudokuPuzzle))]
-    public class DtoSudokuPuzzle
+    public class DtoSudokuPuzzle : EntityBase
     {
-        [Key]
-        [Required]
-        [Display(Name = "ID")]
-        [DataType(DataType.Text)]
-        [StringLength(36, ErrorMessage = "ID must be 36 characters long.")]
-        [RegularExpression(@"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$", ErrorMessage = "ID must be a valid GUID.")]
-        [DisplayFormat(ConvertEmptyStringToNull = true)]
-        public Guid Id { get; internal set; }
-
         [Required]
         [Display(Name = "Difficulty")]
         [JsonPropertyName("difficulty")]
@@ -31,45 +21,38 @@ namespace WebSudoku_v0._0._7.Models
         public string BoardValues { get; set; }
 
         #region Constructors
-        public DtoSudokuPuzzle()
+        public DtoSudokuPuzzle() : base()
         {
-            this.Id = Guid.NewGuid();
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
         }
-        public DtoSudokuPuzzle(Guid id)
+        public DtoSudokuPuzzle(Guid id) : base(id)
         {
-            this.Id = id;
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
         }
-        public DtoSudokuPuzzle(string id)
+        public DtoSudokuPuzzle(string id) : base(id)
         {
-            this.Id = Guid.Parse(id);
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
         }
-        public DtoSudokuPuzzle(string id, int difficulty)
+        public DtoSudokuPuzzle(string id, int difficulty) : base(id)
         {
-            this.Id = Guid.Parse(id);
             Difficulty = difficulty;
             BoardValues = string.Empty;
         }
-        public DtoSudokuPuzzle(Guid id, int difficulty)
+        public DtoSudokuPuzzle(Guid id, int difficulty) : base(id)
         {
-            this.Id = id;
             Difficulty = difficulty;
             BoardValues = string.Empty;
         }
-        public DtoSudokuPuzzle(string id, int difficulty, string boardValues)
+        public DtoSudokuPuzzle(string id, int difficulty, string boardValues) : base(id)
         {
-            this.Id = Guid.Parse(id);
             Difficulty = difficulty;
             BoardValues = boardValues;
         }
-        public DtoSudokuPuzzle(Guid id, int difficulty, string boardValues)
+        public DtoSudokuPuzzle(Guid id, int difficulty, string boardValues) : base(id)
         {
-            this.Id = id;
             Difficulty = difficulty;
             BoardValues = boardValues;
         }
