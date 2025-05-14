@@ -28,10 +28,6 @@ builder.Services.AddScoped<ISudokuRepository,SudokuPuzzlesRepository>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Add sudoku configuration class, as single instance, project wide to dependency injection
-//builder.Services.Configure<DevSudokuConfigurationSection>("DEV", builder.Configuration);
-//builder.Services.AddSingleton<ILocalConfigurationSection, DevSudokuConfigurationSection>();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -57,6 +53,4 @@ if (app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-
-
-    app.Run();
+app.Run();
