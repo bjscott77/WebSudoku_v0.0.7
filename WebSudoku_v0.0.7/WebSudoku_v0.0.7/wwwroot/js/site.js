@@ -2,7 +2,6 @@
 // for details on configuring this project to bundle and minify static web assets.
 
 // Write your JavaScript code.
-var selectedPuzzle;
 window.onload = function () {
     this.getAllPuzzles();
 };
@@ -12,7 +11,6 @@ function getAllPuzzles() {
         .then(res => res.json())
         .then((rawData) => {
             var data = translateResponseData(rawData);
-            data.selectedPuzzle = selectedPuzzle;
             hydrateSelectElem(data);
             hydrateRootElem(data);
         })
@@ -20,7 +18,6 @@ function getAllPuzzles() {
 }
 
 function addPuzzle(puzzle) {
-    selectedPuzzle = puzzle;
     fetch("api/sudoku/addpuzzle", {
         method: 'POST',
         headers: {
@@ -36,6 +33,32 @@ function addPuzzle(puzzle) {
             console.log('Success:', data);
         })
         .catch(error => console.error('Error:', error));
+}
+
+function prepareAddNewPuzzle() {
+    var puzzle = document.getElementById("newPuzzleInput");
+    if (puzzle.value == null || puzzle.value == "" || puzzle.value == 'undefined') {
+        alert("Please enter a puzzle to save it.");
+        return;
+    }
+    var jsonPuzzle = JSON.parse("{\"boardValues\":\"" + puzzle.value + "\",\"difficulty\":0, \"id\":0 }");
+    addPuzzle(jsonPuzzle);
+}
+
+var even = false;
+function toggleNewPuzzleDisplay() {
+    var elem = document.getElementById("addToggle");
+    var button = document.getElementById("addNew");
+
+    if (even) {
+        button.innerHTML = "Add New..."
+        elem.style.display = 'none';
+
+    } else {
+        button.innerHTML = "Back..."
+        elem.style.display = 'block';        
+    }
+    even = !even;
 }
 
 function deletePuzzle(id) {

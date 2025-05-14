@@ -8,9 +8,13 @@
     <select name="puzzle" id="puzzleSelect">
         <!--Sudoku puzzle list selection is generated here via javascript-->
     </select>
-
-    <button for="puzzle" type="submit" class="btn btn-secondary" onclick="addAndUpdatePuzzle()">Load Selected Puzzle</button>
-    <button type="button" class="btn btn-primary" onclick="getSolved();">Show Solution</button>
+    <br /><br />
+    <button type="button" id="addNew" class="btn btn-outline-secondary" onclick="toggleNewPuzzleDisplay();">Add New...</button>
+    <div id="addToggle" style="display:none;">
+        <button for="puzzle" type="submit" class="btn btn-secondary" onclick="prepareAddNewPuzzle();">Add New Puzzle</button>
+        <input type="text" id="newPuzzleInput" name="puzzle" placeholder="Enter a new puzzle here..."><br /><br />
+    </div>
+    <button type="button" class="btn btn-primary" onclick="activateGameSolution();">Show Solution</button>
 
     <div id="root" class="container">
         <!--Sudoku puzzle is generated here via javascript-->

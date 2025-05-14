@@ -8,6 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Configuration\DevSudokuConfigurationSection.cs" />
+    <Compile Remove="Configuration\GamePlaySettings.cs" />
+    <Compile Remove="Configuration\GamePlaySettingsProperty.cs" />
+    <Compile Remove="Configuration\IGamePlaySettingsProperty.cs" />
+    <Compile Remove="Configuration\ILocalConfigurationSection.cs" />
+    <Compile Remove="Configuration\PlayerSettings.cs" />
+    <Compile Remove="Configuration\PlaySettings.cs" />
+    <Compile Remove="Configuration\SolveSettings.cs" />
+    <Compile Remove="Configuration\SudokuSettings.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.4" />
@@ -22,6 +34,7 @@
 
   <ItemGroup>
     <Folder Include="Classes\" />
+    <Folder Include="Configuration\" />
   </ItemGroup>
 
 </Project>

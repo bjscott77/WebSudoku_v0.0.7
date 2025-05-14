@@ -3,19 +3,30 @@ using WebSudoku_v0._0._7.Models;
 
 namespace WebSudoku_v0._0._7.Repositories
 {
-    public class SudokuPuzzlesRepository(ApplicationDbContext _appDbContext) : ISudokuRepository
+    public class SudokuPuzzlesRepository(ApplicationDbContext? _appDbContext) : ISudokuRepository
     {
-        public List<SudokuPuzzledto> AddPuzzle(SudokuPuzzledto puzzle)
+        public SudokuPuzzlesRepository() : this(null)
         {
-            var testList = _appDbContext.Puzzle.ToList();   
-            if (testList != null && testList.Count > 0)
-            {
-                var test = testList.Where(t => t.BoardValues == puzzle.BoardValues);
-                if (test != null)
-                    return null;
-            }
+        }
 
-            _appDbContext.Puzzle.Add(puzzle);
+        public List<SudokuPuzzledto>? AddPuzzle(SudokuPuzzledto puzzle)
+        {
+            try
+            {
+                var existingPuzzle = _appDbContext?.Puzzle.FirstOrDefault(p => p.BoardValues == puzzle.BoardValues);
+                if (existingPuzzle != null)
+                    return null;
+                
+                _appDbContext?.Puzzle.Add(puzzle);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in SudokuPuzzleRepository AddPuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
+                return null;
+            }
+            if (_appDbContext == null)
+                return null;
+            
             _appDbContext.SaveChanges();
             return GetAllPuzzles();
         }

@@ -44,10 +44,18 @@ h1 {
     text-align: center;
 }
 
-#puzzle {
+#puzzleSelect {
     height: 40px;
     width: 95%;
     font-size: 18px;
+    font-weight: bold;
+    border: 2px solid darkslateblue;
+}
+
+#newPuzzleInput {
+    height: 40px;
+    width: 95%;
+    font-size 18px;
     font-weight: bold;
     border: 2px solid darkslateblue;
 }
