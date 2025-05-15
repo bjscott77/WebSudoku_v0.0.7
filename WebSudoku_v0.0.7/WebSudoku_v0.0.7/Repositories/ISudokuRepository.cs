@@ -8,7 +8,7 @@ namespace WebSudoku_v0._0._7.Repositories
         public List<SudokuPuzzledto> GetSelectedPuzzle();
         public List<SudokuPuzzledto>? AddPuzzle(SudokuPuzzledto puzzle);
         public List<SudokuPuzzledto> UpdatePuzzle(SudokuPuzzledto puzzle);
-        public List<SudokuPuzzledto> DeletePuzzle(SudokuPuzzledto puzzle);
+        public List<SudokuPuzzledto>? DeletePuzzle(SudokuPuzzledto puzzle);
         public List<SudokuPuzzledto> GetEmptyListReturnModel();
         public SudokuPuzzledto GetEmptyReturnModel();
     }

@@ -4,6 +4,12 @@
 // Write your JavaScript code.
 window.onload = function () {
     this.getAllPuzzles();
+
+    let selectElem = document.getElementById("puzzleSelect");
+    selectElem.addEventListener("change", function (event) {
+        var data = JSON.parse("[{\"boardValues\": \"" + event.target.value + "\", \"id\":0, \"difficulty\":0}]");
+        hydrateRootElem(data);
+    });
 };
 
 function getAllPuzzles() {
@@ -27,10 +33,16 @@ function addPuzzle(puzzle) {
         body: JSON.stringify(puzzle)
     })
         .then(response => {
-            response.json();
+            return response.json();
         })
-        .then(data => {
-            console.log('Success:', data);
+        .then(rawData => {
+            var data = translateResponseData(rawData);
+            if (data.StatusCode == "409") {
+                alert(data.Status + ": " + data.ErrorMessage);
+            } else if (data.StatusCode == "200") {
+                hydrateSelectElem(data);
+            }
+            
         })
         .catch(error => console.error('Error:', error));
 }
@@ -100,13 +112,13 @@ function hydrateSelectElem(puzzles) {
 }
 
 function hydrateRootElem(puzzles) {
-    var select = document.getElementById("puzzleSelect");
+    var select = document.getElementById("puzzleSelect").value;
     var root = document.getElementById("root");
     var rootInnerHTML = "";
     var puzzle = puzzles[0];
 
-    for (var i = 0; i < puzzle.boardValues.length; i++) {
-        rootInnerHTML += "<div class='cell'>" + puzzle.boardValues[i] + "</div>";
+    for (var i = 0; i < select.length; i++) {
+        rootInnerHTML += "<div class='cell'>" + select[i] + "</div>";
     }
     root.innerHTML = rootInnerHTML;
 }

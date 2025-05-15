@@ -98,7 +98,8 @@ namespace WebSudoku_v0._0._7.Controllers
                     var jsonResult = JsonSerializer.Serialize(errorResponse);
                     return new JsonResult(jsonResult);
                 }
-
+                //  NOTE: overwriting id for testing purposes
+                id = "249D9D4F-1A09-4C46-90EE-809828D9BBE3";
                 var guid = new SudokuPuzzledto(id);
 
                 if (guid == null)

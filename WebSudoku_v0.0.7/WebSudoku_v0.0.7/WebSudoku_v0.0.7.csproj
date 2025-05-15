@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Classes\CustomRouting.cs" />
     <Compile Remove="Configuration\DevSudokuConfigurationSection.cs" />
     <Compile Remove="Configuration\GamePlaySettings.cs" />
     <Compile Remove="Configuration\GamePlaySettingsProperty.cs" />
@@ -33,7 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Classes\" />
     <Folder Include="Configuration\" />
   </ItemGroup>
 

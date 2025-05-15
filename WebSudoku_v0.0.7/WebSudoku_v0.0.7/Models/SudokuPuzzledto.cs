@@ -4,7 +4,6 @@ using System.Text.Json.Serialization;
 
 namespace WebSudoku_v0._0._7.Models
 {
-    [JsonSerializable(typeof(SudokuPuzzledto))]
     public class SudokuPuzzledto : EntityBase
     {
         [Required]
