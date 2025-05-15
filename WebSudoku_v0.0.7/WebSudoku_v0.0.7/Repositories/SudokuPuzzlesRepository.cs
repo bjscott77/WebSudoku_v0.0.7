@@ -31,19 +31,19 @@ namespace WebSudoku_v0._0._7.Repositories
             return GetAllPuzzles();
         }
 
-        public List<SudokuPuzzledto>? DeletePuzzle(SudokuPuzzledto puzzle)
+        public List<SudokuPuzzledto>? DeletePuzzle(string puzzle)
         {
             try
             {
-                var existingPuzzle = _appDbContext?.Puzzle.FirstOrDefault(p => p.Id == puzzle.Id);
-                if (existingPuzzle != null)
+                var existingPuzzle = _appDbContext?.Puzzle.FirstOrDefault(p => p.BoardValues == puzzle);
+                if (existingPuzzle == null)
                     return null;
 
-                _appDbContext?.Puzzle.Remove(puzzle);
+                _appDbContext?.Puzzle.Remove(existingPuzzle);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in SudokuPuzzleRepository AddPuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
+                Console.WriteLine($"Error in SudokuPuzzleRepository DeletePuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
                 return null;
             }
             if (_appDbContext == null)

@@ -87,30 +87,19 @@ namespace WebSudoku_v0._0._7.Controllers
 
         [HttpPost("DeletePuzzle")]
         [Route("/deletepuzzle")]
-        public JsonResult DeletePuzzle([FromBody] string id)    
+        public JsonResult DeletePuzzle([FromBody] string puzzle)
         {
             try
             {
-                if (string.IsNullOrEmpty(id))
+                if (string.IsNullOrEmpty(puzzle))
                 {
                     var errorModel = _sudokuRepo.GetEmptyListReturnModel();
                     var errorResponse = new AddPuzzleResponsedto(errorModel, 400, "Bad Request", "Request body is empty");
                     var jsonResult = JsonSerializer.Serialize(errorResponse);
                     return new JsonResult(jsonResult);
                 }
-                //  NOTE: overwriting id for testing purposes
-                id = "249D9D4F-1A09-4C46-90EE-809828D9BBE3";
-                var guid = new SudokuPuzzledto(id);
 
-                if (guid == null)
-                {
-                    var errorModel = _sudokuRepo.GetEmptyListReturnModel();
-                    var errorResponse = new AddPuzzleResponsedto(errorModel, 400, "Bad Request", "Request query string id cannot be parsed to guid.");
-                    var jsonResult = JsonSerializer.Serialize(errorResponse);
-                    return new JsonResult(jsonResult);
-                }
-
-                var model = _sudokuRepo.DeletePuzzle(guid);
+                var model = _sudokuRepo.DeletePuzzle(puzzle);
 
                 if (model == null)
                 {

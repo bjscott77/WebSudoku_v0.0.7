@@ -73,14 +73,14 @@ function toggleNewPuzzleDisplay() {
     even = !even;
 }
 
-function deletePuzzle(id) {
+function deletePuzzle(puzzle) {
     fetch("api/sudoku/deletepuzzle", {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(id)
+        body: JSON.stringify(puzzle)
     })
         .then(response => {
             response.json();
@@ -89,6 +89,11 @@ function deletePuzzle(id) {
             console.log('Success:', data);
         })
         .catch(error => console.error('Error:', error));
+}
+
+function deleteSelectedPuzzle() {   
+    var selectElem = document.getElementById("puzzleSelect");
+    this.deletePuzzle(selectElem.value);
 }
 
 function translateResponseData(puzzles) {

@@ -10,10 +10,12 @@
     </select>
     <br /><br />
     <button type="button" id="addNew" class="btn btn-outline-secondary" onclick="toggleNewPuzzleDisplay();">Add New...</button>
+    <button type="button" id="deletePuzzle" class="btn btn-outline-secondary" onclick="deleteSelectedPuzzle();">Delete Selected</button>
     <div id="addToggle" style="display:none;">
         <button for="puzzle" type="submit" class="btn btn-secondary" onclick="prepareAddNewPuzzle();">Add New Puzzle</button>
         <input type="text" id="newPuzzleInput" name="puzzle" placeholder="Enter a new puzzle here..."><br /><br />
     </div>
+    <br /><br />
     <button type="button" class="btn btn-primary" onclick="activateGameSolution();">Show Solution</button>
 
     <div id="root" class="container">

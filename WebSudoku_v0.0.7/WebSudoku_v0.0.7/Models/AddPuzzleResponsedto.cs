@@ -1,6 +1,4 @@
-﻿using WebSudoku_v0._0._7.Repositories;
-
-namespace WebSudoku_v0._0._7.Models
+﻿namespace WebSudoku_v0._0._7.Models
 {
     public class AddPuzzleResponsedto : IAddPuzzleResponsedto
     {
