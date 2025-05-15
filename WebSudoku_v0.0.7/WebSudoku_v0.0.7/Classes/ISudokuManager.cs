@@ -22,6 +22,6 @@
         /// <returns></returns>
         Cells ProcessOdds(Cells cells);
 
-        SudokuBoard RunSolution(SudokuBoard board);
+        Cells RunSolution(Cells board);
     }
 }

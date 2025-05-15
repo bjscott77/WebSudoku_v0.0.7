@@ -5,7 +5,8 @@
         ISudokuManager SudokuManager { get; set; }
         Cells Cells { get; set; }
         ISudokuDimensions Dimensions { get; set; }
-        string CurrentStartingPuzzle { get; set; }
+        void InitializeBoard(string puzzle);
+        void InitializeOdds();
 
     }
 }

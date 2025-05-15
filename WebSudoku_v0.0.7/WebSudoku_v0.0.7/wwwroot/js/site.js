@@ -47,6 +47,17 @@ function addPuzzle(puzzle) {
         .catch(error => console.error('Error:', error));
 }
 
+function solvePuzzle(puzzle) {
+    fetch("api/sudoku/getsolvedpuzzle?puzzle="+puzzle)
+        .then(res => res.json())
+        .then((rawData) => {
+            var data = translateResponseData(rawData);
+            hydrateSelectElem(data);
+            hydrateRootElem(data);
+        })
+        .catch(err => console.log(err));
+}
+
 function prepareAddNewPuzzle() {
     var puzzle = document.getElementById("newPuzzleInput");
     if (puzzle.value == null || puzzle.value == "" || puzzle.value == 'undefined') {
@@ -94,6 +105,12 @@ function deletePuzzle(puzzle) {
 function deleteSelectedPuzzle() {   
     var selectElem = document.getElementById("puzzleSelect");
     this.deletePuzzle(selectElem.value);
+}
+
+function activateGameSolution() {
+    var selectElem = document.getElementById("puzzleSelect");
+    var puzzle = selectElem.value.toString();
+    this.solvePuzzle(puzzle);
 }
 
 function translateResponseData(puzzles) {

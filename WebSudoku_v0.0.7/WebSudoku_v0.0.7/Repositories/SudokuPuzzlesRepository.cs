@@ -1,11 +1,12 @@
-﻿using WebSudoku_v0._0._7.Data;
+﻿using WebSudoku_v0._0._7.Classes;
+using WebSudoku_v0._0._7.Data;
 using WebSudoku_v0._0._7.Models;
 
 namespace WebSudoku_v0._0._7.Repositories
 {
-    public class SudokuPuzzlesRepository(ApplicationDbContext? _appDbContext) : ISudokuRepository
+    public class SudokuPuzzlesRepository(ApplicationDbContext? _appDbContext, ISudokuBoard? _sudokuBoard) : ISudokuRepository
     {
-        public SudokuPuzzlesRepository() : this(null)
+        public SudokuPuzzlesRepository() : this(null, null)
         {
         }
 
@@ -88,9 +89,30 @@ namespace WebSudoku_v0._0._7.Repositories
             };
         }
 
-        public List<SudokuPuzzledto> GetSelectedPuzzle()
+        public List<SudokuPuzzledto>? GetSolvedPuzzle(string puzzle)
         {
-            return null;
+            if (string.IsNullOrEmpty(puzzle))
+                return null;
+
+            if (_sudokuBoard == null)
+                return null;
+
+            _sudokuBoard.InitializeBoard(puzzle);
+            _sudokuBoard.InitializeOdds();
+            _sudokuBoard.Cells = _sudokuBoard.SudokuManager.RunSolution(_sudokuBoard.Cells);
+
+            if (_sudokuBoard.Cells.List == null || _sudokuBoard.Cells.List.Count == 0)
+                return null;
+
+            return new List<SudokuPuzzledto>()
+            {
+                new SudokuPuzzledto
+                {
+                    Id = Guid.Empty,
+                    Difficulty = 0,
+                    BoardValues = string.Join("", _sudokuBoard.Cells.List.Select(c => c.Value))
+                }
+            };
         }
 
         public List<SudokuPuzzledto> UpdatePuzzle(SudokuPuzzledto puzzle)

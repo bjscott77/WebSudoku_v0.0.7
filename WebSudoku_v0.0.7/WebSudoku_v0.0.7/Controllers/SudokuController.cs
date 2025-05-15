@@ -30,6 +30,41 @@ namespace WebSudoku_v0._0._7.Controllers
             }
         }
 
+        [HttpGet("GetSolvedPuzzle")]
+        [Route("/getsolvedpuzzle")]
+        public JsonResult GetSolved([FromQuery] string puzzle)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(puzzle))
+                {
+                    var empty = _sudokuRepo.GetEmptyListReturnModel();
+                    var response = _sudokuRepo.GetEmptyReturnModel();
+                    var mtJson = JsonSerializer.Serialize(empty);
+                    return new JsonResult(mtJson);
+                }
+
+                var model = _sudokuRepo.GetSolvedPuzzle(puzzle);
+
+                if (model == null)
+                {
+                    var empty = _sudokuRepo.GetEmptyListReturnModel();
+                    var mtJson = JsonSerializer.Serialize(empty);
+                    return new JsonResult(mtJson);
+                }
+
+                var json = JsonSerializer.Serialize(model);
+                return new JsonResult(json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SudokuController GETSolved.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
+                var model = _sudokuRepo.GetEmptyListReturnModel();
+                var json = JsonSerializer.Serialize(model);
+                return new JsonResult(json);
+            }
+        }
+
         [HttpPost("AddPuzzle")]
         [Route("/addpuzzle")]
         public async Task<JsonResult> AddPuzzle()

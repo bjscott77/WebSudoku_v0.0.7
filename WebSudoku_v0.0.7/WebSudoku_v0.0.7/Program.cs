@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using WebSudoku_v0._0._7.Classes;
 using WebSudoku_v0._0._7.Data;
 using WebSudoku_v0._0._7.Repositories;
 
@@ -22,7 +23,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddSingleton<ConfigurationManager>(builder.Configuration);
 builder.Services.AddSingleton<IConfigurationSection>(builder.Configuration.GetSection("DEV"));
-
+builder.Services.AddSingleton<ISudokuBoard, SudokuBoard>();
 builder.Services.AddScoped<ISudokuRepository,SudokuPuzzlesRepository>();
 
 // Add services to the container.

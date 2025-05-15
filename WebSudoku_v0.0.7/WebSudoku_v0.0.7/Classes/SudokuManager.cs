@@ -222,17 +222,17 @@ namespace WebSudoku_v0._0._7.Classes
             return cells;
         }
 
-        public SudokuBoard RunSolution(SudokuBoard board)
+        public Cells RunSolution(Cells board)
         {
             bool solved = false;
             int attempt = 1;
             int maxAttempts = 1000;
             while (!solved)
             {
-                board.Cells = board.SudokuManager.ProcessOdds(board.Cells);
-                board.Cells.List.ForEach(c => board.SudokuManager.SetCellOdds(board.Cells, c.Location.Index));
+                board = ProcessOdds(board);
+                board.List.ForEach(c => SetCellOdds(board, c.Location.Index));
 
-                solved = board.Cells.List.All(c => c.hasValue);
+                solved = board.List.All(c => c.hasValue);
                 if (attempt >= maxAttempts)
                 {
                     break;

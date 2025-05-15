@@ -1,34 +1,15 @@
-﻿
-using System;
-using System.Runtime.InteropServices;
-
-namespace WebSudoku_v0._0._7.Classes
+﻿namespace WebSudoku_v0._0._7.Classes
 {
-    public class SudokuBoard : ISudokuBoard
+    public class SudokuBoard(IConfigurationSection? _devConfig) : ISudokuBoard
     {
         public ISudokuManager SudokuManager { get; set; } = new SudokuManager();
         public Cells Cells { get; set; } = new Cells();
         
-        //obsolete - Handled by DB now
-        //public List<Puzzle> Puzzles { get; set; } = new List<Puzzle>();
-        
         public ISudokuDimensions Dimensions { get; set; } = new SudokuDimensions(81, 9);
-        public string CurrentStartingPuzzle { get; set; } = string.Empty;
 
-        public SudokuBoard()
+        public SudokuBoard() : this(null)
         {
-
-        }
-        public SudokuBoard(string puzzle)
-        {
-            InitializeBoard(puzzle);
-            InitializeOdds();
-        }
-        public SudokuBoard(ISudokuDimensions dimensions)
-        {
-            Dimensions = dimensions;
-            InitializeBoard();
-            InitializeOdds();
+                
         }
 
         //  obsolete - Handled on FE now
@@ -55,19 +36,17 @@ namespace WebSudoku_v0._0._7.Classes
             }
         }
         
-        public bool InitializeOdds()
+        public void InitializeOdds()
         {
             for (int i = 0; i < Cells.List.Count; i++)
             {
                 Cells = SudokuManager.InitialOddsSetup(Cells, i);
                 Cells = SudokuManager.SetCellOdds(Cells, i);
             }
-            return true;
         }
 
-        public bool InitializeBoard(string puzzle = "350602004007040013069831007503000096000300745946000800692400008800703000004020001")
+        public void InitializeBoard(string puzzle = "350602004007040013069831007503000096000300745946000800692400008800703000004020001")
         {
-            CurrentStartingPuzzle = puzzle;
             Cells = new Cells();
             int index = 0;
             foreach (var cellValue in puzzle.ToCharArray())
@@ -75,7 +54,6 @@ namespace WebSudoku_v0._0._7.Classes
                 Cells.List.Add(SudokuManager.SetNextCell(cellValue.ToString(), index));
                 index++;
             }
-            return true;
         }
     }
 }
