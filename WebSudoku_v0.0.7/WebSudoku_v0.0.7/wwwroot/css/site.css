@@ -1,16 +1,27 @@
 ﻿body {
+
+}
+
+.buttonPanel {
+    display: flex;
+    justify-content:center;
 }
 
 .btn {
     font-size: 16pt;
+    color: darkslateblue;
     border: 1px solid darkslateblue;
-    background-color: aquamarine;
+    background-color: lightgray;
+    width: 20%;
+    height: 5%;
+    margin-right: 2%;
 }
 
     .btn:hover {
         cursor: pointer;
         background-color: lightslategray;
         color: white;
+        border: none;
     }
 
 .cell {
@@ -46,10 +57,18 @@ h1 {
 
 #puzzleSelect {
     height: 40px;
-    width: 95%;
+    width: 60%;
+    margin: 0 19%;
+    margin-bottom: 1%;
+    margin-top: 1%;
     font-size: 18px;
     font-weight: bold;
     border: 2px solid darkslateblue;
+}
+
+.boardSelection {
+    display: flex;
+    align-content: center;
 }
 
 #newPuzzleInput {

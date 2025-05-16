@@ -52,8 +52,7 @@ function solvePuzzle(puzzle) {
         .then(res => res.json())
         .then((rawData) => {
             var data = translateResponseData(rawData);
-            hydrateSelectElem(data);
-            hydrateRootElem(data);
+            updateRootWithSolved(data.Payload[0].boardValues);
         })
         .catch(err => console.log(err));
 }
@@ -120,17 +119,11 @@ function translateResponseData(puzzles) {
 
 function hydrateSelectElem(puzzles) {
     var select = document.getElementById("puzzleSelect");
-
     select.innerHTML = "";
-    var puzzleInnerHTML = select.innerHTML;
 
-    if (puzzles.includes(puzzles.selectedPuzzle))
-        puzzles = swapArrayElements(puzzles, 0, puzzles.indexOf(puzzles.selectedPuzzle));
-
-    for (var i = 0; i < puzzles.length; i++) {
-        puzzleInnerHTML += "<option>" + puzzles[i].boardValues + "</option>\r\n";
+    for (var i = 0; i < puzzles.Payload.length; i++) {
+        select.innerHTML += "<option>" + puzzles.Payload[i].boardValues + "</option>\r\n";
     }
-    select.innerHTML = puzzleInnerHTML;
 }
 
 function hydrateRootElem(puzzles) {
@@ -142,6 +135,18 @@ function hydrateRootElem(puzzles) {
     for (var i = 0; i < select.length; i++) {
         rootInnerHTML += "<div class='cell'>" + select[i] + "</div>";
     }
+    rootInnerHTML = rootInnerHTML.replaceAll("0", "&nbsp");
+    root.innerHTML = rootInnerHTML;
+}
+
+function updateRootWithSolved(puzzle) {
+    var root = document.getElementById("root");
+    var rootInnerHTML = "";
+
+    for (var i = 0; i < puzzle.length; i++) {
+        rootInnerHTML += "<div class='cell'>" + puzzle[i] + "</div>";
+    }
+    rootInnerHTML = rootInnerHTML.replaceAll("0", "&nbsp");
     root.innerHTML = rootInnerHTML;
 }
 

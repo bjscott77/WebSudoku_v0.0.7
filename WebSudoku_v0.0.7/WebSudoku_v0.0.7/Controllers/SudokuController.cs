@@ -18,14 +18,25 @@ namespace WebSudoku_v0._0._7.Controllers
             try
             {
                 var model = _sudokuRepo.GetAllPuzzles();
-                var json = JsonSerializer.Serialize(model);
+
+                if (model == null)
+                {
+                    var empty = _sudokuRepo.GetEmptyListReturnModel();
+                    var errResonse = new SudokuApiResponse(empty, 404, "Not Found", "No puzzles found in the database.");
+                    var mtModel = JsonSerializer.Serialize(errResonse);
+                    return new JsonResult(mtModel);
+                }
+
+                var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                var json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"SudokuController GET.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
                 var model = _sudokuRepo.GetEmptyListReturnModel();
-                var json = JsonSerializer.Serialize(model);
+                var errorModel = new SudokuApiResponse(model, 500, "Server Error", $"Sudoku GetAllPuzzles: {ex?.Message}. Inner: {ex?.InnerException?.Message}");
+                var json = JsonSerializer.Serialize(errorModel);
                 return new JsonResult(json);
             }
         }
@@ -39,8 +50,8 @@ namespace WebSudoku_v0._0._7.Controllers
                 if (string.IsNullOrEmpty(puzzle))
                 {
                     var empty = _sudokuRepo.GetEmptyListReturnModel();
-                    var response = _sudokuRepo.GetEmptyReturnModel();
-                    var mtJson = JsonSerializer.Serialize(empty);
+                    var errResonse = new SudokuApiResponse(empty, 400, "Bad Request", "Query string is malformed is null or empty.");
+                    var mtJson = JsonSerializer.Serialize(errResonse);
                     return new JsonResult(mtJson);
                 }
 
@@ -49,18 +60,21 @@ namespace WebSudoku_v0._0._7.Controllers
                 if (model == null)
                 {
                     var empty = _sudokuRepo.GetEmptyListReturnModel();
-                    var mtJson = JsonSerializer.Serialize(empty);
+                    var errResonse = new SudokuApiResponse(empty, 400, "Bad Request", "Unable to parse puzzle from entered text.");
+                    var mtJson = JsonSerializer.Serialize(errResonse);
                     return new JsonResult(mtJson);
                 }
 
-                var json = JsonSerializer.Serialize(model);
+                var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                var json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"SudokuController GETSolved.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
                 var model = _sudokuRepo.GetEmptyListReturnModel();
-                var json = JsonSerializer.Serialize(model);
+                var errorModel = new SudokuApiResponse(model, 500, "Server Error", $"Sudoku GetSolved: {ex?.Message}. Inner: {ex?.InnerException?.Message}");
+                var json = JsonSerializer.Serialize(errorModel);
                 return new JsonResult(json);
             }
         }
@@ -75,7 +89,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 if (string.IsNullOrEmpty(json))
                 {
                     var errorModel = _sudokuRepo.GetEmptyListReturnModel();
-                    var errorResponse = new AddPuzzleResponsedto(errorModel, 400, "Bad Request", "Request body is empty");
+                    var errorResponse = new SudokuApiResponse(errorModel, 400, "Bad Request", "Request body is empty");
                     var jsonResult = JsonSerializer.Serialize(errorResponse);
                     return new JsonResult(jsonResult);
                 }
@@ -84,14 +98,14 @@ namespace WebSudoku_v0._0._7.Controllers
                 if (puzzle == null)
                 {
                     var errorModel = _sudokuRepo.GetEmptyListReturnModel();
-                    var errorResponse = new AddPuzzleResponsedto(errorModel, 400, "Bad Request", "Request body is missing board values in the puzzle.");
+                    var errorResponse = new SudokuApiResponse(errorModel, 400, "Bad Request", "Request body is missing board values in the puzzle.");
                     var jsonResult = JsonSerializer.Serialize(errorResponse);
                     return new JsonResult(jsonResult);
                 }
                 if (string.IsNullOrEmpty(puzzle.BoardValues))
                 {
                     var errorModel = _sudokuRepo.GetEmptyListReturnModel();
-                    var errorResponse = new AddPuzzleResponsedto(errorModel, 400, "Bad Request", "Request body failed serialization.");
+                    var errorResponse = new SudokuApiResponse(errorModel, 400, "Bad Request", "Request body failed serialization.");
                     var jsonResult = JsonSerializer.Serialize(errorResponse);
                     return new JsonResult(jsonResult);
                 }
@@ -101,12 +115,12 @@ namespace WebSudoku_v0._0._7.Controllers
                 if (model == null)
                 {
                     var errorModel = _sudokuRepo.GetEmptyListReturnModel();
-                    var errorResponse = new AddPuzzleResponsedto(errorModel, 409, "Conflict", "The database already contains a record with the given puzzle.");
+                    var errorResponse = new SudokuApiResponse(errorModel, 409, "Conflict", "The database already contains a record with the given puzzle.");
                     var jsonResult = JsonSerializer.Serialize(errorResponse);
                     return new JsonResult(jsonResult);
                 }
 
-                var successResponse = new AddPuzzleResponsedto(model, 200, "OK", string.Empty);
+                var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
                 json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);   
             }
@@ -114,7 +128,7 @@ namespace WebSudoku_v0._0._7.Controllers
             {
                 Console.WriteLine($"SudokuController POST.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
                 var errorModel = _sudokuRepo.GetEmptyListReturnModel();
-                var errorResponse = new AddPuzzleResponsedto(errorModel, 500, "Server Error", $"ErrorMessage: {ex?.Message} || {ex?.InnerException?.Message}");
+                var errorResponse = new SudokuApiResponse(errorModel, 500, "Server Error", $"ErrorMessage: {ex?.Message} || {ex?.InnerException?.Message}");
                 var json = JsonSerializer.Serialize(errorResponse);
                 return new JsonResult(json);
             }
@@ -129,7 +143,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 if (string.IsNullOrEmpty(puzzle))
                 {
                     var errorModel = _sudokuRepo.GetEmptyListReturnModel();
-                    var errorResponse = new AddPuzzleResponsedto(errorModel, 400, "Bad Request", "Request body is empty");
+                    var errorResponse = new SudokuApiResponse(errorModel, 400, "Bad Request", "Request body is empty");
                     var jsonResult = JsonSerializer.Serialize(errorResponse);
                     return new JsonResult(jsonResult);
                 }
@@ -139,19 +153,19 @@ namespace WebSudoku_v0._0._7.Controllers
                 if (model == null)
                 {
                     var errorModel = _sudokuRepo.GetEmptyListReturnModel();
-                    var errorResponse = new AddPuzzleResponsedto(errorModel, 404, "Not Found", "The database does not contain a record with the given ID.");
+                    var errorResponse = new SudokuApiResponse(errorModel, 404, "Not Found", "The database does not contain a record with the given ID.");
                     var jsonResult = JsonSerializer.Serialize(errorResponse);
                     return new JsonResult(jsonResult);
                 }
 
-                var successResponse = new AddPuzzleResponsedto(model, 200, "OK", string.Empty);
+                var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
                 var json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }
             catch (Exception ex)
             {
                 var errorModel = _sudokuRepo.GetEmptyListReturnModel();
-                var errorResponse = new AddPuzzleResponsedto(errorModel, 500, "Server Error", $"ErrorMessage: {ex?.Message} || {ex?.InnerException?.Message}");
+                var errorResponse = new SudokuApiResponse(errorModel, 500, "Server Error", $"ErrorMessage: {ex?.Message} || {ex?.InnerException?.Message}");
                 var json = JsonSerializer.Serialize(errorResponse);
                 return new JsonResult(json);
             }
