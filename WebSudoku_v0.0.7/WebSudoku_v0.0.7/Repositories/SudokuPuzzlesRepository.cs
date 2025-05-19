@@ -57,7 +57,11 @@ namespace WebSudoku_v0._0._7.Repositories
         public List<SudokuPuzzledto> GetAllPuzzles()
         {
             var puzzles = _appDbContext?.Puzzle.ToList();
-            var model = puzzles?.Select(p => new SudokuPuzzledto
+
+            if (puzzles == null || puzzles.Count == 0)
+                return null;
+
+            var model = puzzles.Select(p => new SudokuPuzzledto
             {
                 Id = p.Id,
                 Difficulty = p.Difficulty,

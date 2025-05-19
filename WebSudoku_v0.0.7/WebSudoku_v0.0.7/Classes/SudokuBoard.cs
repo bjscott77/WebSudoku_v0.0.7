@@ -9,7 +9,6 @@
 
         public SudokuBoard() : this(null)
         {
-                
         }
 
         public void DisplayOdds()
