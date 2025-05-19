@@ -14,13 +14,12 @@
 		<button type="button" id="addNew" class="btn btn-outline-secondary" onclick="toggleNewPuzzleDisplay();">Add New...</button>
 		<button type="button" id="deletePuzzle" class="btn btn-outline-secondary" onclick="deleteSelectedPuzzle();">Delete Selected</button>
 		<br /><br />
-		<div id="addToggle" style="display:none;">
-			<button for="puzzle" type="submit" class="btn btn-secondary" onclick="prepareAddNewPuzzle();">Add New Puzzle</button>
+		<div id="addToggle" class="add-toggle" style="display:none;">
 			<input type="text" id="newPuzzleInput" name="puzzle" placeholder="Enter a new puzzle here..."><br /><br />
 		</div>
 		<br /><br />
-		<button type="button" class="btn btn-primary" onclick="activateGameSolution();">Show Solution</button>
-		<button type="button" class="btn btn-primary" onclick="getAllPuzzles();">Reset</button>
+		<button type="button" id="showPuzzle" class="btn btn-primary" onclick="activateGameSolution();">Show Solution</button>
+		<button type="button" id="resetPuzzle" class="btn btn-primary" onclick="getPuzzle();">Reset</button>
 	</div>
 
 	<div id="root" class="container">

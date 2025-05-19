@@ -10,6 +10,12 @@ window.onload = function () {
         var data = JSON.parse("[{\"boardValues\": \"" + event.target.value + "\", \"id\":0, \"difficulty\":0}]");
         hydrateRootElem(data);
     });
+
+    let AddElem = document.getElementById("newPuzzleInput");
+    AddElem.addEventListener("focus", function (event) {
+        let btn = document.getElementById("addNew");
+        btn.innerHTML = "Add";
+    });
 };
 
 function getAllPuzzles() {
@@ -21,6 +27,24 @@ function getAllPuzzles() {
             hydrateRootElem(data);
         })
         .catch(err => console.log(err));
+}
+
+function getPuzzle() {
+    var selectElem = document.getElementById("puzzleSelect");
+    var puzzle = selectElem.value.toString();
+
+    if (puzzle == null) {
+        alert("Please select a puzzle to load it.");
+    } else {
+        fetch("api/sudoku/getpuzzle?puzzle=" + puzzle)
+            .then(res => res.json())
+            .then((rawData) => {
+                var data = translateResponseData(rawData);
+                updateRootWithSelected(data.Payload[0].boardValues);
+            })
+            .catch(err => console.log(err));
+    }
+
 }
 
 function addPuzzle(puzzle) {
@@ -52,7 +76,7 @@ function solvePuzzle(puzzle) {
         .then(res => res.json())
         .then((rawData) => {
             var data = translateResponseData(rawData);
-            updateRootWithSolved(data.Payload[0].boardValues);
+            updateRootWithSelected(data.Payload[0].boardValues);
         })
         .catch(err => console.log(err));
 }
@@ -71,14 +95,35 @@ var even = false;
 function toggleNewPuzzleDisplay() {
     var elem = document.getElementById("addToggle");
     var button = document.getElementById("addNew");
+    var deletebtn = document.getElementById("deletePuzzle");
+    var showbtn = document.getElementById("showPuzzle");
+    var resetbtn = document.getElementById("resetPuzzle");
 
     if (even) {
-        button.innerHTML = "Add New..."
-        elem.style.display = 'none';
+        var newPuzzle = document.getElementById("newPuzzleInput")?.value;
+
+        if (newPuzzle == null || newPuzzle == "" || newPuzzle == 'undefined') {
+            button.innerHTML = "Add New..."
+            elem.style.display = 'none';
+            deletebtn.style.display = 'block';
+            showbtn.style.display = 'block';
+            resetbtn.style.display = 'block';
+        } else {
+            this.prepareAddNewPuzzle();
+            button.innerHTML = "Add New..."
+            elem.style.display = 'none';
+            deletebtn.style.display = 'block';
+            showbtn.style.display = 'block';
+            resetbtn.style.display = 'block';
+        }
 
     } else {
         button.innerHTML = "Back..."
-        elem.style.display = 'block';        
+        elem.style.display = 'block';
+        deletebtn.style.display = 'none';
+        showbtn.style.display = 'none';
+        resetbtn.style.display = 'none';
+        
     }
     even = !even;
 }
@@ -139,7 +184,7 @@ function hydrateRootElem(puzzles) {
     root.innerHTML = rootInnerHTML;
 }
 
-function updateRootWithSolved(puzzle) {
+function updateRootWithSelected(puzzle) {
     var root = document.getElementById("root");
     var rootInnerHTML = "";
 

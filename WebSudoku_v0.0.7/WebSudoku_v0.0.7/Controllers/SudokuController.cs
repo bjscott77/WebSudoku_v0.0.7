@@ -41,6 +41,44 @@ namespace WebSudoku_v0._0._7.Controllers
             }
         }
 
+        [HttpGet("GetPuzzle")]
+        [Route("/getpuzzle")]
+        public JsonResult GetSelected([FromQuery] string puzzle)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(puzzle))
+                {
+                    var empty = _sudokuRepo.GetEmptyListReturnModel();
+                    var errResonse = new SudokuApiResponse(empty, 400, "Bad Request", "Query string is malformed is null or empty.");
+                    var mtJson = JsonSerializer.Serialize(errResonse);
+                    return new JsonResult(mtJson);
+                }
+
+                var model = _sudokuRepo.GetPuzzle(puzzle);  
+
+                if (model == null)
+                {
+                    var empty = _sudokuRepo.GetEmptyListReturnModel();
+                    var errResonse = new SudokuApiResponse(empty, 404, "Not Found", "Selected puzzle was not found.");
+                    var mtJson = JsonSerializer.Serialize(errResonse);
+                    return new JsonResult(mtJson);
+                }
+
+                var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                var json = JsonSerializer.Serialize(successResponse);
+                return new JsonResult(json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SudokuController GETSelected.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
+                var model = _sudokuRepo.GetEmptyListReturnModel();
+                var errorModel = new SudokuApiResponse(model, 500, "Server Error", $"Sudoku Selected: {ex?.Message}. Inner: {ex?.InnerException?.Message}");
+                var json = JsonSerializer.Serialize(errorModel);
+                return new JsonResult(json);
+            }
+        }
+
         [HttpGet("GetSolvedPuzzle")]
         [Route("/getsolvedpuzzle")]
         public JsonResult GetSolved([FromQuery] string puzzle)

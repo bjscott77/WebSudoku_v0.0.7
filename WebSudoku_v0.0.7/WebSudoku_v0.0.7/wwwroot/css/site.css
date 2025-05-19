@@ -1,10 +1,9 @@
 ﻿body {
-
 }
 
-.buttonPanel {
+.boardSelection {
     display: flex;
-    justify-content:center;
+    align-content: center;
 }
 
 .btn {
@@ -23,6 +22,11 @@
         color: white;
         border: none;
     }
+
+.buttonPanel {
+    display: flex;
+    justify-content: center;
+}
 
 .cell {
     border: 2px solid darkslateblue;
@@ -66,15 +70,10 @@ h1 {
     border: 2px solid darkslateblue;
 }
 
-.boardSelection {
-    display: flex;
-    align-content: center;
-}
-
 #newPuzzleInput {
     height: 40px;
     width: 95%;
-    font-size 18px;
+    font-size: 18px;
     font-weight: bold;
     border: 2px solid darkslateblue;
 }

@@ -54,6 +54,24 @@ namespace WebSudoku_v0._0._7.Repositories
             return GetAllPuzzles();
         }
 
+        public List<SudokuPuzzledto>? GetPuzzle(string puzzle) 
+        {
+            if (string.IsNullOrEmpty(puzzle))
+                return null;
+
+            var record = _appDbContext?.Puzzle.Where(p => p.BoardValues == puzzle).ToList();
+
+            if (record == null || record.Count == 0)
+                return null;
+
+            return record.Select(record => new SudokuPuzzledto
+            {
+                Id = record.Id,
+                Difficulty = record.Difficulty,
+                BoardValues = record.BoardValues,
+            }).ToList();
+        }
+
         public List<SudokuPuzzledto> GetAllPuzzles()
         {
             var puzzles = _appDbContext?.Puzzle.ToList();
@@ -61,13 +79,12 @@ namespace WebSudoku_v0._0._7.Repositories
             if (puzzles == null || puzzles.Count == 0)
                 return null;
 
-            var model = puzzles.Select(p => new SudokuPuzzledto
+            return puzzles.Select(p => new SudokuPuzzledto
             {
                 Id = p.Id,
                 Difficulty = p.Difficulty,
                 BoardValues = p.BoardValues,
             }).ToList();
-            return model;
         }
 
         public List<SudokuPuzzledto> GetEmptyListReturnModel()
