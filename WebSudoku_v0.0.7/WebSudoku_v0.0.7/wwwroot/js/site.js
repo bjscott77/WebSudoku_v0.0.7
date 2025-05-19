@@ -103,6 +103,9 @@ function toggleNewPuzzleDisplay() {
         var newPuzzle = document.getElementById("newPuzzleInput")?.value;
 
         if (newPuzzle == null || newPuzzle == "" || newPuzzle == 'undefined') {
+            if (button.innerHTML == "Add")
+                alert("No puzzle was entered.  No new puzzles were added.");
+
             button.innerHTML = "Add New..."
             elem.style.display = 'none';
             deletebtn.style.display = 'block';
