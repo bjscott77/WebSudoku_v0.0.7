@@ -87,29 +87,6 @@ namespace WebSudoku_v0._0._7.Repositories
             }).ToList();
         }
 
-        public List<SudokuPuzzledto> GetEmptyListReturnModel()
-        {
-            return new List<SudokuPuzzledto>
-                {
-                    new SudokuPuzzledto
-                    {
-                        Id = Guid.Empty,
-                        Difficulty = int.MinValue,
-                        BoardValues = string.Empty
-                    }
-                };
-        }
-
-        public SudokuPuzzledto GetEmptyReturnModel()
-        {
-            return new SudokuPuzzledto
-            {
-                Id = Guid.Empty,
-                Difficulty = int.MinValue,
-                BoardValues = string.Empty
-            };
-        }
-
         public List<SudokuPuzzledto>? GetSolvedPuzzle(string puzzle)
         {
             if (string.IsNullOrEmpty(puzzle))
@@ -136,9 +113,58 @@ namespace WebSudoku_v0._0._7.Repositories
             };
         }
 
-        public List<SudokuPuzzledto>? UpdatePuzzle(SudokuPuzzledto puzzle)
+        public List<SudokuPuzzledto>? UpdatePuzzle(List<SudokuPuzzledto> puzzles)
         {
-            return null;
+            try
+            {
+                var existingPuzzle = _appDbContext?.Puzzle.FirstOrDefault(p => p.BoardValues == puzzles[0].BoardValues);
+                if (existingPuzzle == null)
+                    return null;
+
+                existingPuzzle.BoardValues = puzzles[1].BoardValues;
+                _appDbContext?.Puzzle.Update(existingPuzzle);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in SudokuPuzzleRepository UpdatePuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
+                return null;
+            }
+            if (_appDbContext == null)
+                return null;
+
+            _appDbContext.SaveChanges();
+
+            var retObj = new List<SudokuPuzzledto>()
+            {
+                new SudokuPuzzledto()
+                {
+                    BoardValues = puzzles[1].BoardValues
+                }
+            };
+            return retObj;
+        }
+
+        public List<SudokuPuzzledto> GetEmptyListReturnModel()
+        {
+            return new List<SudokuPuzzledto>
+                {
+                    new SudokuPuzzledto
+                    {
+                        Id = Guid.Empty,
+                        Difficulty = int.MinValue,
+                        BoardValues = string.Empty
+                    }
+                };
+        }
+
+        public SudokuPuzzledto GetEmptyReturnModel()
+        {
+            return new SudokuPuzzledto
+            {
+                Id = Guid.Empty,
+                Difficulty = int.MinValue,
+                BoardValues = string.Empty
+            };
         }
     }
 }

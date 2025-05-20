@@ -3,7 +3,7 @@
 
     let selectElem = document.getElementById("puzzleSelect");
     selectElem.addEventListener("change", function (event) {
-        var data = JSON.parse("[{\"boardValues\": \"" + event.target.value + "\", \"id\":0, \"difficulty\":0}]");
+        let data = JSON.parse("[{\"boardValues\": \"" + event.target.value + "\", \"id\":0, \"difficulty\":0}]");
         hydrateRootElem(data);
     });
 
@@ -12,13 +12,19 @@
         let btn = document.getElementById("addNew");
         btn.innerHTML = "Add";
     });
+
+    let updateElem = document.getElementById("updatePuzzleInput");
+    updateElem.addEventListener("focus", function (event) {
+        let btn = document.getElementById("updatePuzzle");
+        btn.innerHTML = "Update";
+    });
 };
 
 function getAllPuzzles() {
     fetch("api/sudoku/getallpuzzles")
         .then(res => res.json())
         .then((rawData) => {
-            var data = translateResponseData(rawData);
+            let data = translateResponseData(rawData);
             hydrateSelectElem(data);
             hydrateRootElem(data);
         })
@@ -26,8 +32,8 @@ function getAllPuzzles() {
 }
 
 function getPuzzle() {
-    var selectElem = document.getElementById("puzzleSelect");
-    var puzzle = selectElem.value.toString();
+    let selectElem = document.getElementById("puzzleSelect");
+    let puzzle = selectElem.value.toString();
 
     if (puzzle == null) {
         alert("Please select a puzzle to load it.");
@@ -35,7 +41,7 @@ function getPuzzle() {
         fetch("api/sudoku/getpuzzle?puzzle=" + puzzle)
             .then(res => res.json())
             .then((rawData) => {
-                var data = translateResponseData(rawData);
+                let data = translateResponseData(rawData);
                 updateRootWithSelected(data.Payload[0].boardValues);
             })
             .catch(err => console.log(err));
@@ -44,12 +50,12 @@ function getPuzzle() {
 }
 
 function addPuzzle() {
-    var puzzle = document.getElementById("newPuzzleInput");
+    let puzzle = document.getElementById("newPuzzleInput");
     if (puzzle.value == null || puzzle.value == "" || puzzle.value == 'undefined') {
         alert("Please enter a puzzle to save it.");
         return;
     }
-    var jsonPuzzle = JSON.parse("{\"boardValues\":\"" + puzzle.value + "\",\"difficulty\":0, \"id\":0 }");
+    let jsonPuzzle = JSON.parse("{\"boardValues\":\"" + puzzle.value + "\",\"difficulty\":0, \"id\":0 }");
 
     fetch("api/sudoku/addpuzzle", {
         method: 'POST',
@@ -63,7 +69,7 @@ function addPuzzle() {
             return response.json();
         })
         .then(rawData => {
-            var data = translateResponseData(rawData);
+            let data = translateResponseData(rawData);
             if (data.StatusCode == "409") {
                 alert(data.Status + ": " + data.ErrorMessage);
             } else if (data.StatusCode == "200") {
@@ -74,9 +80,44 @@ function addPuzzle() {
         .catch(error => console.error('Error:', error));
 }
 
+function updatePuzzle() {
+    let uPuzzle = document.getElementById("updatePuzzleInput");
+    let sPuzzle = document.getElementById("puzzleSelect");
+
+    if (uPuzzle.value == null || uPuzzle.value == "" || uPuzzle.value == 'undefined') {
+        alert("Please select a puzzle to update it.");
+        return;
+    }
+
+    let putObj = [{ boardValues: sPuzzle.value, id: 0, difficulty: 0 }, { boardValues: uPuzzle.value, id: 0, difficulty: 0 }];
+
+    fetch("api/sudoku/updatepuzzle", {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(putObj)
+    })
+        .then(response => {
+            return response.json();
+        })
+        .then(rawData => {
+            data = translateResponseData(rawData);
+            if (data.StatusCode == "404") {
+                alert(data.Status + ": " + data.ErrorMessage);
+            } else if (data.StatusCode == "200") {                
+                hydrateSelectElem(data);
+                updateRootWithSelected(data.Payload[0].boardValues)
+            }
+
+        })
+        .catch(error => console.error('Error:', error));
+}
+
 function solvePuzzle() {
-    var selectElem = document.getElementById("puzzleSelect");
-    var puzzle = selectElem?.value?.toString();
+    let selectElem = document.getElementById("puzzleSelect");
+    let puzzle = selectElem?.value?.toString();
 
     if (puzzle == null) {
         alert("Please select a puzzle to solve it.");
@@ -84,7 +125,7 @@ function solvePuzzle() {
         fetch("api/sudoku/getsolvedpuzzle?puzzle=" + puzzle)
             .then(res => res.json())
             .then((rawData) => {
-                var data = translateResponseData(rawData);
+                let data = translateResponseData(rawData);
                 updateRootWithSelected(data.Payload[0].boardValues);
             })
             .catch(err => console.log(err));
@@ -92,7 +133,7 @@ function solvePuzzle() {
 }
 
 function deletePuzzle() {
-    var puzzle = document.getElementById("puzzleSelect")?.value;
+    let puzzle = document.getElementById("puzzleSelect")?.value;
 
     if (puzzle == null || puzzle == "" || puzzle == 'undefined') {
         alert("Please select a puzzle to delete it.");
@@ -115,16 +156,17 @@ function deletePuzzle() {
     }
 }
 
-var even = false;
+let even = false;
 function toggleNewPuzzleDisplay() {
-    var elem = document.getElementById("addToggle");
-    var button = document.getElementById("addNew");
-    var deletebtn = document.getElementById("deletePuzzle");
-    var showbtn = document.getElementById("showPuzzle");
-    var resetbtn = document.getElementById("resetPuzzle");
+    let elem = document.getElementById("addToggle");
+    let button = document.getElementById("addNew");
+    let updatebtn = document.getElementById("updatePuzzle");
+    let deletebtn = document.getElementById("deletePuzzle");
+    let showbtn = document.getElementById("showPuzzle");
+    let resetbtn = document.getElementById("resetPuzzle");
 
     if (even) {
-        var newPuzzle = document.getElementById("newPuzzleInput")?.value;
+        let newPuzzle = document.getElementById("newPuzzleInput")?.value;
 
         if (newPuzzle == null || newPuzzle == "" || newPuzzle == 'undefined') {
             if (button.innerHTML == "Add")
@@ -132,6 +174,7 @@ function toggleNewPuzzleDisplay() {
 
             button.innerHTML = "Add New..."
             elem.style.display = 'none';
+            updatebtn.style.display = 'block';
             deletebtn.style.display = 'block';
             showbtn.style.display = 'block';
             resetbtn.style.display = 'block';
@@ -139,6 +182,7 @@ function toggleNewPuzzleDisplay() {
             this.addPuzzle();
             button.innerHTML = "Add New..."
             elem.style.display = 'none';
+            updatebtn.style.display = 'block';
             deletebtn.style.display = 'block';
             showbtn.style.display = 'block';
             resetbtn.style.display = 'block';
@@ -147,6 +191,7 @@ function toggleNewPuzzleDisplay() {
     } else {
         button.innerHTML = "Back..."
         elem.style.display = 'block';
+        updatebtn.style.display = 'none';
         deletebtn.style.display = 'none';
         showbtn.style.display = 'none';
         resetbtn.style.display = 'none';
@@ -155,27 +200,76 @@ function toggleNewPuzzleDisplay() {
     even = !even;
 }
 
+
+let odd = true;
+function toggleUpdatePuzzleDisplay() {
+    let elem = document.getElementById("updateToggle");
+    let button = document.getElementById("updatePuzzle");
+    let addbtn = document.getElementById("addNew");
+    let deletebtn = document.getElementById("deletePuzzle");
+    let showbtn = document.getElementById("showPuzzle");
+    let resetbtn = document.getElementById("resetPuzzle");
+
+    if (!odd) {
+        let updatePuzzle = document.getElementById("updatePuzzleInput")?.value;
+
+        if (updatePuzzle == null || updatePuzzle == "" || updatePuzzle == 'undefined') {
+            if (button.innerHTML == "Update")
+                alert("No puzzle was entered.  No new puzzles were updated.");
+
+            button.innerHTML = "Update..."
+            elem.style.display = 'none';
+            addbtn.style.display = 'block';
+            deletebtn.style.display = 'block';
+            showbtn.style.display = 'block';
+            resetbtn.style.display = 'block';
+        } else {
+            this.updatePuzzle();
+            button.innerHTML = "Update..."
+            elem.style.display = 'none';
+            addbtn.style.display = 'block';
+            deletebtn.style.display = 'block';
+            showbtn.style.display = 'block';
+            resetbtn.style.display = 'block';
+        }
+
+    } else {
+        let selectPuzzle = document.getElementById("puzzleSelect");
+        let updatePuzzle = document.getElementById("updatePuzzleInput");
+
+        updatePuzzle.value = selectPuzzle.value;
+        button.innerHTML = "Back"
+        elem.style.display = 'block';
+        addbtn.style.display = 'none';
+        deletebtn.style.display = 'none';
+        showbtn.style.display = 'none';
+        resetbtn.style.display = 'none';
+
+    }
+    odd = !odd;
+}
+
 function translateResponseData(puzzles) {
-    var data = JSON.parse(puzzles);
+    let data = JSON.parse(puzzles);
     return data;
 }
 
 function hydrateSelectElem(puzzles) {
-    var select = document.getElementById("puzzleSelect");
+    let select = document.getElementById("puzzleSelect");
     select.innerHTML = "";
 
-    for (var i = 0; i < puzzles.Payload.length; i++) {
+    for (let i = 0; i < puzzles.Payload.length; i++) {
         select.innerHTML += "<option>" + puzzles.Payload[i].boardValues + "</option>\r\n";
     }
 }
 
 function hydrateRootElem(puzzles) {
-    var select = document.getElementById("puzzleSelect").value;
-    var root = document.getElementById("root");
-    var rootInnerHTML = "";
-    var puzzle = puzzles[0];
+    let select = document.getElementById("puzzleSelect").value;
+    let root = document.getElementById("root");
+    let rootInnerHTML = "";
+    let puzzle = puzzles[0];
 
-    for (var i = 0; i < select.length; i++) {
+    for (let i = 0; i < select.length; i++) {
         rootInnerHTML += "<div class='cell'>" + select[i] + "</div>";
     }
     rootInnerHTML = rootInnerHTML.replaceAll("0", "&nbsp");
@@ -183,10 +277,10 @@ function hydrateRootElem(puzzles) {
 }
 
 function updateRootWithSelected(puzzle) {
-    var root = document.getElementById("root");
-    var rootInnerHTML = "";
+    let root = document.getElementById("root");
+    let rootInnerHTML = "";
 
-    for (var i = 0; i < puzzle.length; i++) {
+    for (let i = 0; i < puzzle.length; i++) {
         rootInnerHTML += "<div class='cell'>" + puzzle[i] + "</div>";
     }
     rootInnerHTML = rootInnerHTML.replaceAll("0", "&nbsp");

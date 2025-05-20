@@ -172,6 +172,62 @@ namespace WebSudoku_v0._0._7.Controllers
             }
         }
 
+        [HttpPut("UpdatePuzzle")]
+        [Route("/updatepuzzle")]
+        public async Task<JsonResult> UpdatePuzzle()
+        {
+            try
+            {
+                var json = await new StreamReader(Request.Body).ReadToEndAsync();
+                if (string.IsNullOrEmpty(json))
+                {
+                    var errorModel = _sudokuRepo.GetEmptyListReturnModel();
+                    var errorResponse = new SudokuApiResponse(errorModel, 400, "Bad Request", "Request body is empty");
+                    var jsonResult = JsonSerializer.Serialize(errorResponse);
+                    return new JsonResult(jsonResult);
+                }
+
+                var puzzles = JsonSerializer.Deserialize<List<SudokuPuzzledto>>(json);
+                if (puzzles == null)
+                {
+                    var errorModel = _sudokuRepo.GetEmptyListReturnModel();
+                    var errorResponse = new SudokuApiResponse(errorModel, 400, "Bad Request", "Request body is missing board values in the puzzle.");
+                    var jsonResult = JsonSerializer.Serialize(errorResponse);
+                    return new JsonResult(jsonResult);
+                }
+                if (string.IsNullOrEmpty(puzzles[0].BoardValues))
+                {
+                    var errorModel = _sudokuRepo.GetEmptyListReturnModel();
+                    var errorResponse = new SudokuApiResponse(errorModel, 400, "Bad Request", "Request body failed serialization.");
+                    var jsonResult = JsonSerializer.Serialize(errorResponse);
+                    return new JsonResult(jsonResult);
+                }
+
+                var model = _sudokuRepo.UpdatePuzzle(puzzles);
+
+                if (model == null)
+                {
+                    var errorModel = _sudokuRepo.GetEmptyListReturnModel();
+                    var errorResponse = new SudokuApiResponse(errorModel, 404, "Not Found", "The puzzle could not be found to update.");
+                    var jsonResult = JsonSerializer.Serialize(errorResponse);
+                    return new JsonResult(jsonResult);
+                }
+
+                var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                json = JsonSerializer.Serialize(successResponse);
+                return new JsonResult(json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SudokuController POST.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
+                var errorModel = _sudokuRepo.GetEmptyListReturnModel();
+                var errorResponse = new SudokuApiResponse(errorModel, 500, "Server Error", $"ErrorMessage: {ex?.Message} || {ex?.InnerException?.Message}");
+                var json = JsonSerializer.Serialize(errorResponse);
+                return new JsonResult(json);
+            }
+        }
+
+
         [HttpPost("DeletePuzzle")]
         [Route("/deletepuzzle")]
         public JsonResult DeletePuzzle([FromBody] string puzzle)
