@@ -59,7 +59,7 @@ function addPuzzle() {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
-            'Content-Type': 'application/json'            
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify(jsonPuzzle)
     })
@@ -73,7 +73,7 @@ function addPuzzle() {
             } else if (data.StatusCode == "200") {
                 hydrateSelectElem(data);
             }
-            
+
         })
         .catch(error => console.error('Error:', error));
 }
@@ -118,7 +118,7 @@ function deletePuzzle() {
             .catch(error => console.error('Error:', error));
     }
 }
- 
+
 var even = false;
 function toggleNewPuzzleDisplay() {
     var elem = document.getElementById("addToggle");
@@ -154,7 +154,7 @@ function toggleNewPuzzleDisplay() {
         deletebtn.style.display = 'none';
         showbtn.style.display = 'none';
         resetbtn.style.display = 'none';
-        
+
     }
     even = !even;
 }
