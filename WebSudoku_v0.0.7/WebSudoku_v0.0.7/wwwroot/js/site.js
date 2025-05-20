@@ -78,16 +78,47 @@ function addPuzzle() {
         .catch(error => console.error('Error:', error));
 }
 
-function solvePuzzle(puzzle) {
-    fetch("api/sudoku/getsolvedpuzzle?puzzle="+puzzle)
-        .then(res => res.json())
-        .then((rawData) => {
-            var data = translateResponseData(rawData);
-            updateRootWithSelected(data.Payload[0].boardValues);
-        })
-        .catch(err => console.log(err));
+function solvePuzzle() {
+    var selectElem = document.getElementById("puzzleSelect");
+    var puzzle = selectElem?.value?.toString();
+
+    if (puzzle == null) {
+        alert("Please select a puzzle to solve it.");
+    } else {
+        fetch("api/sudoku/getsolvedpuzzle?puzzle=" + puzzle)
+            .then(res => res.json())
+            .then((rawData) => {
+                var data = translateResponseData(rawData);
+                updateRootWithSelected(data.Payload[0].boardValues);
+            })
+            .catch(err => console.log(err));
+    }
 }
 
+function deletePuzzle() {
+    var puzzle = document.getElementById("puzzleSelect")?.value;
+
+    if (puzzle == null || puzzle == "" || puzzle == 'undefined') {
+        alert("Please select a puzzle to delete it.");
+    } else {
+        fetch("api/sudoku/deletepuzzle", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(puzzle)
+        })
+            .then(response => {
+                response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch(error => console.error('Error:', error));
+    }
+}
+ 
 var even = false;
 function toggleNewPuzzleDisplay() {
     var elem = document.getElementById("addToggle");
@@ -126,35 +157,6 @@ function toggleNewPuzzleDisplay() {
         
     }
     even = !even;
-}
-
-function deletePuzzle(puzzle) {
-    fetch("api/sudoku/deletepuzzle", {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(puzzle)
-    })
-        .then(response => {
-            response.json();
-        })
-        .then(data => {
-            console.log('Success:', data);
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-function deleteSelectedPuzzle() {   
-    var selectElem = document.getElementById("puzzleSelect");
-    this.deletePuzzle(selectElem.value);
-}
-
-function activateGameSolution() {
-    var selectElem = document.getElementById("puzzleSelect");
-    var puzzle = selectElem.value.toString();
-    this.solvePuzzle(puzzle);
 }
 
 function translateResponseData(puzzles) {

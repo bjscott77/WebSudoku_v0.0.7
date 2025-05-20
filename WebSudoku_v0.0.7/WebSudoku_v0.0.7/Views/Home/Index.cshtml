@@ -12,13 +12,13 @@
 
 	<div class="buttonPanel">
 		<button type="button" id="addNew" class="btn btn-outline-secondary" onclick="toggleNewPuzzleDisplay();">Add New...</button>
-		<button type="button" id="deletePuzzle" class="btn btn-outline-secondary" onclick="deleteSelectedPuzzle();">Delete Selected</button>
+		<button type="button" id="deletePuzzle" class="btn btn-outline-secondary" onclick="deletePuzzle();">Delete Selected</button>
 		<br /><br />
 		<div id="addToggle" class="add-toggle" style="display:none;">
 			<input type="text" id="newPuzzleInput" name="puzzle" placeholder="Enter a new puzzle here..."><br /><br />
 		</div>
 		<br /><br />
-		<button type="button" id="showPuzzle" class="btn btn-primary" onclick="activateGameSolution();">Show Solution</button>
+		<button type="button" id="showPuzzle" class="btn btn-primary" onclick="solvePuzzle();">Show Solution</button>
 		<button type="button" id="resetPuzzle" class="btn btn-primary" onclick="getPuzzle();">Reset</button>
 	</div>
 
