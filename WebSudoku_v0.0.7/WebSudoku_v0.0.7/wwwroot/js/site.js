@@ -47,14 +47,21 @@ function getPuzzle() {
 
 }
 
-function addPuzzle(puzzle) {
+function addPuzzle() {
+    var puzzle = document.getElementById("newPuzzleInput");
+    if (puzzle.value == null || puzzle.value == "" || puzzle.value == 'undefined') {
+        alert("Please enter a puzzle to save it.");
+        return;
+    }
+    var jsonPuzzle = JSON.parse("{\"boardValues\":\"" + puzzle.value + "\",\"difficulty\":0, \"id\":0 }");
+
     fetch("api/sudoku/addpuzzle", {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'            
         },
-        body: JSON.stringify(puzzle)
+        body: JSON.stringify(jsonPuzzle)
     })
         .then(response => {
             return response.json();
@@ -81,16 +88,6 @@ function solvePuzzle(puzzle) {
         .catch(err => console.log(err));
 }
 
-function prepareAddNewPuzzle() {
-    var puzzle = document.getElementById("newPuzzleInput");
-    if (puzzle.value == null || puzzle.value == "" || puzzle.value == 'undefined') {
-        alert("Please enter a puzzle to save it.");
-        return;
-    }
-    var jsonPuzzle = JSON.parse("{\"boardValues\":\"" + puzzle.value + "\",\"difficulty\":0, \"id\":0 }");
-    addPuzzle(jsonPuzzle);
-}
-
 var even = false;
 function toggleNewPuzzleDisplay() {
     var elem = document.getElementById("addToggle");
@@ -112,7 +109,7 @@ function toggleNewPuzzleDisplay() {
             showbtn.style.display = 'block';
             resetbtn.style.display = 'block';
         } else {
-            this.prepareAddNewPuzzle();
+            this.addPuzzle();
             button.innerHTML = "Add New..."
             elem.style.display = 'none';
             deletebtn.style.display = 'block';
