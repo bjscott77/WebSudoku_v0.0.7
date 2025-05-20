@@ -72,7 +72,7 @@ namespace WebSudoku_v0._0._7.Repositories
             }).ToList();
         }
 
-        public List<SudokuPuzzledto> GetAllPuzzles()
+        public List<SudokuPuzzledto>? GetAllPuzzles()
         {
             var puzzles = _appDbContext?.Puzzle.ToList();
 
@@ -136,7 +136,7 @@ namespace WebSudoku_v0._0._7.Repositories
             };
         }
 
-        public List<SudokuPuzzledto> UpdatePuzzle(SudokuPuzzledto puzzle)
+        public List<SudokuPuzzledto>? UpdatePuzzle(SudokuPuzzledto puzzle)
         {
             return null;
         }
