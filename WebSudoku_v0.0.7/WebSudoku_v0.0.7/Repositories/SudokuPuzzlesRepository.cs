@@ -30,29 +30,30 @@ namespace WebSudoku_v0._0._7.Repositories
                 return await Task.FromResult<List<SudokuPuzzledto>>(null);
             }
 
-            _appDbContext.SaveChanges();
+            await _appDbContext.SaveChangesAsync();
             return GetAllPuzzles();
         }
 
-        public List<SudokuPuzzledto>? DeletePuzzle(string puzzle)
+        public async Task<List<SudokuPuzzledto>>? DeletePuzzleAsync(string puzzle)  
         {
             try
             {
-                var existingPuzzle = _appDbContext?.Puzzle.FirstOrDefault(p => p.BoardValues == puzzle);
-                if (existingPuzzle == null)
-                    return null;
+                if (_appDbContext == null || string.IsNullOrEmpty(puzzle))
+                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
 
-                _appDbContext?.Puzzle.Remove(existingPuzzle);
+                var existingPuzzle = await _appDbContext.Puzzle.FirstOrDefaultAsync(p => p.BoardValues == puzzle);
+                if (existingPuzzle == null)
+                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
+
+                _appDbContext.Puzzle.Remove(existingPuzzle);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in SudokuPuzzleRepository DeletePuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
-                return null;
+                return await Task.FromResult<List<SudokuPuzzledto>>(null);
             }
-            if (_appDbContext == null)
-                return null;
 
-            _appDbContext.SaveChanges();
+            await _appDbContext.SaveChangesAsync();
             return GetAllPuzzles();
         }
 
@@ -115,26 +116,29 @@ namespace WebSudoku_v0._0._7.Repositories
             };
         }
 
-        public List<SudokuPuzzledto>? UpdatePuzzle(List<SudokuPuzzledto> puzzles)
+        public async Task<List<SudokuPuzzledto>>? UpdatePuzzleAsync(List<SudokuPuzzledto> puzzles)
         {
             try
             {
-                var existingPuzzle = _appDbContext?.Puzzle.FirstOrDefault(p => p.BoardValues == puzzles[0].BoardValues);
+                if (_appDbContext == null || puzzles == null)
+                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
+
+                var existingPuzzle = await _appDbContext.Puzzle.FirstOrDefaultAsync(p => p.BoardValues == puzzles[0].BoardValues);
                 if (existingPuzzle == null)
-                    return null;
+                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
 
                 existingPuzzle.BoardValues = puzzles[1].BoardValues;
-                _appDbContext?.Puzzle.Update(existingPuzzle);
+                _appDbContext.Puzzle.Update(existingPuzzle);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in SudokuPuzzleRepository UpdatePuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
-                return null;
+                return await Task.FromResult<List<SudokuPuzzledto>>(null);
             }
             if (_appDbContext == null)
-                return null;
+                return await Task.FromResult<List<SudokuPuzzledto>>(null);
 
-            _appDbContext.SaveChanges();
+            await _appDbContext.SaveChangesAsync();
 
             var retObj = new List<SudokuPuzzledto>()
             {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
+using System.IO;
 using WebSudoku_v0._0._7.Models;
 using WebSudoku_v0._0._7.Repositories;
 
@@ -123,6 +124,9 @@ namespace WebSudoku_v0._0._7.Controllers
         {
             try
             {
+                if (_sudokuRepo == null)
+                    return await Task.FromResult<JsonResult>(null);
+
                 var json = await new StreamReader(Request.Body).ReadToEndAsync();
                 if (string.IsNullOrEmpty(json))
                 {
@@ -148,7 +152,7 @@ namespace WebSudoku_v0._0._7.Controllers
                     return new JsonResult(jsonResult);
                 }
 
-                var model = _sudokuRepo.AddPuzzleAsync(puzzle);
+                var model = await _sudokuRepo.AddPuzzleAsync(puzzle);
 
                 if (model == null)
                 {
@@ -158,7 +162,7 @@ namespace WebSudoku_v0._0._7.Controllers
                     return new JsonResult(jsonResult);
                 }
 
-                var successResponse = new SudokuApiResponse(model.Result, 200, "OK", string.Empty);
+                var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
                 json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);   
             }
@@ -203,7 +207,7 @@ namespace WebSudoku_v0._0._7.Controllers
                     return new JsonResult(jsonResult);
                 }
 
-                var model = _sudokuRepo.UpdatePuzzle(puzzles);
+                var model = await _sudokuRepo.UpdatePuzzleAsync(puzzles);   
 
                 if (model == null)
                 {
@@ -230,7 +234,7 @@ namespace WebSudoku_v0._0._7.Controllers
 
         [HttpPost("DeletePuzzle")]
         [Route("/deletepuzzle")]
-        public JsonResult DeletePuzzle([FromBody] string puzzle)
+        public async Task<JsonResult> DeletePuzzle([FromBody] string puzzle)
         {
             try
             {
@@ -242,7 +246,7 @@ namespace WebSudoku_v0._0._7.Controllers
                     return new JsonResult(jsonResult);
                 }
 
-                var model = _sudokuRepo.DeletePuzzle(puzzle);
+                var model = await _sudokuRepo.DeletePuzzleAsync(puzzle);
 
                 if (model == null)
                 {
