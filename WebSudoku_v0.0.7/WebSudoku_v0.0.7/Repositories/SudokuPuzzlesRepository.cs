@@ -57,22 +57,20 @@ namespace WebSudoku_v0._0._7.Repositories
             return GetAllPuzzles();
         }
 
-        public List<SudokuPuzzledto>? GetPuzzle(string puzzle) 
+        public async Task<List<SudokuPuzzledto>>? GetPuzzleAsync(string puzzle) 
         {
-            if (string.IsNullOrEmpty(puzzle))
-                return null;
+            if (string.IsNullOrEmpty(puzzle) || _appDbContext == null)
+                return await Task.FromResult<List<SudokuPuzzledto>>(null);
 
-            var record = _appDbContext?.Puzzle.Where(p => p.BoardValues == puzzle).ToList();
-
-            if (record == null || record.Count == 0)
-                return null;
-
-            return record.Select(record => new SudokuPuzzledto
-            {
-                Id = record.Id,
-                Difficulty = record.Difficulty,
-                BoardValues = record.BoardValues,
-            }).ToList();
+            return await _appDbContext.Puzzle
+                .Where(p => p.BoardValues == puzzle)
+                .Select(record => new SudokuPuzzledto
+                {
+                    Id = record.Id,
+                    Difficulty = record.Difficulty,
+                    BoardValues = record.BoardValues,
+                })
+                    .ToListAsync();
         }
 
         public List<SudokuPuzzledto>? GetAllPuzzles()

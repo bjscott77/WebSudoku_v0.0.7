@@ -44,7 +44,7 @@ namespace WebSudoku_v0._0._7.Controllers
 
         [HttpGet("GetPuzzle")]
         [Route("/getpuzzle")]
-        public JsonResult GetSelected([FromQuery] string puzzle)
+        public async Task<JsonResult> GetSelected([FromQuery] string puzzle)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace WebSudoku_v0._0._7.Controllers
                     return new JsonResult(mtJson);
                 }
 
-                var model = _sudokuRepo.GetPuzzle(puzzle);  
+                var model = await _sudokuRepo.GetPuzzleAsync(puzzle);    
 
                 if (model == null)
                 {
