@@ -89,6 +89,11 @@ function updatePuzzle() {
         return;
     }
 
+    if (uPuzzle.value == sPuzzle.value) {
+        alert("No changes specified.  No updates made.");
+        return;
+    }
+
     let putObj = [{ boardValues: sPuzzle.value, id: 0, difficulty: 0 }, { boardValues: uPuzzle.value, id: 0, difficulty: 0 }];
 
     fetch("api/sudoku/updatepuzzle", {
@@ -104,12 +109,9 @@ function updatePuzzle() {
         })
         .then(rawData => {
             data = translateResponseData(rawData);
-            if (data.StatusCode == "404") {
-                alert(data.Status + ": " + data.ErrorMessage);
-            } else if (data.StatusCode == "200") {                
-                hydrateSelectElem(data);
-                updateRootWithSelected(data.Payload[0].boardValues)
-            }
+            updateRootWithSelected(data.Payload[0].boardValues)
+            data.Payload = data.Payload.slice(1, data.length);
+            hydrateSelectElem(data);
 
         })
         .catch(error => console.error('Error:', error));

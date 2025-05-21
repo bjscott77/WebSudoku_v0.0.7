@@ -14,11 +14,11 @@ namespace WebSudoku_v0._0._7.Controllers
     {
         [HttpGet("GetAllPuzzles")]
         [Route("/getallpuzzles")]
-        public JsonResult Get()
+        public async Task<JsonResult> Get()
         {
             try
             {
-                var model = _sudokuRepo.GetAllPuzzles();
+                var model = await _sudokuRepo.GetAllPuzzlesAsync(); 
 
                 if (model == null)
                 {
@@ -82,7 +82,7 @@ namespace WebSudoku_v0._0._7.Controllers
 
         [HttpGet("GetSolvedPuzzle")]
         [Route("/getsolvedpuzzle")]
-        public JsonResult GetSolved([FromQuery] string puzzle)
+        public async Task<JsonResult> GetSolved([FromQuery] string puzzle)
         {
             try
             {
@@ -94,7 +94,7 @@ namespace WebSudoku_v0._0._7.Controllers
                     return new JsonResult(mtJson);
                 }
 
-                var model = _sudokuRepo.GetSolvedPuzzle(puzzle);
+                var model = await _sudokuRepo.GetSolvedPuzzleAsync(puzzle);
 
                 if (model == null)
                 {

@@ -8,3 +8,6 @@ dotnet_diagnostic.CS8625.severity = silent
 
 # CS8603: Possible null reference return.
 dotnet_diagnostic.CS8603.severity = silent
+
+# CS9113: Parameter is unread.
+dotnet_diagnostic.CS9113.severity = silent

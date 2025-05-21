@@ -21,7 +21,7 @@ namespace WebSudoku_v0._0._7.Repositories
                 var existingPuzzle = await _appDbContext.Puzzle.FirstOrDefaultAsync(p => p.BoardValues == puzzle.BoardValues);
                 if (existingPuzzle != null)
                     return await Task.FromResult<List<SudokuPuzzledto>>(null);
-                
+
                 await _appDbContext.Puzzle.AddAsync(puzzle);
             }
             catch (Exception ex)
@@ -31,10 +31,10 @@ namespace WebSudoku_v0._0._7.Repositories
             }
 
             await _appDbContext.SaveChangesAsync();
-            return GetAllPuzzles();
+            return await GetAllPuzzlesAsync();
         }
 
-        public async Task<List<SudokuPuzzledto>>? DeletePuzzleAsync(string puzzle)  
+        public async Task<List<SudokuPuzzledto>>? DeletePuzzleAsync(string puzzle)
         {
             try
             {
@@ -54,10 +54,10 @@ namespace WebSudoku_v0._0._7.Repositories
             }
 
             await _appDbContext.SaveChangesAsync();
-            return GetAllPuzzles();
+            return await GetAllPuzzlesAsync();
         }
 
-        public async Task<List<SudokuPuzzledto>>? GetPuzzleAsync(string puzzle) 
+        public async Task<List<SudokuPuzzledto>>? GetPuzzleAsync(string puzzle)
         {
             if (string.IsNullOrEmpty(puzzle) || _appDbContext == null)
                 return await Task.FromResult<List<SudokuPuzzledto>>(null);
@@ -73,45 +73,45 @@ namespace WebSudoku_v0._0._7.Repositories
                     .ToListAsync();
         }
 
-        public List<SudokuPuzzledto>? GetAllPuzzles()
+        public async Task<List<SudokuPuzzledto>>? GetAllPuzzlesAsync()
         {
-            var puzzles = _appDbContext?.Puzzle.ToList();
+            if (_appDbContext == null)
+                return await new Task<List<SudokuPuzzledto>>(null);
 
-            if (puzzles == null || puzzles.Count == 0)
-                return null;
-
-            return puzzles.Select(p => new SudokuPuzzledto
-            {
-                Id = p.Id,
-                Difficulty = p.Difficulty,
-                BoardValues = p.BoardValues,
-            }).ToList();
+            return await _appDbContext.Puzzle
+                .Where(p => p != null)
+                .Select(p => new SudokuPuzzledto
+                {
+                    Id = p.Id,
+                    Difficulty = p.Difficulty,
+                    BoardValues = p.BoardValues,
+                }).ToListAsync();
         }
 
-        public List<SudokuPuzzledto>? GetSolvedPuzzle(string puzzle)
+        public async Task<List<SudokuPuzzledto>> GetSolvedPuzzleAsync(string puzzle)
         {
-            if (string.IsNullOrEmpty(puzzle))
-                return null;
-
-            if (_sudokuBoard == null)
-                return null;
-
-            _sudokuBoard.InitializeBoard(puzzle);
-            _sudokuBoard.InitializeOdds();
-            _sudokuBoard.Cells = _sudokuBoard.SudokuManager.RunSolution(_sudokuBoard.Cells);
-
-            if (_sudokuBoard.Cells.List == null || _sudokuBoard.Cells.List.Count == 0)
-                return null;
-
-            return new List<SudokuPuzzledto>()
+            return await Task.Run(() =>
             {
-                new SudokuPuzzledto
+                if (string.IsNullOrEmpty(puzzle) || _sudokuBoard == null)
+                    return null;
+
+                _sudokuBoard.InitializeBoard(puzzle);
+                _sudokuBoard.InitializeOdds();
+                _sudokuBoard.Cells = _sudokuBoard.SudokuManager.RunSolution(_sudokuBoard.Cells);
+
+                if (_sudokuBoard.Cells.List == null || _sudokuBoard.Cells.List.Count == 0)
+                    return null;
+
+                return new List<SudokuPuzzledto>
                 {
-                    Id = Guid.Empty,
-                    Difficulty = 0,
-                    BoardValues = string.Join("", _sudokuBoard.Cells.List.Select(c => c.Value))
-                }
-            };
+                    new SudokuPuzzledto
+                    {
+                        Id = Guid.Empty,
+                        Difficulty = 0,
+                        BoardValues = string.Join("", _sudokuBoard.Cells.List.Select(c => c.Value))
+                    }
+                };
+            });
         }
 
         public async Task<List<SudokuPuzzledto>>? UpdatePuzzleAsync(List<SudokuPuzzledto> puzzles)
@@ -145,6 +145,8 @@ namespace WebSudoku_v0._0._7.Repositories
                     BoardValues = puzzles[1].BoardValues
                 }
             };
+            var retPuzzles = await GetAllPuzzlesAsync();
+            retObj.AddRange(retPuzzles);
             return retObj;
         }
 
