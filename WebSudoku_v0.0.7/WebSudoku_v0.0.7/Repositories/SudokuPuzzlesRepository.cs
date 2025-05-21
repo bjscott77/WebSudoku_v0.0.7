@@ -1,4 +1,5 @@
-﻿using WebSudoku_v0._0._7.Classes;
+﻿using Microsoft.EntityFrameworkCore;
+using WebSudoku_v0._0._7.Classes;
 using WebSudoku_v0._0._7.Data;
 using WebSudoku_v0._0._7.Models;
 
@@ -10,24 +11,25 @@ namespace WebSudoku_v0._0._7.Repositories
         {
         }
 
-        public List<SudokuPuzzledto>? AddPuzzle(SudokuPuzzledto puzzle)
+        public async Task<List<SudokuPuzzledto>>? AddPuzzleAsync(SudokuPuzzledto? puzzle)
         {
             try
             {
-                var existingPuzzle = _appDbContext?.Puzzle.FirstOrDefault(p => p.BoardValues == puzzle.BoardValues);
+                if (puzzle == null || _appDbContext == null)
+                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
+
+                var existingPuzzle = await _appDbContext.Puzzle.FirstOrDefaultAsync(p => p.BoardValues == puzzle.BoardValues);
                 if (existingPuzzle != null)
-                    return null;
+                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
                 
-                _appDbContext?.Puzzle.Add(puzzle);
+                await _appDbContext.Puzzle.AddAsync(puzzle);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in SudokuPuzzleRepository AddPuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
-                return null;
+                return await Task.FromResult<List<SudokuPuzzledto>>(null);
             }
-            if (_appDbContext == null)
-                return null;
-            
+
             _appDbContext.SaveChanges();
             return GetAllPuzzles();
         }

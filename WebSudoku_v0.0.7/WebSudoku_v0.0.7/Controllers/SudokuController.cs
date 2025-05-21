@@ -148,7 +148,7 @@ namespace WebSudoku_v0._0._7.Controllers
                     return new JsonResult(jsonResult);
                 }
 
-                var model = _sudokuRepo.AddPuzzle(puzzle);
+                var model = _sudokuRepo.AddPuzzleAsync(puzzle);
 
                 if (model == null)
                 {
@@ -158,7 +158,7 @@ namespace WebSudoku_v0._0._7.Controllers
                     return new JsonResult(jsonResult);
                 }
 
-                var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                var successResponse = new SudokuApiResponse(model.Result, 200, "OK", string.Empty);
                 json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);   
             }

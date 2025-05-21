@@ -7,7 +7,7 @@ namespace WebSudoku_v0._0._7.Repositories
         public List<SudokuPuzzledto>? GetAllPuzzles();
         public List<SudokuPuzzledto>? GetPuzzle(string puzzle);
         public List<SudokuPuzzledto>? GetSolvedPuzzle(string puzzle);
-        public List<SudokuPuzzledto>? AddPuzzle(SudokuPuzzledto puzzle);
+        public Task<List<SudokuPuzzledto>>? AddPuzzleAsync(SudokuPuzzledto puzzle);
         public List<SudokuPuzzledto>? UpdatePuzzle(List<SudokuPuzzledto> puzzles);  
         public List<SudokuPuzzledto>? DeletePuzzle(string puzzle);  
         public List<SudokuPuzzledto> GetEmptyListReturnModel();
