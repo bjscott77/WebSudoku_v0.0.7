@@ -1,4 +1,6 @@
 ﻿body {
+    background-color: #F3F3E0;
+    color: #183B4E;
 }
 
 .boardSelection {
@@ -8,19 +10,20 @@
 
 .btn {
     font-size: 16pt;
-    color: darkslateblue;
-    border: 1px solid darkslateblue;
-    background-color: lightgray;
+    color: #F3F3E0;
+    border: 1px solid #27548A;
+    background-color: #27548A;
     width: 15%;
     height: 5%;
     margin-right: 2%;
+    transition: background 0.2s, color 0.2s;
 }
 
     .btn:hover {
         cursor: pointer;
-        background-color: lightslategray;
-        color: white;
-        border: none;
+        background-color: #DDA853;
+        color: #183B4E;
+        border: 1px solid #DDA853;
     }
 
 .buttonPanel {
@@ -29,19 +32,20 @@
 }
 
 .cell {
-    border: 2px solid darkslateblue;
-    color: darkslateblue;
+    border: 2px solid #27548A;
+    color: #183B4E;
     text-align: center;
     font-size: 32pt;
+    background-color: #F3F3E0;
 }
 
     .cell:hover {
         cursor: pointer;
-        background-color: lightslategray;
+        background-color: #DDA853;
     }
 
 .cell-highlite {
-    background-color: aquamarine;
+    background-color: #DDA853;
 }
 
 .container {
@@ -57,16 +61,18 @@
 
 .copyright {
     text-align: center;
+    color: #183B4E;
 }
 
 h1 {
     font-weight: bolder;
     text-align: center;
+    color: #27548A;
 }
 
 h2 {
     text-align: center;
-    color: darkslateblue;
+    color: #183B4E;
 }
 
 #puzzleSelect {
@@ -77,7 +83,9 @@ h2 {
     margin-top: 1%;
     font-size: 18px;
     font-weight: bold;
-    border: 2px solid darkslateblue;
+    border: 2px solid #27548A;
+    background-color: #F3F3E0;
+    color: #183B4E;
 }
 
 #newPuzzleInput {
@@ -85,5 +93,7 @@ h2 {
     width: 95%;
     font-size: 18px;
     font-weight: bold;
-    border: 2px solid darkslateblue;
+    border: 2px solid #27548A;
+    background-color: #F3F3E0;
+    color: #183B4E;
 }
