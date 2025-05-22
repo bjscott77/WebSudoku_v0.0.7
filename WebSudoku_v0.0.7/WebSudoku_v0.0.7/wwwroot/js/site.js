@@ -36,7 +36,7 @@ function getPuzzle() {
     let puzzle = selectElem.value.toString();
 
     if (puzzle == null) {
-        alert("Please select a puzzle to load it.");
+        showModal("Please select a puzzle to load it.");
     } else {
         fetch("api/sudoku/getpuzzle?puzzle=" + puzzle)
             .then(res => res.json())
@@ -52,7 +52,7 @@ function getPuzzle() {
 function addPuzzle() {
     let puzzle = document.getElementById("newPuzzleInput");
     if (puzzle.value == null || puzzle.value == "" || puzzle.value == 'undefined') {
-        alert("Please enter a puzzle to save it.");
+        showModal("Please enter a puzzle to save it.");
         return;
     }
     let jsonPuzzle = JSON.parse("{\"boardValues\":\"" + puzzle.value + "\",\"difficulty\":0, \"id\":0 }");
@@ -71,7 +71,7 @@ function addPuzzle() {
         .then(rawData => {
             let data = translateResponseData(rawData);
             if (data.StatusCode == "409") {
-                alert(data.Status + ": " + data.ErrorMessage);
+                showModal(data.Status + ": " + data.ErrorMessage);
             } else if (data.StatusCode == "200") {
                 hydrateSelectElem(data);
             }
@@ -85,12 +85,12 @@ function updatePuzzle() {
     let sPuzzle = document.getElementById("puzzleSelect");
 
     if (uPuzzle.value == null || uPuzzle.value == "" || uPuzzle.value == 'undefined') {
-        alert("Please select a puzzle to update it.");
+        showModal("Please select a puzzle to update it.");
         return;
     }
 
     if (uPuzzle.value == sPuzzle.value) {
-        alert("No changes specified.  No updates made.");
+        showModal("No changes were specified, so no updates were made.");
         return;
     }
 
@@ -122,7 +122,7 @@ function solvePuzzle() {
     let puzzle = selectElem?.value?.toString();
 
     if (puzzle == null) {
-        alert("Please select a puzzle to solve it.");
+        showModal("Please select a puzzle to solve it.");
     } else {
         fetch("api/sudoku/getsolvedpuzzle?puzzle=" + puzzle)
             .then(res => res.json())
@@ -138,7 +138,7 @@ function deletePuzzle() {
     let puzzle = document.getElementById("puzzleSelect")?.value;
 
     if (puzzle == null || puzzle == "" || puzzle == 'undefined') {
-        alert("Please select a puzzle to delete it.");
+        showModal("Please select a puzzle to delete it.");
     } else {
         fetch("api/sudoku/deletepuzzle", {
             method: 'POST',
@@ -172,7 +172,7 @@ function toggleNewPuzzleDisplay() {
 
         if (newPuzzle == null || newPuzzle == "" || newPuzzle == 'undefined') {
             if (button.innerHTML == "Add")
-                alert("No puzzle was entered.  No new puzzles were added.");
+                showModal("No puzzle was entered, so no new puzzles were added.");
 
             button.innerHTML = "Add New..."
             elem.style.display = 'none';
@@ -217,7 +217,7 @@ function toggleUpdatePuzzleDisplay() {
 
         if (updatePuzzle == null || updatePuzzle == "" || updatePuzzle == 'undefined') {
             if (button.innerHTML == "Update")
-                alert("No puzzle was entered.  No new puzzles were updated.");
+                showModal("No puzzle was entered, so no puzzles were updated.");
 
             button.innerHTML = "Update..."
             elem.style.display = 'none';
@@ -293,3 +293,17 @@ function swapArrayElements(array, index1, index2) {
     [array[index1], array[index2]] = [array[index2], array[index1]];
     return array;
 };
+
+function showModal(message) {
+    var modal = document.getElementById('customModal');
+    modal.querySelector('p').textContent = message;
+    modal.style.display = 'block';
+    modal.querySelector('.close').onclick = function () {
+        modal.style.display = 'none';
+    };
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    };
+}

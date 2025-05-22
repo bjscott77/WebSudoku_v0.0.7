@@ -5,12 +5,8 @@ using WebSudoku_v0._0._7.Models;
 
 namespace WebSudoku_v0._0._7.Repositories
 {
-    public class SudokuPuzzlesRepository(ApplicationDbContext? _appDbContext, ISudokuBoard? _sudokuBoard) : ISudokuRepository
+    public class SudokuPuzzlesRepository(ApplicationDbContext _appDbContext, ISudokuBoard _sudokuBoard) : ISudokuRepository
     {
-        public SudokuPuzzlesRepository() : this(null, null)
-        {
-        }
-
         public async Task<List<SudokuPuzzledto>>? AddPuzzleAsync(SudokuPuzzledto? puzzle)
         {
             try

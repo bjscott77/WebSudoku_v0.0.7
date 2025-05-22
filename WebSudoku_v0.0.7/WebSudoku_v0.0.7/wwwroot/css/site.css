@@ -98,3 +98,50 @@ h2 {
     background-color: #F3F3E0;
     color: #183B4E;
 }
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.modal-content {
+    background-color: #F3F3E0; /* Site background */
+    margin: 15% auto;
+    padding: 20px;
+    border: 2px solid #27548A; /* Site border color */
+    width: 300px;
+    border-radius: 8px;
+    text-align: center;
+    color: #183B4E; /* Site text color */
+    font-family: 'Roboto Slab', Arial, sans-serif;
+}
+
+.close {
+    color: #27548A; /* Site accent color */
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+    .close:hover {
+        color: #DDA853; /* Site highlight color */
+    }
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(24,59,78,0.4); /* Use site accent color with transparency */
+}
