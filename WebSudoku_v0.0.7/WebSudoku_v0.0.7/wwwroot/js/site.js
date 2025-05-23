@@ -174,7 +174,7 @@ function toggleNewPuzzleDisplay() {
             if (button.innerHTML == "Add")
                 showModal("No puzzle was entered, so no new puzzles were added.");
 
-            button.innerHTML = "Add New..."
+            button.innerHTML = "Add..."
             elem.style.display = 'none';
             updatebtn.style.display = 'block';
             deletebtn.style.display = 'block';
@@ -182,7 +182,7 @@ function toggleNewPuzzleDisplay() {
             resetbtn.style.display = 'block';
         } else {
             this.addPuzzle();
-            button.innerHTML = "Add New..."
+            button.innerHTML = "Add..."
             elem.style.display = 'none';
             updatebtn.style.display = 'block';
             deletebtn.style.display = 'block';
@@ -191,7 +191,7 @@ function toggleNewPuzzleDisplay() {
         }
 
     } else {
-        button.innerHTML = "Back..."
+        button.innerHTML = "Back"
         elem.style.display = 'block';
         updatebtn.style.display = 'none';
         deletebtn.style.display = 'none';
