@@ -27,7 +27,14 @@ namespace WebSudoku_v0._0._7.Repositories
             }
 
             await _appDbContext.SaveChangesAsync();
-            return await GetAllPuzzlesAsync();
+
+            var added = new List<SudokuPuzzledto>()
+            {
+                puzzle,
+            };
+            added.AddRange(_appDbContext.Puzzle.Where(p => !(p.BoardValues == puzzle.BoardValues)).ToList());
+
+            return added;
         }
 
         public async Task<List<SudokuPuzzledto>>? DeletePuzzleAsync(string puzzle)

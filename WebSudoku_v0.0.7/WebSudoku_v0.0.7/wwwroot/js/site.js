@@ -75,6 +75,7 @@ function addPuzzle() {
                 showModal(data.Status + ": " + data.ErrorMessage);
             } else if (data.StatusCode == "200") {
                 hydrateSelectElem(data);
+                hydrateRootElem(data);
             }
 
         })
