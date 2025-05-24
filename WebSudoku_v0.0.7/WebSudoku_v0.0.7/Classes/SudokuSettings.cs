@@ -10,6 +10,7 @@
         public IEnumerable<string> SolvedCellValueOptions { get; set; }
         public IEnumerable<string> CellValueChangeOptions { get; set; }
         public IEnumerable<int> CellStatisticsInitial { get; set; }
+        public IEnumerable<int> CellStatisticsEmpty { get; set; }
         public GamePlaySettings GamePlaySettings { get; set; }
 
         public SudokuSettings(IConfigurationSection devSettings)
@@ -22,6 +23,7 @@
             SolvedCellValueOptions = devSettings["Sudoku Settings:SolvedCellValueOptions"].Split(',');
             CellValueChangeOptions = devSettings["Sudoku Settings:CellValueChangeOptions"].Split(',');
             CellStatisticsInitial = devSettings["Sudoku Settings:CellStatisticsInitial"].Split(',').Select(s => int.Parse(s));
+            CellStatisticsEmpty = devSettings["Sudoku Settings:CellStatisticsEmpty"].Split(',').Select(s => int.Parse(s));
             GamePlaySettings = new GamePlaySettings(devSettings);
         }
     }

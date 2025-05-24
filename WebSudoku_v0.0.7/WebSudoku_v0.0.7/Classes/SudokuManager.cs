@@ -21,8 +21,11 @@ namespace WebSudoku_v0._0._7.Classes
             if (!cell.hasValue)
             {
                 cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsInitial);
+            } else
+            {
+                cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsEmpty);
             }
-            return cells;
+                return cells;
         }
 
         public Cell SetNextCell(string cellValue,  int index)
@@ -71,7 +74,7 @@ namespace WebSudoku_v0._0._7.Classes
                         {
                             cells.List[index].CellPossibilities.List[indexOf] = 0;
                         }
-                    }                                        
+                    }                             
                 }
 
                 var colCells = cells.List.Where(c => c.Location.Column == cell.Location.Column).ToList();
@@ -184,6 +187,7 @@ namespace WebSudoku_v0._0._7.Classes
             return cells;
         }
 
+        //  REM: Complete HiLite and Pattern Checking
         public Cells ProcessValueCheck(Cells cells)
         {
             Cells emptyCells = new Cells();
