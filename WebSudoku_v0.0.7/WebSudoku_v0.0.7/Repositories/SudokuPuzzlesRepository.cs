@@ -5,7 +5,7 @@ using WebSudoku_v0._0._7.Models;
 
 namespace WebSudoku_v0._0._7.Repositories
 {
-    public class SudokuPuzzlesRepository(ApplicationDbContext _appDbContext, ISudokuBoard _sudokuBoard) : ISudokuRepository
+    public class SudokuPuzzlesRepository(ApplicationDbContext _appDbContext, ISudokuBoard _sudokuBoard, DevConfiguration _devConfig) : ISudokuRepository
     {
         public async Task<List<SudokuPuzzledto>>? AddPuzzleAsync(SudokuPuzzledto? puzzle)
         {
@@ -28,13 +28,16 @@ namespace WebSudoku_v0._0._7.Repositories
 
             await _appDbContext.SaveChangesAsync();
 
-            var added = new List<SudokuPuzzledto>()
-            {
-                puzzle,
-            };
-            added.AddRange(_appDbContext.Puzzle.Where(p => !(p.BoardValues == puzzle.BoardValues)).ToList());
+            List<SudokuPuzzledto> added;
 
-            return added;
+            if (_devConfig.SudokuSettings.GamePlaySettings.SolveSettings.Selection == "NEW")
+            {
+                added = new List<SudokuPuzzledto>() { puzzle, };
+                added.AddRange(_appDbContext.Puzzle.Where(p => !(p.BoardValues == puzzle.BoardValues)).ToList());
+                return added;
+            }
+
+            return await GetAllPuzzlesAsync();
         }
 
         public async Task<List<SudokuPuzzledto>>? DeletePuzzleAsync(string puzzle)
