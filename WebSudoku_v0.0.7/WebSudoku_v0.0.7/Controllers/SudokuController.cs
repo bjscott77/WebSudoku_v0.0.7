@@ -4,13 +4,14 @@ using System.Text.Json;
 using System.IO;
 using WebSudoku_v0._0._7.Models;
 using WebSudoku_v0._0._7.Repositories;
+using WebSudoku_v0._0._7.Classes;
 
 namespace WebSudoku_v0._0._7.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors()]
-    public class SudokuController(ISudokuRepository _sudokuRepo) : ControllerBase
+    public class SudokuController(ISudokuRepository _sudokuRepo, DevConfiguration _devConfig) : ControllerBase
     {
         [HttpGet("GetAllPuzzles")]
         [Route("/getallpuzzles")]
@@ -29,6 +30,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 }
 
                 var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                successResponse.CellDisplayValueType = _devConfig.SudokuSettings.GamePlaySettings.SolveSettings.CellDisplayValueType;
                 var json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }
@@ -67,6 +69,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 }
 
                 var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                successResponse.CellDisplayValueType = _devConfig.SudokuSettings.GamePlaySettings.SolveSettings.CellDisplayValueType;
                 var json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }
@@ -105,6 +108,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 }
 
                 var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                successResponse.CellDisplayValueType = _devConfig.SudokuSettings.GamePlaySettings.SolveSettings.CellDisplayValueType;
                 var json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }
@@ -163,6 +167,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 }
 
                 var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                successResponse.CellDisplayValueType = _devConfig.SudokuSettings.GamePlaySettings.SolveSettings.CellDisplayValueType;
                 json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);   
             }
@@ -218,6 +223,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 }
 
                 var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                successResponse.CellDisplayValueType = _devConfig.SudokuSettings.GamePlaySettings.SolveSettings.CellDisplayValueType;
                 json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }
@@ -257,6 +263,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 }
 
                 var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                successResponse.CellDisplayValueType = _devConfig.SudokuSettings.GamePlaySettings.SolveSettings.CellDisplayValueType;
                 var json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }

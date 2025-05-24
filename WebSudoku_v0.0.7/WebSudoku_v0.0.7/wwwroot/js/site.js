@@ -3,8 +3,7 @@
 
     let selectElem = document.getElementById("puzzleSelect");
     selectElem.addEventListener("change", function (event) {
-        let data = JSON.parse("[{\"boardValues\": \"" + event.target.value + "\", \"id\":0, \"difficulty\":0}]");
-        hydrateRootElem(data);
+        getPuzzle();
     });
 
     let AddElem = document.getElementById("newPuzzleInput");
@@ -28,7 +27,9 @@ function getAllPuzzles() {
             hydrateSelectElem(data);
             hydrateRootElem(data);
         })
-        .catch(err => console.log(err));
+        .catch(err => {
+            console.log(err);
+        });
 }
 
 function getPuzzle() {
@@ -42,7 +43,7 @@ function getPuzzle() {
             .then(res => res.json())
             .then((rawData) => {
                 let data = translateResponseData(rawData);
-                updateRootWithSelected(data.Payload[0].boardValues);
+                updateRootWithSelected(data.Payload[0].boardValues, data.CellDisplayValueType);
             })
             .catch(err => console.log(err));
     }
@@ -269,23 +270,31 @@ function hydrateRootElem(puzzles) {
     let select = document.getElementById("puzzleSelect").value;
     let root = document.getElementById("root");
     let rootInnerHTML = "";
-    let puzzle = puzzles[0];
+    let puzzle = puzzles.Payload[0].boardValues;
 
-    for (let i = 0; i < select.length; i++) {
-        rootInnerHTML += "<div class='cell'>" + select[i] + "</div>";
+    for (let i = 0; i < puzzle.length; i++) {
+        rootInnerHTML += "<div class='cell'>" + puzzle[i] + "</div>";
     }
-    rootInnerHTML = rootInnerHTML.replaceAll("0", "&nbsp");
+
+    if (puzzles.CellDisplayValueType == "SPACE") {
+        rootInnerHTML = rootInnerHTML.replaceAll("0", "&nbsp");
+    }
+
     root.innerHTML = rootInnerHTML;
 }
 
-function updateRootWithSelected(puzzle) {
+function updateRootWithSelected(puzzle, displayType) {
     let root = document.getElementById("root");
     let rootInnerHTML = "";
 
     for (let i = 0; i < puzzle.length; i++) {
         rootInnerHTML += "<div class='cell'>" + puzzle[i] + "</div>";
     }
-    rootInnerHTML = rootInnerHTML.replaceAll("0", "&nbsp");
+
+    if (displayType == "SPACE") {
+        rootInnerHTML = rootInnerHTML.replaceAll("0", "&nbsp");
+    }
+
     root.innerHTML = rootInnerHTML;
 }
 

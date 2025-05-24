@@ -3,9 +3,10 @@
     public class SudokuApiResponse : ISudokuApiResponse
     {
         public List<SudokuPuzzledto> Payload { get; set; } = new List<SudokuPuzzledto>();
-        public int StatusCode { get; set; } = 200;
-        public string Status { get; set; } = "OK";
-        public string ErrorMessage { get; set; } = string.Empty;
+        public int? StatusCode { get; set; } = 200;
+        public string? Status { get; set; } = "OK";
+        public string? ErrorMessage { get; set; } = string.Empty;
+        public string? CellDisplayValueType { get; set; }
         public SudokuApiResponse()
         {
         }

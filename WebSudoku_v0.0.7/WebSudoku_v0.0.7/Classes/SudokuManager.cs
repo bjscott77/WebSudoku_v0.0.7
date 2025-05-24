@@ -40,7 +40,10 @@ namespace WebSudoku_v0._0._7.Classes
                         SetBlock(index), 
                         index);
                 cell = new Cell(cellLocation);
-                cell.DisplayValue = cellValue;
+                cell.DisplayValue = DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.CellDisplayValueType == "SPACE"
+                    ? cellValue == "0"
+                        ? " " : cellValue
+                    : cellValue;
                 cell.Value = int.TryParse(cellValue, out int value) ? value : 0;
                 cell.hasValue = !string.IsNullOrEmpty(cellValue) && cell.Value != 0;
                 cell.isEnabled = value > 0 ?  false: true;
