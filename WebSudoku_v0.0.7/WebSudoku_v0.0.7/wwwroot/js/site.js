@@ -160,7 +160,7 @@ function deletePuzzle() {
 }
 
 let even = false;
-function toggleNewPuzzleDisplay() {
+function toggleNewPuzzleForm() {
     let elem = document.getElementById("addToggle");
     let button = document.getElementById("addNew");
     let updatebtn = document.getElementById("updatePuzzle");
@@ -205,7 +205,7 @@ function toggleNewPuzzleDisplay() {
 
 
 let odd = true;
-function toggleUpdatePuzzleDisplay() {
+function toggleUpdatePuzzleForm() {
     let elem = document.getElementById("updateToggle");
     let button = document.getElementById("updatePuzzle");
     let addbtn = document.getElementById("addNew");
@@ -250,7 +250,7 @@ function toggleUpdatePuzzleDisplay() {
 
     }
     odd = !odd;
-}
+}   
 
 function translateResponseData(puzzles) {
     let data = JSON.parse(puzzles);
@@ -282,11 +282,6 @@ function hydrateRootElem(puzzles) {
 
     root.innerHTML = rootInnerHTML;
 }
-
-function swapArrayElements(array, index1, index2) {
-    [array[index1], array[index2]] = [array[index2], array[index1]];
-    return array;
-};
 
 function showModal(message) {
     var modal = document.getElementById('customModal');
