@@ -1,13 +1,11 @@
 ﻿namespace WebSudoku_v0._0._7.Classes
 {
-    public class SudokuBoard(IConfigurationSection _devConfig) : ISudokuBoard
+    public class SudokuBoard(IConfigurationSection _devConfig) : ISudokuBoard   
     {
         public ISudokuManager SudokuManager { get; set; } = new SudokuManager();
-        public Cells Cells { get; set; } = new Cells();        
-        
+        public Cells Cells { get; set; } = new Cells();
+        public DevConfiguration DevConfiguration { get; set; } = new DevConfiguration(_devConfig);
         public required ISudokuDimensions Dimensions { get; set; }
-
-        public IConfigurationSection SudokuSettings { get; } = _devConfig.GetSection("Sudoku Settings");
 
         public SudokuBoard() : this(null)
         {
@@ -33,7 +31,8 @@
 
         public void InitializeBoard(string puzzle)
         {
-            var dims = SudokuSettings["Board Dimensions"].Split(',').Select(d => int.Parse(d));
+
+            var dims = DevConfiguration.SudokuSettings.BoardDimensions;
             Dimensions = new SudokuDimensions(dims.FirstOrDefault(), dims.LastOrDefault());
             Cells = new Cells();
             int index = 0;

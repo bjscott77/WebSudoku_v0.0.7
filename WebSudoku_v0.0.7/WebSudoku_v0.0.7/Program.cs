@@ -23,6 +23,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddSingleton<ConfigurationManager>(builder.Configuration);
 builder.Services.AddSingleton<IConfigurationSection>(builder.Configuration.GetSection("DEV"));
+var devConfig = new DevConfiguration(builder.Configuration.GetSection("DEV"));
+builder.Services.AddSingleton<DevConfiguration>(devConfig);
 builder.Services.AddSingleton<ISudokuBoard, SudokuBoard>();
 builder.Services.AddScoped<ISudokuRepository,SudokuPuzzlesRepository>();
 
