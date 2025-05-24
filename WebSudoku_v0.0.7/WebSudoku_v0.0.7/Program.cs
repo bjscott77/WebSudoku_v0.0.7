@@ -21,11 +21,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-builder.Services.AddSingleton<ConfigurationManager>(builder.Configuration);
-builder.Services.AddSingleton<IConfigurationSection>(builder.Configuration.GetSection("DEV"));
+// Add custom services to the container
 var devConfig = new DevConfiguration(builder.Configuration.GetSection("DEV"));
 builder.Services.AddSingleton<DevConfiguration>(devConfig);
-builder.Services.AddSingleton<ISudokuBoard, SudokuBoard>();
+builder.Services.AddScoped<ISudokuBoard, SudokuBoard>();
 builder.Services.AddScoped<ISudokuRepository,SudokuPuzzlesRepository>();
 
 // Add services to the container.

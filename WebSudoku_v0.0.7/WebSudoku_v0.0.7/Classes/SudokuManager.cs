@@ -6,42 +6,21 @@ namespace WebSudoku_v0._0._7.Classes
 {
     public class SudokuManager : ISudokuManager
     {
-        public SudokuDimensions Dimensions { get; set; }
-
-        public SudokuManager()
+        public SudokuDimensions Dimensions { get; set; } = null;
+        public DevConfiguration DevConfig { get; set; } 
+        public SudokuManager(DevConfiguration devConfig)
         {
-            Dimensions = new SudokuDimensions(81, 9);
-        }
-        public SudokuManager(int size)
-        {
-            Dimensions = new SudokuDimensions(size);
-        }
-        public SudokuManager(int size, int blockSize)
-        {
-            Dimensions = new SudokuDimensions(size, blockSize);
-        }
-        public SudokuManager(SudokuDimensions dimensions) {
-            Dimensions = dimensions;
+            DevConfig = devConfig;
+            Dimensions = new SudokuDimensions(DevConfig.SudokuSettings.BoardDimensions.FirstOrDefault(), devConfig.SudokuSettings.BoardDimensions.LastOrDefault());
         }
 
         public Cells InitialOddsSetup(Cells cells, int index)
         {
             Cell cell = cells.List[index];
             cells.List[index].CellPossibilities.List.Clear();
-            if (cell.hasValue)
+            if (!cell.hasValue)
             {
-                for (int i = 0; i < 9; i++)
-                {
-                    cells.List[index].CellPossibilities.List.Add(0);
-                }
-                return cells;
-            }
-            else
-            {
-                for (int i = 0; i < 9; i++)
-                {
-                    cells.List[index].CellPossibilities.List.Add(i + 1);
-                }
+                cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsInitial);
             }
             return cells;
         }
@@ -76,14 +55,7 @@ namespace WebSudoku_v0._0._7.Classes
         public Cells SetCellOdds(Cells cells, int index)
         {
             Cell cell = cells.List[index];
-            if (cell.hasValue)
-            {
-                for (int i = 0; i < 9; i++)
-                {
-                    cells.List[index].CellPossibilities.List[i] = 0;
-                }
-                return cells;
-            } else
+            if (!cell.hasValue)
             {
                 var rowCells = cells.List.Where(c => c.Location.Row == cell.Location.Row).ToList();
                 foreach (var rowCell in rowCells)
