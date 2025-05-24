@@ -190,17 +190,105 @@ namespace WebSudoku_v0._0._7.Classes
             return cells;
         }
 
-        //  REM: Complete HiLite and Pattern Checking
+        //  REM: Complete Pattern Checking
         public Cells ProcessValueCheck(Cells cells)
         {
             Cells emptyCells = new Cells();
             emptyCells.List = cells.List.Where(c => !c.hasValue).ToList();
-            //Check Rows for 1-9 values
-            //Check Columns for 1-9 values
-            //Check Blocks for 1-9 values
+
+            emptyCells.List.ForEach(c => ProcessRow(c, ref cells));
+            emptyCells.List.ForEach(c => ProcessCol(c, ref cells));
+            emptyCells.List.ForEach(c => ProcessBlock(c, ref cells));  
+
             return cells;
         }
 
+        private void ProcessRow(Cell cell, ref Cells cells)
+        {
+            for (int i = 1; i <= 9; i++)
+            {
+                SetRowHiLite(ref cells, cell, i);
+            }
+        }
+
+        private void ProcessCol(Cell cell, ref Cells cells)    
+        {
+            for (int i = 1; i <= 9; i++)
+            {
+                SetColHiLite(ref cells, cell, i);
+            }
+        }
+
+        private void ProcessBlock(Cell cell, ref Cells cells)  
+        {
+            for (int i = 1; i <= 9; i++)
+            {
+                SetBlockHiLite(ref cells, cell, i); 
+            }
+        }
+
+        private void SetRowHiLite(ref Cells cells, Cell cell, int searchValue)
+        {
+            var row = cells.List.Where(c => c.Location.Row == cell.Location.Row && c.Location.Index != cell.Location.Index).ToList();
+            foreach (Cell rowCell in row)
+            {
+                if (rowCell.Value == searchValue)
+                {
+                    foreach(Cell hCell in row)
+                    {
+                        cells.List[hCell.Location.Index].isHighlighted = true;
+                        break;
+                    }
+                }
+            }
+            
+        }
+
+        private void SetColHiLite(ref Cells cells, Cell cell, int searchValue)  
+        {
+            var col = cells.List.Where(c => c.Location.Column == cell.Location.Column && c.Location.Index != cell.Location.Index).ToList();
+            foreach (Cell colCell in col)
+            {
+                if (colCell.Value == searchValue)
+                {
+                    foreach (Cell hCell in col)
+                    {
+                        cells.List[hCell.Location.Index].isHighlighted = true;
+                        break;
+                    }
+                }
+            }
+
+        }
+
+        private void SetBlockHiLite(ref Cells cells, Cell cell, int searchValue)    
+        {
+            var block = cells.List.Where(c => c.Location.Block == cell.Location.Block && c.Location.Index != cell.Location.Index).ToList();
+            foreach (Cell blockCell in block)
+            {
+                if (blockCell.Value == searchValue)
+                {
+                    foreach (Cell hCell in block)
+                    {
+                        cells.List[hCell.Location.Index].isHighlighted = true;
+                        break;
+                    }
+                }
+            }
+            ProcessResult(ref cells, ref cell, searchValue);
+        }
+
+        private void ProcessResult(ref Cells cells, ref Cell cell, int value)
+        {
+            var cellBlock = cell.Location.Block;    
+            var block = cells.List.Where(c => c.Location.Block == cellBlock && c.isHighlighted == false);
+
+            if (block.ToList().Count == 1 && block.FirstOrDefault().Location.Index == cell.Location.Index)
+                cell.Value = value;
+
+            cells.List.ForEach(c => c.isHighlighted = false);
+        }
+        
         public Cells RunSolution(Cells board)
         {
             bool solved = false;
@@ -208,10 +296,16 @@ namespace WebSudoku_v0._0._7.Classes
             int maxAttempts = 1000;
             while (!solved)
             {
+                //  Check for cell solutions based on current odds
                 board = ProcessOdds(board);
                 board.List.ForEach(c => SetCellOdds(board, c.Location.Index));
 
+                //  Check for cell solutions based on current board values
+                board = ProcessValueCheck(board);
+                board.List.ForEach(c => SetCellOdds(board, c.Location.Index));
+
                 solved = board.List.All(c => c.hasValue);
+
                 if (attempt >= maxAttempts)
                 {
                     break;

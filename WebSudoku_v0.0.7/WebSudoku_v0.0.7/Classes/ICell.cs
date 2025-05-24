@@ -8,5 +8,6 @@
         ICellPossibilities CellPossibilities { get; set; }
         bool isEnabled { get; set; }
         bool hasValue { get; set; }
+        bool isHighlighted { get; set; }
     }
 }
