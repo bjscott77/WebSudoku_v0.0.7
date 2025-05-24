@@ -43,7 +43,7 @@ function getPuzzle() {
             .then(res => res.json())
             .then((rawData) => {
                 let data = translateResponseData(rawData);
-                updateRootWithSelected(data.Payload[0].boardValues, data.CellDisplayValueType);
+                hydrateRootElem(data);
             })
             .catch(err => console.log(err));
     }
@@ -110,7 +110,7 @@ function updatePuzzle() {
         })
         .then(rawData => {
             data = translateResponseData(rawData);
-            updateRootWithSelected(data.Payload[0].boardValues)
+            hydrateRootElem(data)
             data.Payload = data.Payload.slice(1, data.length);
             hydrateSelectElem(data);
 
@@ -129,7 +129,7 @@ function solvePuzzle() {
             .then(res => res.json())
             .then((rawData) => {
                 let data = translateResponseData(rawData);
-                updateRootWithSelected(data.Payload[0].boardValues);
+                hydrateRootElem(data);
             })
             .catch(err => console.log(err));
     }
@@ -277,21 +277,6 @@ function hydrateRootElem(puzzles) {
     }
 
     if (puzzles.CellDisplayValueType == "SPACE") {
-        rootInnerHTML = rootInnerHTML.replaceAll("0", "&nbsp");
-    }
-
-    root.innerHTML = rootInnerHTML;
-}
-
-function updateRootWithSelected(puzzle, displayType) {
-    let root = document.getElementById("root");
-    let rootInnerHTML = "";
-
-    for (let i = 0; i < puzzle.length; i++) {
-        rootInnerHTML += "<div class='cell'>" + puzzle[i] + "</div>";
-    }
-
-    if (displayType == "SPACE") {
         rootInnerHTML = rootInnerHTML.replaceAll("0", "&nbsp");
     }
 
