@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace WebSudoku_v0._0._7.Classes
 {
@@ -14,7 +15,7 @@ namespace WebSudoku_v0._0._7.Classes
             Dimensions = new SudokuDimensions(DevConfig.SudokuSettings.BoardDimensions.FirstOrDefault(), devConfig.SudokuSettings.BoardDimensions.LastOrDefault());
         }
 
-        public Cells InitialOddsSetup(Cells cells, int index)
+        public void InitialOddsSetup(ref Cells cells, int index)
         {
             Cell cell = cells.List[index];
             cells.List[index].CellPossibilities.List.Clear();
@@ -25,7 +26,6 @@ namespace WebSudoku_v0._0._7.Classes
             {
                 cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsEmpty);
             }
-                return cells;
         }
 
         public Cell SetNextCell(string cellValue,  int index)
@@ -46,7 +46,8 @@ namespace WebSudoku_v0._0._7.Classes
                     : cellValue;
                 cell.Value = int.TryParse(cellValue, out int value) ? value : 0;
                 cell.hasValue = !string.IsNullOrEmpty(cellValue) && cell.Value != 0;
-                cell.isEnabled = value > 0 ?  false: true;
+                cell.isHighlighted = cell.hasValue ? true : false;
+                cell.isEnabled = true;
             }
             catch (Exception ex)
             {
@@ -58,7 +59,7 @@ namespace WebSudoku_v0._0._7.Classes
             return cell;
         }
 
-        public Cells SetCellOdds(Cells cells, int index)
+        public void SetCellOdds(ref Cells cells, int index)
         {
             Cell cell = cells.List[index];
             if (!cell.hasValue)
@@ -113,7 +114,6 @@ namespace WebSudoku_v0._0._7.Classes
                     }
                 }
             }
-            return cells;
         }
 
         private int SetBlock(int index)
@@ -168,149 +168,106 @@ namespace WebSudoku_v0._0._7.Classes
             return index / Dimensions.RowSize + 1;
         }
 
-        public Cells ProcessOdds(Cells cells)
+        private bool ProcessOdds(ref Cells cells)
         {
-            Cells emptyCells = new Cells();
-            emptyCells.List = cells.List.Where(c => !c.hasValue).ToList();
-            foreach (var cell in emptyCells.List)
+            foreach (var cell in cells.List)
             {
-                if (cell.CellPossibilities.List.Where(p => p != 0).Count() == 1)
+                if (cell.hasValue)
                 {
-                    cell.Value = cell.CellPossibilities.List.Where(p => p != 0).FirstOrDefault();
-                    cell.DisplayValue = cell.Value.ToString();
-                    cell.hasValue = true;
-                    //cell.isEnabled = false;
-                    cells.List[cell.Location.Index] = cell;
-                    break;
+                    cell.isHighlighted = true;
                 } else
                 {
-                    continue;
+                    if (cell.CellPossibilities.List.Where(p => p != 0).Count() == 1)
+                    {
+                        cell.Value = cell.CellPossibilities.List.Where(p => p != 0).FirstOrDefault();
+                        cell.DisplayValue = cell.Value.ToString();
+                        cell.hasValue = true;
+                        cell.isHighlighted = true;
+                        cells.List[cell.Location.Index] = cell;
+                        var oCells = cells;
+                        cells.List.ForEach(c => SetCellOdds(ref oCells, cell.Location.Index));                        
+                        Console.WriteLine($"ProcessOdds Solved - Index: {cell.Location.Index}={cell.Value}");
+                        return true;
+                    }
+                    else
+                    {
+                        continue;
+                    }
                 }
             }
-            return cells;
+            return false;
         }
 
         //  REM: Complete Pattern Checking
-        public Cells ProcessValueCheck(Cells cells)
+        private bool ProcessValueCheck(ref Cells cells)
         {
-            Cells emptyCells = new Cells();
-            emptyCells.List = cells.List.Where(c => !c.hasValue).ToList();
-
-            emptyCells.List.ForEach(c => ProcessRow(c, ref cells));
-            emptyCells.List.ForEach(c => ProcessCol(c, ref cells));
-            emptyCells.List.ForEach(c => ProcessBlock(c, ref cells));  
-
-            return cells;
-        }
-
-        private void ProcessRow(Cell cell, ref Cells cells)
-        {
-            for (int i = 1; i <= 9; i++)
+            for (int val = 1; val <= DevConfig.SudokuSettings.BoardDimensions.LastOrDefault(); val++)
             {
-                SetRowHiLite(ref cells, cell, i);
-            }
-        }
+                cells.List.ForEach(c => c.isHighlighted = false);
+                cells.List.ForEach(c => { if (c.hasValue) c.isHighlighted = true; });
 
-        private void ProcessCol(Cell cell, ref Cells cells)    
-        {
-            for (int i = 1; i <= 9; i++)
-            {
-                SetColHiLite(ref cells, cell, i);
-            }
-        }
-
-        private void ProcessBlock(Cell cell, ref Cells cells)  
-        {
-            for (int i = 1; i <= 9; i++)
-            {
-                SetBlockHiLite(ref cells, cell, i); 
-            }
-        }
-
-        private void SetRowHiLite(ref Cells cells, Cell cell, int searchValue)
-        {
-            var row = cells.List.Where(c => c.Location.Row == cell.Location.Row && c.Location.Index != cell.Location.Index).ToList();
-            foreach (Cell rowCell in row)
-            {
-                if (rowCell.Value == searchValue)
+                foreach (var cell in cells.List.Where(c => c.hasValue))
                 {
-                    foreach(Cell hCell in row)
+                    if (cell.Value == val)
                     {
-                        cells.List[hCell.Location.Index].isHighlighted = true;
-                        break;
+                        var row = cells.List.Where(c => c.Location.Row == cell.Location.Row).ToList();
+                        foreach(var c in row) { 
+                            c.isHighlighted = true; 
+                        }
+                        var column = cells.List.Where(c => c.Location.Column == cell.Location.Column).ToList();
+                        foreach (var c in column)
+                        {
+                            c.isHighlighted = true;
+                        }
+                        var block = cells.List.Where(c => c.Location.Block == cell.Location.Block).ToList();
+                        foreach (var c in block)
+                        {
+                            c.isHighlighted = true;
+                        }
                     }
                 }
+                if (ProcessHighlights(ref cells, val)) { return true; }
             }
-            
+            return false;
         }
 
-        private void SetColHiLite(ref Cells cells, Cell cell, int searchValue)  
+        private bool ProcessHighlights(ref Cells cells, int value)  
         {
-            var col = cells.List.Where(c => c.Location.Column == cell.Location.Column && c.Location.Index != cell.Location.Index).ToList();
-            foreach (Cell colCell in col)
+            for (int blk = 1; blk <= DevConfig.SudokuSettings.BoardDimensions.LastOrDefault(); blk++)
             {
-                if (colCell.Value == searchValue)
+                var block = cells.List.Where(c => c.Location.Block == blk && !c.hasValue && !c.isHighlighted);
+                if (block.Count() == 1)
                 {
-                    foreach (Cell hCell in col)
+                    var indx = block.FirstOrDefault().Location.Index;
+                    Console.WriteLine($"ProcessHighlights Solved - Index: {indx}={value}");
+                    cells.List[indx].Value = value;
+                    cells.List[indx].DisplayValue = value.ToString();
+                    cells.List[indx].hasValue = true;
+
+                    foreach (var cell in cells.List)
                     {
-                        cells.List[hCell.Location.Index].isHighlighted = true;
-                        break;
+                        SetCellOdds(ref cells, cell.Location.Index);
                     }
-                }
+                    return true;
+                }                
             }
-
+            return false;
         }
 
-        private void SetBlockHiLite(ref Cells cells, Cell cell, int searchValue)    
-        {
-            var block = cells.List.Where(c => c.Location.Block == cell.Location.Block && c.Location.Index != cell.Location.Index).ToList();
-            foreach (Cell blockCell in block)
-            {
-                if (blockCell.Value == searchValue)
-                {
-                    foreach (Cell hCell in block)
-                    {
-                        cells.List[hCell.Location.Index].isHighlighted = true;
-                        break;
-                    }
-                }
-            }
-            ProcessResult(ref cells, ref cell, searchValue);
-        }
-
-        private void ProcessResult(ref Cells cells, ref Cell cell, int value)
-        {
-            var cellBlock = cell.Location.Block;    
-            var block = cells.List.Where(c => c.Location.Block == cellBlock && c.isHighlighted == false);
-
-            if (block.ToList().Count == 1 && block.FirstOrDefault().Location.Index == cell.Location.Index)
-                cell.Value = value;
-
-            cells.List.ForEach(c => c.isHighlighted = false);
-        }
-        
         public Cells RunSolution(Cells board)
         {
             bool solved = false;
-            int attempt = 1;
-            int maxAttempts = 1000;
             while (!solved)
             {
                 //  Check for cell solutions based on current odds
-                board = ProcessOdds(board);
-                board.List.ForEach(c => SetCellOdds(board, c.Location.Index));
+                var oddSolutionFound = ProcessOdds(ref board);
 
-                //  Check for cell solutions based on current board values
-                board = ProcessValueCheck(board);
-                board.List.ForEach(c => SetCellOdds(board, c.Location.Index));
+                //  Check for cell solutions based on current board values and update odds
+                var valueSolutionFound = ProcessValueCheck(ref board);
 
                 solved = board.List.All(c => c.hasValue);
 
-                if (attempt >= maxAttempts)
-                {
-                    break;
-                }
-                attempt++;
+                if (!oddSolutionFound && !valueSolutionFound) break;
             }
             return board;
         }

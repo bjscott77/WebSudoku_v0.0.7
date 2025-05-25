@@ -6,7 +6,7 @@
 
 .boardSelection {
     display: flex;
-    align-content: center;
+    justify-content: center;
 }
 
 .btn {
@@ -63,9 +63,31 @@ h2 {
 #puzzleSelect {
     height: 40px;
     width: 60%;
-    margin: 0 19%;
+    margin: 0 2%;
     margin-bottom: 1%;
-    margin-top: 1%;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #205781;
+    background-color: white;
+    color: #205781;
+    text-align: center;
+}
+
+#selectPuzzleRating {
+    height: 40px;
+    width: 10%;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #205781;
+    background-color: lightgray;
+    color: #205781;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+#newPuzzleInput {
+    height: 40px;
+    width: 60%;
     font-size: 18px;
     font-weight: bold;
     border: 2px solid #205781;
@@ -73,13 +95,33 @@ h2 {
     color: #205781;
 }
 
-#newPuzzleInput {
+#newPuzzleRating {
     height: 40px;
-    width: 95%;
+    width: 20%;
     font-size: 18px;
     font-weight: bold;
     border: 2px solid #205781;
-    background-color: #F6F8D5;
+    background-color: white;
+    color: #205781;
+}
+
+#updatePuzzleInput {
+    height: 40px;
+    width: 60%;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #205781;
+    background-color: white;
+    color: #205781;
+}
+
+#updatePuzzleRating {
+    height: 40px;
+    width: 20%;
+    font-size: 18px;
+    font-weight: bold;
+    border: 2px solid #205781;
+    background-color: white;
     color: #205781;
 }
 

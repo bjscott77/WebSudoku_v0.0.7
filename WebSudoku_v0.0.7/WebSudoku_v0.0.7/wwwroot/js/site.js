@@ -12,8 +12,20 @@
         btn.innerHTML = "Add";
     });
 
+    let AddRatingElem = document.getElementById("newPuzzleRating");
+    AddRatingElem.addEventListener("focus", function (event) {
+        let btn = document.getElementById("addNew");
+        btn.innerHTML = "Add";
+    });
+
     let updateElem = document.getElementById("updatePuzzleInput");
     updateElem.addEventListener("focus", function (event) {
+        let btn = document.getElementById("updatePuzzle");
+        btn.innerHTML = "Update";
+    });
+
+    let updateRatingElem = document.getElementById("updatePuzzleRating");
+    updateRatingElem.addEventListener("focus", function (event) {
         let btn = document.getElementById("updatePuzzle");
         btn.innerHTML = "Update";
     });
@@ -24,8 +36,7 @@ function getAllPuzzles() {
         .then(res => res.json())
         .then((rawData) => {
             let data = translateResponseData(rawData);
-            hydrateSelectElem(data);
-            hydrateRootElem(data);
+            hydrateAll(data);   
         })
         .catch(err => {
             console.log(err);
@@ -44,6 +55,7 @@ function getPuzzle() {
             .then((rawData) => {
                 let data = translateResponseData(rawData);
                 hydrateRootElem(data);
+                hydrateRatingElem(data);
             })
             .catch(err => console.log(err));
     }
@@ -52,11 +64,16 @@ function getPuzzle() {
 
 function addPuzzle() {
     let puzzle = document.getElementById("newPuzzleInput");
-    if (puzzle.value == null || puzzle.value == "" || puzzle.value == 'undefined') {
-        showModal("Please enter a puzzle to save it.");
+    let rating = document.getElementById("newPuzzleRating");
+
+    if ((puzzle.value == null && rating.value == null) || (puzzle.value == "" && rating.value == "") || (puzzle.value == 'undefined' && rating.value == 'undefined')) {
+        showModal("Please enter a puzzle and rating to save it.");
         return;
     }
-    let jsonPuzzle = JSON.parse("{\"boardValues\":\"" + puzzle.value + "\",\"difficulty\":0, \"id\":0 }");
+    if (rating.value == null || rating.value == "" || rating.value == 'undefined')
+        rating.value = 0;
+
+    let newObj = { boardValues: puzzle.value, id: 0, difficulty: +rating.value };
 
     fetch("api/sudoku/addpuzzle", {
         method: 'POST',
@@ -64,7 +81,7 @@ function addPuzzle() {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(jsonPuzzle)
+        body: JSON.stringify(newObj)
     })
         .then(response => {
             return response.json();
@@ -74,8 +91,7 @@ function addPuzzle() {
             if (data.StatusCode == "409") {
                 showModal(data.Status + ": " + data.ErrorMessage);
             } else if (data.StatusCode == "200") {
-                hydrateSelectElem(data);
-                hydrateRootElem(data);
+                hydrateAll(data);   
             }
 
         })
@@ -85,18 +101,23 @@ function addPuzzle() {
 function updatePuzzle() {
     let uPuzzle = document.getElementById("updatePuzzleInput");
     let sPuzzle = document.getElementById("puzzleSelect");
+    let uRating = document.getElementById("updatePuzzleRating");
+    let sRating = document.getElementById("selectPuzzleRating");
 
-    if (uPuzzle.value == null || uPuzzle.value == "" || uPuzzle.value == 'undefined') {
+    if ((uPuzzle.value == null && uRating.value == null) || (uPuzzle.value == "" && uRating.value == "") || (uPuzzle.value == 'undefined' && uRating.value == 'undefined')) {
         showModal("Please select a puzzle to update it.");
         return;
     }
 
-    if (uPuzzle.value == sPuzzle.value) {
+    if (uPuzzle.value == sPuzzle.value && uRating.value == sRating.value) {
         showModal("No changes were specified, so no updates were made.");
         return;
     }
 
-    let putObj = [{ boardValues: sPuzzle.value, id: 0, difficulty: 0 }, { boardValues: uPuzzle.value, id: 0, difficulty: 0 }];
+    if (uRating.value == null || uRating.value == "" || uRating.value == 'undefined')
+        uRating.value = 0;
+
+    let putObj = [{ boardValues: sPuzzle.value, id: 0, difficulty: 0 }, { boardValues: uPuzzle.value, id: 0, difficulty: +uRating.value }];
 
     fetch("api/sudoku/updatepuzzle", {
         method: 'PUT',
@@ -114,12 +135,15 @@ function updatePuzzle() {
             hydrateRootElem(data)
             data.Payload = data.Payload.slice(1, data.length);
             hydrateSelectElem(data);
+            hydrateRatingElem(data);
 
         })
         .catch(error => console.error('Error:', error));
 }
 
 function solvePuzzle() {
+    disableAll();
+
     let selectElem = document.getElementById("puzzleSelect");
     let puzzle = selectElem?.value?.toString();
 
@@ -131,6 +155,8 @@ function solvePuzzle() {
             .then((rawData) => {
                 let data = translateResponseData(rawData);
                 hydrateRootElem(data);
+
+                enableAll();
             })
             .catch(err => console.log(err));
     }
@@ -258,6 +284,17 @@ function translateResponseData(puzzles) {
     return data;
 }
 
+function hydrateAll(puzzles) {
+    hydrateSelectElem(puzzles);
+    hydrateRatingElem(puzzles);
+    hydrateRootElem(puzzles);
+}
+
+function hydrateRatingElem(puzzles) {
+    let rating = document.getElementById("selectPuzzleRating");
+    rating.value = puzzles.Payload[0].difficulty;
+}
+
 function hydrateSelectElem(puzzles) {
     let select = document.getElementById("puzzleSelect");
     select.innerHTML = "";
@@ -296,4 +333,24 @@ function showModal(message) {
             modal.style.display = 'none';
         }
     };
+}
+
+function disableAll() {
+    document.getElementById("root").style.backgroundColor = "#36ff33";
+    document.getElementById("puzzleSelect").disabled = true;
+    document.getElementById("addNew").disabled = true;
+    document.getElementById("updatePuzzle").disabled = true;
+    document.getElementById("deletePuzzle").disabled = true;
+    document.getElementById("showPuzzle").disabled = true;
+    document.getElementById("resetPuzzle").disabled = true;
+}
+
+function enableAll() {
+    document.getElementById("root").style.backgroundColor = "#000000";
+    document.getElementById("puzzleSelect").disabled = false;
+    document.getElementById("addNew").disabled = false;
+    document.getElementById("updatePuzzle").disabled = false;
+    document.getElementById("deletePuzzle").disabled = false;
+    document.getElementById("showPuzzle").disabled = false;
+    document.getElementById("resetPuzzle").disabled = false;
 }

@@ -3,10 +3,9 @@
     public interface ISudokuBoard
     {
         ISudokuManager SudokuManager { get; set; }
-        Cells Cells { get; set; }
         ISudokuDimensions Dimensions { get; set; }
+        Cells GetCells();
         void InitializeBoard(string puzzle);
         void InitializeOdds();
-
     }
 }

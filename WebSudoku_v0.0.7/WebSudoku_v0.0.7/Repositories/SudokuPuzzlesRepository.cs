@@ -103,9 +103,9 @@ namespace WebSudoku_v0._0._7.Repositories
 
                 _sudokuBoard.InitializeBoard(puzzle);
                 _sudokuBoard.InitializeOdds();
-                _sudokuBoard.Cells = _sudokuBoard.SudokuManager.RunSolution(_sudokuBoard.Cells);
+                _sudokuBoard.SudokuManager.RunSolution(_sudokuBoard.GetCells());
 
-                if (_sudokuBoard.Cells.List == null || _sudokuBoard.Cells.List.Count == 0)
+                if (_sudokuBoard.GetCells().List == null || _sudokuBoard.GetCells().List.Count == 0)
                     return null;
 
                 return new List<SudokuPuzzledto>
@@ -114,7 +114,7 @@ namespace WebSudoku_v0._0._7.Repositories
                     {
                         Id = Guid.Empty,
                         Difficulty = 0,
-                        BoardValues = string.Join("", _sudokuBoard.Cells.List.Select(c => c.Value))
+                        BoardValues = string.Join("", _sudokuBoard.GetCells().List.Select(c => c.Value))
                     }
                 };
             });
@@ -132,6 +132,7 @@ namespace WebSudoku_v0._0._7.Repositories
                     return await Task.FromResult<List<SudokuPuzzledto>>(null);
 
                 existingPuzzle.BoardValues = puzzles[1].BoardValues;
+                existingPuzzle.Difficulty = puzzles[1].Difficulty;
                 _appDbContext.Puzzle.Update(existingPuzzle);
             }
             catch (Exception ex)

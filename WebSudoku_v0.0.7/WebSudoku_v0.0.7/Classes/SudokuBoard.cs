@@ -10,21 +10,17 @@
         {
         }
 
-        public void DisplayOdds()
+        public Cells GetCells()
         {
-            foreach(var cell in Cells.List)
-            {
-                var odds = string.Join(", ", cell.CellPossibilities.List);
-                Console.WriteLine(odds);
-            }
+            return Cells;
         }
-        
         public void InitializeOdds()
         {
+            var Cells = GetCells();
             for (int i = 0; i < Cells.List.Count; i++)
             {
-                Cells = SudokuManager.InitialOddsSetup(Cells, i);
-                Cells = SudokuManager.SetCellOdds(Cells, i);
+                SudokuManager.InitialOddsSetup(ref Cells, i);
+                SudokuManager.SetCellOdds(ref Cells, i);
             }
         }
 
@@ -33,11 +29,10 @@
             SudokuManager = new SudokuManager(_devConfig);
             var dims = _devConfig.SudokuSettings.BoardDimensions;
             Dimensions = new SudokuDimensions(dims.FirstOrDefault(), dims.LastOrDefault());
-            Cells = new Cells();
             int index = 0;
             foreach (var cellValue in puzzle.ToCharArray())
             {
-                Cells.List.Add(SudokuManager.SetNextCell(cellValue.ToString(), index));
+                this.Cells.List.Add(SudokuManager.SetNextCell(cellValue.ToString(), index));
                 index++;
             }
         }

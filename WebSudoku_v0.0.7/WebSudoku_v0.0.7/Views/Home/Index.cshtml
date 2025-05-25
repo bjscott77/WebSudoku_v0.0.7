@@ -3,26 +3,29 @@
 }
 <div>
 	<h1>Welcome to the @ViewData["Title"]</h1>
-	<br />
+	<br>
 	<h2>Puzzle Selector</h2>
 	<div class="boardSelection">
 		<select name="puzzle" id="puzzleSelect">
 			<!--Sudoku puzzle list selection is generated here via javascript-->
 		</select>
+		<input type="text" id="selectPuzzleRating" placeholder="No rating set..." readonly>
 	</div>
 
 	<div class="buttonPanel">
 		<button type="button" id="addNew" class="btn btn-outline-secondary" onclick="toggleNewPuzzleForm();">Add...</button>
 		<button type="button" id="updatePuzzle" class="btn btn-outline-secondary" onclick="toggleUpdatePuzzleForm();">Update...</button>
 		<button type="button" id="deletePuzzle" class="btn btn-outline-secondary" onclick="deletePuzzle();">Delete</button>
-		<br /><br />
+		<br><br>
 		<div id="addToggle" class="add-toggle" style="display:none;">
-			<input type="text" id="newPuzzleInput" placeholder="Enter a new puzzle here..."><br /><br />
+			<input type="text" id="newPuzzleInput" placeholder="Enter a new puzzle here...">
+			<input type="text" id="newPuzzleRating" placeholder="Rating..."><br><br>
 		</div>
 		<div id="updateToggle" class="add-toggle" style="display:none;">
-			<input type="text" id="updatePuzzleInput" name="update" placeholder="Enter updated puzzle here..."><br /><br />
+			<input type="text" id="updatePuzzleInput" name="update" placeholder="Enter updated puzzle here...">
+			<input type="text" id="updatePuzzleRating" placeholder="Rating..."><br><br>
 		</div>
-		<br /><br />
+		<br><br>
 		<button type="button" id="showPuzzle" class="btn btn-primary" onclick="solvePuzzle();">Solve</button>
 		<button type="button" id="resetPuzzle" class="btn btn-primary" onclick="getPuzzle();">Reset</button>
 	</div>
