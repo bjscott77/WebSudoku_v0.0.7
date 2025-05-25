@@ -199,6 +199,7 @@ namespace WebSudoku_v0._0._7.Classes
         }
 
         //  REM: Complete Pattern Checking
+
         private bool ProcessValueCheck(ref Cells cells)
         {
             for (int val = 1; val <= DevConfig.SudokuSettings.BoardDimensions.LastOrDefault(); val++)
