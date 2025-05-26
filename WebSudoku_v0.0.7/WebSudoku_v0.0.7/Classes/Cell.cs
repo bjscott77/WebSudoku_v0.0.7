@@ -8,6 +8,7 @@
         public bool isEnabled { get; set; } = true;
         public bool hasValue { get; set; } = false;
         public bool isHighlighted { get; set; } = false;
+        public bool hasBackup { get; set; } = false;
         public ICellPossibilities CellPossibilities { get; set; } = new CellPossibilities();
 
         public Cell(CellLocation location)

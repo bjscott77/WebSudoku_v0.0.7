@@ -9,5 +9,7 @@
         bool isEnabled { get; set; }
         bool hasValue { get; set; }
         bool isHighlighted { get; set; }
+
+        bool hasBackup { get; set; }
     }
 }
