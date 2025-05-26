@@ -29,12 +29,12 @@ A web-based Sudoku puzzle manager and solver built with ASP.NET Core Razor Pages
 
 ## Project Structure
 
-- `Views/Home/Index.cshtml` – Main UI for puzzle selection and interaction.
-- `Controllers/SudokuController.cs` – API endpoints for puzzle management and solving.
-- `Repositories/SudokuPuzzlesRepository.cs` – Handles puzzle data storage and retrieval.
-- `Classes/SudokuBoard.cs`, `SudokuManager.cs` – Core logic for Sudoku board and solving.
-- `wwwroot/js/site.js` – JavaScript for dynamic UI updates.
-- `wwwroot/css/site.css` – Custom styles.
+- `Views/Home/Index.cshtml` â€“ Main UI for puzzle selection and interaction.
+- `Controllers/SudokuController.cs` â€“ API endpoints for puzzle management and solving.
+- `Repositories/SudokuPuzzlesRepository.cs` â€“ Handles puzzle data storage and retrieval.
+- `Classes/SudokuBoard.cs`, `SudokuManager.cs` â€“ Core logic for Sudoku board and solving.
+- `wwwroot/js/site.js` â€“ JavaScript for dynamic UI updates.
+- `wwwroot/css/site.css` â€“ Custom styles.
 
 ## Usage
 
@@ -52,7 +52,7 @@ A web-based Sudoku puzzle manager and solver built with ASP.NET Core Razor Pages
 
 ## Contributing
 
-Contributions are welcome! Please fork the repository and submit a pull request.
+Feel free to copy and make your own! I'm not looking for a collaboration, just making this open and available for personal use.
 
 ## License
 
