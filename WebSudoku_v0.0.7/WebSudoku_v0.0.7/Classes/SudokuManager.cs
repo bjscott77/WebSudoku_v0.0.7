@@ -449,13 +449,16 @@ namespace WebSudoku_v0._0._7.Classes
                 //  Check for cell solutions based on current board values and update odds
                 var valueSolutionFound = ProcessValueCheck(ref board);
 
+                //  If no odd or value solutions are found
                 if (!oddSolutionFound && !valueSolutionFound)
                 {
+                    // Check for cell solutions based on 2 possibilities
                     if (ProcessDualOdds(ref board))
                     {
-
+                        continue;
                     } else
                     {
+                        //  Otherwise revert to the last backup state and try the second possible
                         if (ProcessDualOdds(ref board, true))
                         {
                             continue;
