@@ -170,6 +170,88 @@ namespace WebSudoku_v0._0._7.Classes
             return index / Dimensions.RowSize + 1;
         }
 
+        private Cell ClearCellOdds(Cell dualOddsCell)
+        {
+            for (int i = 0; i < dualOddsCell.CellPossibilities.List.Count; i++)
+            {
+                dualOddsCell.CellPossibilities.List[i] = 0;
+            }
+            return dualOddsCell;
+        }
+
+        private bool IsBackedUp(Cell cell)
+        {
+            foreach (var record in DualOddsBackups)
+            {
+                if (record.DualOddsCellCopy == cell)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool BackupDualOdds(Cells cells, Cell dualOddsCell)
+        {
+            try
+            {
+                var cellsCopy = new List<Cell>();
+                foreach (var cell in cells.List)
+                {
+                    var cellCopy = new Cell(
+                        new CellLocation(
+                            cell.Location.Row,
+                            cell.Location.Column,
+                            cell.Location.Block,
+                            cell.Location.Index
+                        )
+                    )
+                    {
+                        DisplayValue = cell.DisplayValue,
+                        Value = cell.Value,
+                        isEnabled = cell.isEnabled,
+                        hasValue = cell.hasValue,
+                        isHighlighted = false,
+                        CellPossibilities = new CellPossibilities
+                        {
+                            List = new List<int>(cell.CellPossibilities.List)
+                        }
+                    };
+                    cellsCopy.Add(cellCopy);
+                }
+
+                var dualOddsCellCopy = new Cell(
+                    new CellLocation(
+                        dualOddsCell.Location.Row,
+                        dualOddsCell.Location.Column,
+                        dualOddsCell.Location.Block,
+                        dualOddsCell.Location.Index
+                    )
+                )
+                {
+                    DisplayValue = dualOddsCell.DisplayValue,
+                    Value = dualOddsCell.Value,
+                    isEnabled = dualOddsCell.isEnabled,
+                    hasValue = dualOddsCell.hasValue,
+                    isHighlighted = false,
+                    CellPossibilities = new CellPossibilities
+                    {
+                        List = new List<int>(dualOddsCell.CellPossibilities.List)
+                    }
+                };
+
+                cells.List[dualOddsCellCopy.Location.Index].hasBackup = true;
+
+                DualOddsBackups.Push((cellsCopy, dualOddsCellCopy));
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in BackupDualOdds(...).  Error: {ex.Message}, Inner: {ex?.InnerException?.Message}");
+            }
+            return false;
+        }
+
         private bool ProcessOdds(ref Cells cells)
         {
             foreach (var cell in cells.List)
@@ -275,88 +357,6 @@ namespace WebSudoku_v0._0._7.Classes
                     }
                     return false;
                 }
-            }
-            return false;
-        }
-
-        private Cell ClearCellOdds(Cell dualOddsCell)
-        {
-            for (int i = 0; i < dualOddsCell.CellPossibilities.List.Count; i++)
-            {
-                dualOddsCell.CellPossibilities.List[i] = 0;
-            }
-            return dualOddsCell;
-        }
-
-        private bool IsBackedUp(Cell cell)
-        {
-            foreach (var record in DualOddsBackups)
-            {
-                if (record.DualOddsCellCopy == cell)
-                    return true;
-            }
-
-            return false;
-        }
-
-        private bool BackupDualOdds(Cells cells, Cell dualOddsCell)
-        {
-            try
-            {
-                var cellsCopy = new List<Cell>();
-                foreach (var cell in cells.List)
-                {
-                    var cellCopy = new Cell(
-                        new CellLocation(
-                            cell.Location.Row,
-                            cell.Location.Column,
-                            cell.Location.Block,
-                            cell.Location.Index
-                        )
-                    )
-                    {
-                        DisplayValue = cell.DisplayValue,
-                        Value = cell.Value,
-                        isEnabled = cell.isEnabled,
-                        hasValue = cell.hasValue,
-                        isHighlighted = false,
-                        CellPossibilities = new CellPossibilities
-                        {
-                            List = new List<int>(cell.CellPossibilities.List)
-                        }
-                    };
-                    cellsCopy.Add(cellCopy);
-                }
-
-                var dualOddsCellCopy = new Cell(
-                    new CellLocation(
-                        dualOddsCell.Location.Row,
-                        dualOddsCell.Location.Column,
-                        dualOddsCell.Location.Block,
-                        dualOddsCell.Location.Index
-                    )
-                )
-                {
-                    DisplayValue = dualOddsCell.DisplayValue,
-                    Value = dualOddsCell.Value,
-                    isEnabled = dualOddsCell.isEnabled,
-                    hasValue = dualOddsCell.hasValue,
-                    isHighlighted = false,
-                    CellPossibilities = new CellPossibilities
-                    {
-                        List = new List<int>(dualOddsCell.CellPossibilities.List)
-                    }
-                };
-
-                cells.List[dualOddsCellCopy.Location.Index].hasBackup = true;
-
-                DualOddsBackups.Push((cellsCopy, dualOddsCellCopy));
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in BackupDualOdds(...).  Error: {ex.Message}, Inner: {ex?.InnerException?.Message}");
             }
             return false;
         }
