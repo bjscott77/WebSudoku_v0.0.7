@@ -8,6 +8,7 @@ namespace WebSudoku_v0._0._7.Classes
 {
     public class SudokuManager : ISudokuManager
     {
+        #region Definitions
         private Stack<(List<Cell> CellsCopy, Cell DualOddsCellCopy)> DualOddsBackups = new Stack<(List<Cell>, Cell)>();
         public SudokuDimensions Dimensions { get; set; } = null;
         public DevConfiguration DevConfig { get; set; } 
@@ -17,6 +18,9 @@ namespace WebSudoku_v0._0._7.Classes
             Dimensions = new SudokuDimensions(DevConfig.SudokuSettings.BoardDimensions.FirstOrDefault(), devConfig.SudokuSettings.BoardDimensions.LastOrDefault());
         }
         public int CurrentRound { get; set; } = 0;
+        #endregion
+
+        #region InitializationAndUpdates
         public void InitialOddsSetup(ref Cells cells, int index)
         {
             Cell cell = cells.List[index];
@@ -169,7 +173,9 @@ namespace WebSudoku_v0._0._7.Classes
         {
             return index / Dimensions.RowSize + 1;
         }
+        #endregion
 
+        #region SolveHelpers
         private Cell ClearCellOdds(Cell dualOddsCell)
         {
             for (int i = 0; i < dualOddsCell.CellPossibilities.List.Count; i++)
@@ -251,7 +257,9 @@ namespace WebSudoku_v0._0._7.Classes
             }
             return false;
         }
+        #endregion
 
+        #region SolveProcessors
         private bool ProcessOdds(ref Cells cells)
         {
             foreach (var cell in cells.List)
@@ -415,6 +423,7 @@ namespace WebSudoku_v0._0._7.Classes
             }
             return false;
         }
+        #endregion
 
         /// <summary>
         /// Attempts to solve the given Sudoku board using a combination of logical deduction and backtracking.
