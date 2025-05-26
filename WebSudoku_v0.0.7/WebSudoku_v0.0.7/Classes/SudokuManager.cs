@@ -449,8 +449,6 @@ namespace WebSudoku_v0._0._7.Classes
                 //  Check for cell solutions based on current board values and update odds
                 var valueSolutionFound = ProcessValueCheck(ref board);
 
-                solved = board.List.All(c => c.hasValue);
-
                 if (!oddSolutionFound && !valueSolutionFound)
                 {
                     if (ProcessDualOdds(ref board))
@@ -468,6 +466,7 @@ namespace WebSudoku_v0._0._7.Classes
                         }
                     }
                 }
+                solved = board.List.All(c => c.hasValue);
             }
             return board;
         }
