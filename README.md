@@ -52,7 +52,7 @@ A web-based Sudoku puzzle manager and solver built with ASP.NET Core Razor Pages
 
 ## Contributing
 
-Contributions are welcome! Please fork the repository and submit a pull request.
+Feel free to copy and make your own! I'm not looking for a collaboration, just making this open and available for personal use.
 
 ## License
 
