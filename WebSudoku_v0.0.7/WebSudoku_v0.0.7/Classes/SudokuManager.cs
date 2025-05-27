@@ -391,6 +391,7 @@ namespace WebSudoku_v0._0._7.Classes
 
             return false;
         }
+
         public bool IsBoardValid(Cells cells)
         {
             int size = Dimensions.RowSize; // Typically 9 for standard Sudoku
