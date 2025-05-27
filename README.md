@@ -20,7 +20,7 @@ A web-based Sudoku puzzle manager and solver built with ASP.NET Core Razor Pages
 ### Running the Application
 
 1. **Clone the repository:**
-	1. git clone <repository-url> cd WebSudoku_v0.0.7
+	1. git clone https://github.com/bjscott77/WebSudoku_v0.0.7.git
 2. **Restore dependencies:**
 	1. dotnet restore
 3. **Build and run:**
