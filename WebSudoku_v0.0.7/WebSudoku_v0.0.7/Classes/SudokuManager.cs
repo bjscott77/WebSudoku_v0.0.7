@@ -391,6 +391,46 @@ namespace WebSudoku_v0._0._7.Classes
 
             return false;
         }
+        public bool IsBoardValid(Cells cells)
+        {
+            int size = Dimensions.RowSize; // Typically 9 for standard Sudoku
+            int blockSize = Dimensions.BlockSize; // Typically 3 for standard Sudoku
+
+            // Check rows
+            for (int row = 1; row <= size; row++)
+            {
+                var values = cells.List
+                    .Where(c => c.Location.Row == row && c.hasValue)
+                    .Select(c => c.Value)
+                    .ToList();
+                if (values.Count != values.Distinct().Count())
+                    return false;
+            }
+
+            // Check columns
+            for (int col = 1; col <= size; col++)
+            {
+                var values = cells.List
+                    .Where(c => c.Location.Column == col && c.hasValue)
+                    .Select(c => c.Value)
+                    .ToList();
+                if (values.Count != values.Distinct().Count())
+                    return false;
+            }
+
+            // Check blocks
+            for (int block = 1; block <= size; block++)
+            {
+                var values = cells.List
+                    .Where(c => c.Location.Block == block && c.hasValue)
+                    .Select(c => c.Value)
+                    .ToList();
+                if (values.Count != values.Distinct().Count())
+                    return false;
+            }
+
+            return true;
+        }
         #endregion
 
         #region SolveProcessors
@@ -664,7 +704,9 @@ namespace WebSudoku_v0._0._7.Classes
                         }
                     }
                 }
-                solved = board.List.All(c => c.hasValue);
+                solved = board.List.All(c => c.hasValue) && IsBoardValid(board);
+                if (!solved && !IsBoardValid(board))
+                    throw new Exception($"The solver finished, but the solution was invalid.");
             }
             return board;
         }
