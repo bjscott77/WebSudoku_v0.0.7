@@ -678,14 +678,11 @@ namespace WebSudoku_v0._0._7.Classes
             bool solved = false;
             while (!solved)
             {
-                var oddSolutionFound = ProcessOdds(ref board);
-                                
+                var oddSolutionFound = ProcessOdds(ref board);                                
                 var valueSolutionFound = ProcessValueCheck(ref board);
-
                 if (!oddSolutionFound && !valueSolutionFound)
                 {
                     var patternSolutionFound = ProcessPatterns(ref board);
-
                     if (!patternSolutionFound)
                     {
                         if (ProcessDualOdds(ref board))
