@@ -10,6 +10,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		WebSudoku_v0.0.7\README.md = WebSudoku_v0.0.7\README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSudoku_v0.0.7.Tests", "WebSudoku_v0.0.7.Tests\WebSudoku_v0.0.7.Tests.csproj", "{71F19BFE-8C19-44E6-A888-4579A3EED81C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{0C21E2F8-8EEE-4F76-B8E9-1807A25F9403}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C21E2F8-8EEE-4F76-B8E9-1807A25F9403}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C21E2F8-8EEE-4F76-B8E9-1807A25F9403}.Release|Any CPU.Build.0 = Release|Any CPU
+		{71F19BFE-8C19-44E6-A888-4579A3EED81C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{71F19BFE-8C19-44E6-A888-4579A3EED81C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{71F19BFE-8C19-44E6-A888-4579A3EED81C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{71F19BFE-8C19-44E6-A888-4579A3EED81C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
