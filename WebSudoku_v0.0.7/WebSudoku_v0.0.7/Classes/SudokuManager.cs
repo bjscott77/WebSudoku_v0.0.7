@@ -24,14 +24,29 @@ namespace WebSudoku_v0._0._7.Classes
         #region InitializationAndUpdates
         public void InitialOddsSetup(ref Cells cells, int index)
         {
-            Cell cell = cells.List[index];
-            cells.List[index].CellPossibilities.List.Clear();
-            if (!cell.hasValue)
+            if (index < 0 || index > 80)
+                throw new ArgumentOutOfRangeException("index", $"Index must be between {0}:{Dimensions.Size - 1} inclusivley.  Expected: 0-80, Received: {index}");
+
+            try
             {
-                cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsInitial);
-            } else
+                Cell cell = cells.List[index];
+                cells.List[index].CellPossibilities.List.Clear();
+                if (!cell.hasValue)
+                {
+                    cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsInitial);
+                }
+                else
+                {
+                    cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsEmpty);
+                }
+            }
+            catch (ArgumentOutOfRangeException ex)
             {
-                cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsEmpty);
+                Console.WriteLine($"Error in InitialOddsSetup: {ex.Message}");
+                
+                Cell cell = new Cell(new CellLocation(0, 0, 0, 0));
+                cell.isEnabled = false;
+                cell.hasValue = false;
             }
         }
 
@@ -46,6 +61,9 @@ namespace WebSudoku_v0._0._7.Classes
                         SetColumn(index), 
                         SetBlock(index), 
                         index);
+                if (cellLocation.Row == -1 || cellLocation.Column == -1 || cellLocation.Block == -1)
+                    throw new ArgumentOutOfRangeException("index", $"Index must be between {0}:{Dimensions.Size - 1} inclusivley.  Expected: 0-80, Received: {index}");
+
                 cell = new Cell(cellLocation);
                 cell.DisplayValue = DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.CellDisplayValueType == "SPACE"
                     ? cellValue == "0"
@@ -53,12 +71,12 @@ namespace WebSudoku_v0._0._7.Classes
                     : cellValue;
                 cell.Value = int.TryParse(cellValue, out int value) ? value : 0;
                 cell.hasValue = !string.IsNullOrEmpty(cellValue) && cell.Value != 0;
-                cell.isHighlighted = cell.hasValue ? true : false;
+                cell.isHighlighted = false;
                 cell.isEnabled = true;
             }
-            catch (Exception ex)
+            catch (ArgumentOutOfRangeException ex)
             {
-                Console.WriteLine($"Error in SetNextCell: Cell Index: {index}, error: {ex.Message}");
+                Console.WriteLine($"Error in SetNextCell: {ex.Message}");
                 cell = new Cell(new CellLocation(0, 0, 0, 0));
                 cell.isEnabled = false;
                 cell.hasValue = false;
@@ -125,32 +143,41 @@ namespace WebSudoku_v0._0._7.Classes
 
         private int SetBlock(int index)
         {
-            int row = SetRow(index) - 1;
-            int col = SetColumn(index) - 1;
-            int blockRow = row / Dimensions.BlockSize;
-            int blockCol = col / Dimensions.BlockSize;
-            return (blockRow * Dimensions.BlockSize) + blockCol + 1;
+            if (index < 0 || index > 80)
+                return -1;
+            // Rows, columns, and blocks are 1-based
+            int row = SetRow(index);    // 1-based row
+            int col = SetColumn(index); // 1-based column
+            int blockRow = (row - 1) / 3;
+            int blockCol = (col - 1) / 3;
+            return (blockRow * 3) + blockCol + 1;
         }
 
         private int SetColumn(int index)
         {
+            if (index < 0 || index > 80)
+                return -1;
+
             return (index % Dimensions.ColumnSize) + 1;
         }
 
         public int SetRow(int index)
         {
+            if (index < 0 || index > 80)
+                return -1;
+
             return (index / Dimensions.RowSize) + 1;
         }
         #endregion
 
         #region SolveHelpers
-        private Cell ClearCellOdds(Cell dualOddsCell)
+        private Cell ClearCellOdds(Cell cell)
         {
-            for (int i = 0; i < dualOddsCell.CellPossibilities.List.Count; i++)
+            for (int i = 0; i < cell.CellPossibilities.List.Count; i++)
             {
-                dualOddsCell.CellPossibilities.List[i] = 0;
+                cell.CellPossibilities.List[i] = 0;
             }
-            return dualOddsCell;
+            return cell;
         }
 
         private bool IsBackedUp(Cell cell)
@@ -226,137 +253,16 @@ namespace WebSudoku_v0._0._7.Classes
             return false;
         }
 
-        private bool QueryFullRows(ref Cells fullRow, Cells cells, int block)    
-        {   
-            var searchBlock = cells.List.Where(c => c.Location.Block == block).ToList();
-            var row1 = searchBlock.Where(c => c.Location.Row == searchBlock[0].Location.Row && c.hasValue);
-            var row2 = searchBlock.Where(c => c.Location.Row == searchBlock[3].Location.Row && c.hasValue);
-            var row3 = searchBlock.Where(c => c.Location.Row == searchBlock[6].Location.Row && c.hasValue);
-
-            if (row1.Count() != 3 || row2.Count() != 3 || row3.Count() != 3)
-                return false;
-
-            if (row1.Count() + row2.Count() == 6)
-                return false;
-
-            if (row1.Count() + row3.Count() == 6)
-                return false;
-
-            if (row2.Count() + row3.Count() == 6)
-                return false;
-
-            if (row1.Count() == 3)
-                fullRow.List.AddRange(row1);
-            else if (row2.Count() == 3)
-                fullRow.List.AddRange(row2);
-            else
-                fullRow.List.AddRange(row3);
-
-            return fullRow.List.Any() ? true : false;
-        }
-
-        private bool QueryFullCols(ref Cells fullCol, Cells cells, int block)   
+        private bool HasCorruptedOdds(Cells cells)
         {
-            var searchBlock = cells.List.Where(c => c.Location.Block == block).ToList();
-            var col1 = searchBlock.Where(c => c.Location.Column == searchBlock[0].Location.Column && c.hasValue);
-            var col2 = searchBlock.Where(c => c.Location.Column == searchBlock[3].Location.Column && c.hasValue);
-            var col3 = searchBlock.Where(c => c.Location.Column == searchBlock[6].Location.Column && c.hasValue);
-
-            if (col1.Count() != 3 || col2.Count() != 3 || col3.Count() != 3)
-                return false;
-
-            if (col1.Count() + col2.Count() == 6)
-                return false;
-
-            if (col1.Count() + col3.Count() == 6)
-                return false;
-
-            if (col2.Count() + col3.Count() == 6)
-                return false;
-
-            if (col1.Count() == 3)
-                fullCol.List.AddRange(col1);
-            else if (col2.Count() == 3)
-                fullCol.List.AddRange(col2);
-            else
-                fullCol.List.AddRange(col3);
-
-            return fullCol.List.Any() ? true : false;
-        }
-
-        private bool DistinctOpposing(ref int value, Cells full, Cells opposing)
-        {
-            var counter = 0;
-            var distinct = false;
-            foreach (var c in full.List)
+            foreach (var cell in cells.List.Where(c => !c.hasValue))
             {
-                counter = 0;
-                if (opposing.List.Select(l => l.Value).ToList().Contains(c.Value))
+                if (cell.CellPossibilities.List.Where(p => p > 0).Count() == 0)
                 {
-                    continue;
-                }
-                else
-                {
-                    counter++;
-                    if (counter == 3)
-                    {
-                        distinct = true;
-                        value = c.Value;
-                        break;
-                    }
-                }
+                    return false;
+                }               
             }
-            return distinct;
-        }
-
-        private bool QueryFinalColCell(ref Cell? finalCell, Cells cells, Cells fullCol, Cells opposingCol)
-        {
-            var blockIndex = cells.List.FirstOrDefault(c =>
-                c.Location.Column == opposingCol.List[0].Location.Column
-                && c.Location.Block != fullCol.List[0].Location.Block
-                && c.Location.Block != opposingCol.List[0].Location.Block).Location.Block;
-
-            var block = cells.List.Where(c => c.Location.Block == blockIndex).ToList();
-            var col = block.Where(c => c.Location.Column == opposingCol.List[0].Location.Column && !c.hasValue);
-            if (col == null || !col.Any())
-                return false;
-
-            if (col.Count() != 1)
-                finalCell = null;
-            else
-                finalCell = col.FirstOrDefault(c => c.Value == 0);
-
-            return finalCell != null ? true : false;
-        }
-
-        private bool QueryFinalRowCell(ref Cell? finalCell, Cells cells, Cells fullRow, Cells opposingRow)
-        {
-            var blockIndex = cells.List.FirstOrDefault(c => 
-                c.Location.Row == opposingRow.List[0].Location.Row
-                && c.Location.Block != fullRow.List[0].Location.Block
-                && c.Location.Block != opposingRow.List[0].Location.Block).Location.Block;
-
-            var block = cells.List.Where(c => c.Location.Block == blockIndex).ToList();
-            var row = block.Where(c => c.Location.Row == opposingRow.List[0].Location.Row && !c.hasValue);
-            if (row == null || !row.Any())
-                return false;
-
-            if (row.Count() != 1)
-                finalCell = null;
-            else
-                finalCell = row.FirstOrDefault(c => c.Value == 0);
-
-                return finalCell != null ? true : false;
-        }
-
-        private bool PossibleValue(Cell? finalCell, int value)
-        {
-            if (finalCell == null) return false;
-
-            if (finalCell.CellPossibilities.List.Contains(value))
-                return true;
-
-            return false;
+            return true;
         }
 
         public bool IsBoardValid(Cells cells)
@@ -404,79 +310,6 @@ namespace WebSudoku_v0._0._7.Classes
         #region SolveProcessors
         private bool ProcessPatterns(ref Cells cells)
         {
-            for (int blk = 1; blk <= DevConfig.SudokuSettings.BoardDimensions.LastOrDefault(); blk++)
-            {
-                Cells fullRow = new Cells();
-                if (!QueryFullRows(ref fullRow, cells, blk))
-                    return false;
-
-                Cells opposingRow = new Cells();
-                if (!QueryFullRows(ref opposingRow, cells, fullRow.List[0].Location.Block))
-                    return false;
-
-                int value = 0;
-                if (!DistinctOpposing(ref value, fullRow, opposingRow))
-                    return false;
-
-                Cell? finalCell = new Cell(new CellLocation(0,0,0,0));
-                if (!QueryFinalRowCell(ref finalCell, cells, fullRow, opposingRow))
-                    return false;
-
-                if (finalCell.hasValue)
-                    return false;
-
-                if (!PossibleValue(finalCell, value))
-                    return false;
-
-                var index = finalCell.Location.Index;
-                cells.List[index].Value = value;
-                cells.List[index].DisplayValue = value.ToString();
-                cells.List[index].hasValue = true;
-                cells.List[index] = ClearCellOdds(cells.List[index]);
-
-                for (int i = 0; i < cells.List.Count(); i++)
-                    SetCellOdds(ref cells, cells.List[index].Location.Index);
-
-                Console.WriteLine($"Pattern Row: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
-                return true;
-            }
-
-            for (int blk = 1; blk <= DevConfig.SudokuSettings.BoardDimensions.LastOrDefault(); blk++)
-            {
-                Cells fullCol = new Cells();
-                if (!QueryFullCols(ref fullCol, cells, blk))
-                    return false;
-
-                Cells opposingCol = new Cells();
-                if (!QueryFullCols(ref opposingCol, cells, fullCol.List[0].Location.Block))
-                    return false;
-
-                int value = 0;
-                if (!DistinctOpposing(ref value, fullCol, opposingCol))
-                    return false;
-
-                Cell? finalCell = new Cell(new CellLocation(0, 0, 0, 0));
-                if (!QueryFinalColCell(ref finalCell, cells, fullCol, opposingCol))
-                    return false;
-
-                if (finalCell.hasValue)
-                    return false;
-
-                if (!PossibleValue(finalCell, value))
-                    return false;
-
-                var index = finalCell.Location.Index;
-                cells.List[index].Value = value;
-                cells.List[index].DisplayValue = value.ToString();
-                cells.List[index].hasValue = true;
-                cells.List[index] = ClearCellOdds(cells.List[index]);
-
-                for (int i = 0; i < cells.List.Count(); i++)
-                    SetCellOdds(ref cells, cells.List[index].Location.Index);
-
-                Console.WriteLine($"Pattern Col: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
-                return true;
-            }
             return false;
         }
 
@@ -649,25 +482,7 @@ namespace WebSudoku_v0._0._7.Classes
                 var valueSolutionFound = ProcessValueCheck(ref board);
                 if (!oddSolutionFound && !valueSolutionFound)
                 {
-                    var patternSolutionFound = ProcessPatterns(ref board);
-                    if (!patternSolutionFound)
-                    {
-                        if (ProcessDualOdds(ref board))
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            if (ProcessDualOdds(ref board, true))
-                            {
-                                continue;
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        }
-                    }
+                    //ProcessDualOdds(ref board);
                 }
                 solved = board.List.All(c => c.hasValue) && IsBoardValid(board);
                 if (!solved && !IsBoardValid(board))
