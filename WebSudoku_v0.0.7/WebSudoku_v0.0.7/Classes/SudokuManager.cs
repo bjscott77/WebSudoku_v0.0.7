@@ -125,54 +125,21 @@ namespace WebSudoku_v0._0._7.Classes
 
         private int SetBlock(int index)
         {
-            int block = 0;
-            if (index % Dimensions.ColumnSize <= 2 && index / Dimensions.RowSize <= 2)
-            {
-                return 1;
-            }
-            else if (index % Dimensions.ColumnSize <= 5 && index / Dimensions.RowSize <= 2)
-            {
-                return 2;
-            }
-            else if (index % Dimensions.ColumnSize <= 8 && index / Dimensions.RowSize <= 2)
-            {
-                return 3;
-            }
-            else if (index % Dimensions.ColumnSize <= 2 && index / Dimensions.RowSize <= 5)
-            {
-                return 4;
-            }
-            else if (index % Dimensions.ColumnSize <= 5 && index / Dimensions.RowSize <= 5)
-            {
-                return 5;
-            }
-            else if (index % Dimensions.ColumnSize <= 8 && index / Dimensions.RowSize <= 5)
-            {
-                return 6;
-            }
-            else if (index % Dimensions.ColumnSize <= 2 && index / Dimensions.RowSize <= 8)
-            {
-                return 7;
-            }
-            else if (index % Dimensions.ColumnSize <= 5 && index / Dimensions.RowSize <= 8)
-            {
-                return 8;
-            }
-            else if (index % Dimensions.ColumnSize <= 8 && index / Dimensions.RowSize <= 8)
-            {
-                return 9;
-            }
-            return block;
+            int row = SetRow(index) - 1;
+            int col = SetColumn(index) - 1;
+            int blockRow = row / Dimensions.BlockSize;
+            int blockCol = col / Dimensions.BlockSize;
+            return (blockRow * Dimensions.BlockSize) + blockCol + 1;
         }
 
         private int SetColumn(int index)
         {
-            return index % Dimensions.ColumnSize + 1;
+            return (index % Dimensions.ColumnSize) + 1;
         }
 
-        private int SetRow(int index)
+        public int SetRow(int index)
         {
-            return index / Dimensions.RowSize + 1;
+            return (index / Dimensions.RowSize) + 1;
         }
         #endregion
 
