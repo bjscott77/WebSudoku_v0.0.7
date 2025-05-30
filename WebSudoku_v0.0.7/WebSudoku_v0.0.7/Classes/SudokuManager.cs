@@ -498,6 +498,12 @@ namespace WebSudoku_v0._0._7.Classes
             return false;
         }
 
+        private bool FindOpposingRowPattern(ref List<Cell> opposingRow, List<List<Cell>> blockRow, List<int> initalRowValues)      
+        {
+
+            return false;
+        }
+
         private List<Cell> FindFilledRow(List<List<List<Cell>>> blockRows)
         {
             var found = false;
@@ -516,6 +522,30 @@ namespace WebSudoku_v0._0._7.Classes
                     break;
             }
             return initialRow;
+        }
+
+        private List<Cell> FindOpposingRow(List<List<List<Cell>>> blockRows, List<Cell> initialRow, int block, int row)
+        {
+            var found = false;
+            var opposingRow = new List<Cell>();
+            var checkBlocks = blockRows.FirstOrDefault(b => b[0][0].Location.Row == row);
+            if (checkBlocks == null)
+                return opposingRow;
+
+            var blockRow = checkBlocks.Where(c => c[0].Location.Block != block).ToList();
+
+            found = FindOpposingRowPattern(ref opposingRow, blockRow, initialRow.Select(i => i.Value).ToList());
+            if (!found)
+                return opposingRow;
+            
+            Console.WriteLine($"blockRow: {
+                    string.Join(" ", opposingRow.Select(b => b.Location.Index))
+                },{
+                    string.Join(" ", opposingRow.Select(b => b.Location.Index))
+                }");
+
+            return opposingRow;
+            
         }
 
         #endregion
@@ -542,7 +572,15 @@ namespace WebSudoku_v0._0._7.Classes
             if (!filledRow.Any())
                 return false;
 
-            Console.WriteLine($"Found: {filledRow.Any()}");
+            //  3. Find opposing block with opposing filled row, if none, exit
+            List<Cell> opposingRow = FindOpposingRow(blockRows, filledRow,
+                filledRow[0].Location.Block,
+                filledRow[0].Location.Row);
+
+            if (opposingRow.Any())
+                return false;
+
+            Console.WriteLine($"Found: {opposingRow.Any()}");
 
             return false;
         }
