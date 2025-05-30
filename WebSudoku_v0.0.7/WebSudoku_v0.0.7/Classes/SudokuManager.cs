@@ -2,9 +2,11 @@
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 using static System.Net.Mime.MediaTypeNames;
@@ -387,7 +389,7 @@ namespace WebSudoku_v0._0._7.Classes
             previousRecords.ForEach(r => DualOddsRecord.Remove(r));
 
             var displayBackups = DualOddsBackups.Select(b => $"Index: {b.Cell.Location.Index} ");
-            Console.WriteLine($"Reload cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
+            //Console.WriteLine($"Reload cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
             
             if (DualOddsBackups.Count == 0)
             {
@@ -422,7 +424,7 @@ namespace WebSudoku_v0._0._7.Classes
 
                     var displayBackups = DualOddsBackups.Select(b => $"Index: {b.Cell.Location.Index} ");
                     
-                    Console.WriteLine($"Dual cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
+                    //Console.WriteLine($"Dual cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
                     
                     _dualAttempt++;
                     return true;
@@ -437,11 +439,111 @@ namespace WebSudoku_v0._0._7.Classes
                 .Where(cell => cell.CellPossibilities.List.Count(p => p > 0) == 2).FirstOrDefault();
         }
 
+        private List<List<Cell>> GetBlockRow(Cells cells, int selectBlock)
+        {
+            var blockRow = new List<List<Cell>>();
+            try
+            {
+                switch (selectBlock)
+                {
+                    case 1:
+                        {
+                            blockRow.Add(cells.List.Where(c => c.Location.Block == 1).ToList());
+                            blockRow.Add(cells.List.Where(c => c.Location.Block == 2).ToList());
+                            blockRow.Add(cells.List.Where(c => c.Location.Block == 3).ToList());
+                            break;
+                        }
+                    case 4:
+                        {
+                            blockRow.Add(cells.List.Where(c => c.Location.Block == 4).ToList());
+                            blockRow.Add(cells.List.Where(c => c.Location.Block == 5).ToList());
+                            blockRow.Add(cells.List.Where(c => c.Location.Block == 6).ToList());
+                            break;
+                        }
+                    case 7:
+                        {
+                            blockRow.Add(cells.List.Where(c => c.Location.Block == 7).ToList());
+                            blockRow.Add(cells.List.Where(c => c.Location.Block == 8).ToList());
+                            blockRow.Add(cells.List.Where(c => c.Location.Block == 9).ToList());
+                            break;
+                        }
+                }
+                return blockRow;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBlockRow: {ex.Message}, Inner: {ex?.InnerException?.Message}");
+                return null;
+            }
+        }
+
+        private bool FindInitialRowPattern(ref List<Cell> initialRow, List<Cell> block)
+        {
+            var index = 1;
+            foreach (var cell in block)
+            {
+                if (cell.Value > 0)
+                    initialRow.Add(cell);
+                if (initialRow.Count == 3 && index % 3 == 0)
+                {
+                    return true;
+                }
+                else if (index > 0 && index % 3 == 0)
+                {
+                    initialRow.Clear();
+                    index = 0;
+                }                
+                index++;
+            }
+            return false;
+        }
+
+        private List<Cell> FindFilledRow(List<List<List<Cell>>> blockRows)
+        {
+            var found = false;
+            var initialRow = new List<Cell>();
+            foreach (var blockRow in blockRows)
+            {
+                foreach (var block in blockRow)
+                {
+                    found = FindInitialRowPattern(ref initialRow, block);
+                    if (!found)
+                        continue;
+                    else
+                        break;
+                }
+                if (found)
+                    break;
+            }
+            return initialRow;
+        }
+
         #endregion
 
         #region SolveProcessors
-        private bool ProcessPatterns(ref Cells cells)
+        private bool ProcessRowPatterns(ref Cells cells)    
         {
+            /*
+                1. Get list of block rows
+                2. Find block with filled row, if none, exit
+                3. Find opposing block with opposing filled row, if none, exit
+                4. Find first value from #2 row that isn't in #3 row, if none, exit
+                5. Find single empty cell in final block, same row as #3. if none, exit
+                5. Place value from #4 in single empty cell #5
+            */
+
+            //  1.Get list of block rows
+            List<List<List<Cell>>> blockRows = new List<List<List<Cell>>>();
+            for (int i = 1; i <= Dimensions.BlockSize; i += 3)            
+                blockRows.Add(GetBlockRow(cells, i));
+
+            //  2. Find block with filled row, if none, exit
+            List<Cell> filledRow = FindFilledRow(blockRows);
+            if (!filledRow.Any())
+                return false;
+
+            Console.WriteLine($"Found: {filledRow.Any()}");
+
             return false;
         }
 
@@ -458,7 +560,7 @@ namespace WebSudoku_v0._0._7.Classes
                     if (!result)
                         throw new Exception($"Placing Cell {index} failed @ ProcessOdds");
 
-                    Console.WriteLine($"Odd cell: {cell.Location.Index}, val: {cell.Value}");
+                    //Console.WriteLine($"Odd cell: {cell.Location.Index}, val: {cell.Value}");
                     return true;
                 }
                 else
@@ -540,7 +642,7 @@ namespace WebSudoku_v0._0._7.Classes
                     if (!result)
                         throw new Exception($"Placing Cell {index} failed @ ProcessHighlights");
 
-                    Console.WriteLine($"Highlight cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
+                    //Console.WriteLine($"Highlight cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
                     return true;
                 }                
             }
@@ -571,11 +673,11 @@ namespace WebSudoku_v0._0._7.Classes
                 var previousBoard = DeepCopyCells(board);
                 do
                 {
-                    progressMade = ProcessOdds(ref board);
-                    progressMade = ProcessValueCheck(ref board);
+                    var oddsProgress = ProcessOdds(ref board);
+                    var valueProgress = ProcessValueCheck(ref board);
+                    var rowPatternProgress = ProcessRowPatterns(ref board);
+                    progressMade = oddsProgress || valueProgress || rowPatternProgress;
                 } while (progressMade);
-
-                DebugInfo(board);
 
                 solved = CompleteBoard(board);
                 if (solved)
