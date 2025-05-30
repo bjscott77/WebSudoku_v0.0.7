@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -11,7 +12,9 @@ namespace WebSudoku_v0._0._7.Classes
     public class SudokuManager : ISudokuManager
     {
         #region Definitions
-        private Stack<(List<Cell> CellsCopy, Cell DualOddsCellCopy)> DualOddsBackups = new Stack<(List<Cell>, Cell)>();
+        private Stack<(List<Cell> Cells, Cell Cell)> DualOddsBackups = new Stack<(List<Cell>, Cell)>();
+        private List<(int Attempt, int Index, int Value, int AlternateValue)> DualOddsRecord = new List<(int, int, int, int)>();
+
         public SudokuDimensions Dimensions { get; set; } = null;
         public DevConfiguration DevConfig { get; set; } 
         public SudokuManager(DevConfiguration devConfig)
@@ -184,14 +187,15 @@ namespace WebSudoku_v0._0._7.Classes
         {
             foreach (var record in DualOddsBackups)
             {
-                if (record.DualOddsCellCopy == cell)
+                if (record.Cell == cell)
                     return true;
             }
 
             return false;
         }
 
-        private bool BackupDualOdds(Cells cells, Cell dualOddsCell)
+        private int _attempt = 1;
+        private bool BackupDualOdds(Cells cells, Cell dualCell)
         {
             try
             {
@@ -222,28 +226,30 @@ namespace WebSudoku_v0._0._7.Classes
 
                 var dualOddsCellCopy = new Cell(
                     new CellLocation(
-                        dualOddsCell.Location.Row,
-                        dualOddsCell.Location.Column,
-                        dualOddsCell.Location.Block,
-                        dualOddsCell.Location.Index
+                        dualCell.Location.Row,
+                        dualCell.Location.Column,
+                        dualCell.Location.Block,
+                        dualCell.Location.Index
                     )
                 )
                 {
-                    DisplayValue = dualOddsCell.DisplayValue,
-                    Value = dualOddsCell.Value,
-                    isEnabled = dualOddsCell.isEnabled,
-                    hasValue = dualOddsCell.hasValue,
+                    DisplayValue = dualCell.DisplayValue,
+                    Value = dualCell.Value,
+                    isEnabled = dualCell.isEnabled,
+                    hasValue = dualCell.hasValue,
                     isHighlighted = false,
                     CellPossibilities = new CellPossibilities
                     {
-                        List = new List<int>(dualOddsCell.CellPossibilities.List)
+                        List = new List<int>(dualCell.CellPossibilities.List)
                     }
                 };
 
                 cells.List[dualOddsCellCopy.Location.Index].hasBackup = true;
-
                 DualOddsBackups.Push((cellsCopy, dualOddsCellCopy));
+                var altValue = dualCell.CellPossibilities.List.Where(p => p > 0).LastOrDefault();
+                DualOddsRecord.Add((_attempt, dualCell.Location.Index, dualCell.Value, altValue));
 
+                _attempt++;
                 return true;
             }
             catch (Exception ex)
@@ -259,16 +265,22 @@ namespace WebSudoku_v0._0._7.Classes
             {
                 if (cell.CellPossibilities.List.Where(p => p > 0).Count() == 0)
                 {
-                    return false;
+                    return true;
                 }               
             }
-            return true;
+            return false;
         }
 
-        public bool IsBoardValid(Cells cells)
+        private bool CompleteBoard(Cells cells)
+        {
+            return cells.List.Where(c => c.hasValue).Count() == 81;
+        }
+
+        public bool IsBoardValid(Cells cells, bool corrupt)   
         {
             int size = Dimensions.RowSize; // Typically 9 for standard Sudoku
             int blockSize = Dimensions.BlockSize; // Typically 3 for standard Sudoku
+            bool valid = true;
 
             // Check rows
             for (int row = 1; row <= size; row++)
@@ -303,8 +315,39 @@ namespace WebSudoku_v0._0._7.Classes
                     return false;
             }
 
-            return true;
+            return valid && !corrupt;
         }
+
+        private bool PlaceCellValue(ref Cells cells, int index, int value)
+        {
+            try
+            {
+                cells.List[index].Value = value;
+                cells.List[index] = ClearCellOdds(cells.List[index]);
+                cells.List[index].DisplayValue = cells.List[index].Value.ToString();
+                cells.List[index].hasValue = true;
+
+                foreach (var cell in cells.List)
+                    SetCellOdds(ref cells, index);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error PlaceCellValue: {ex.Message}, Inner: {ex?.InnerException?.Message}");
+            }
+            return false;
+        }
+
+        private void DebugInfo(Cells cells)
+        {
+            Console.WriteLine($"Board: {string.Join("", cells.List.Select(c => c.Value))}");
+            cells.List.Where(c => !c.hasValue).ToList().ForEach(c =>
+            {
+                Console.WriteLine($"Cell: {c.Location.Index}, Value: {c.Value}, Odds: {string.Join("", c.CellPossibilities.List.Where(c => c > 0))}");
+            });
+        }
+
         #endregion
 
         #region SolveProcessors
@@ -315,30 +358,29 @@ namespace WebSudoku_v0._0._7.Classes
 
         private bool ProcessOdds(ref Cells cells)
         {
-            foreach (var cell in cells.List)
+            var emptyCells = cells.List.Where(c  => !c.hasValue).ToList();
+            foreach (var cell in emptyCells)
             {
-                if (!cell.hasValue)
+                if (cell.CellPossibilities.List.Where(p => p != 0).Count() == 1 && !cell.hasValue)
                 {
-                    if (cell.CellPossibilities.List.Where(p => p != 0).Count() == 1 && !cell.hasValue)
-                    {
-                        cell.Value = cell.CellPossibilities.List.Where(p => p != 0).FirstOrDefault();
-                        cell.DisplayValue = cell.Value.ToString();
-                        cell.hasValue = true;
-                        cells.List[cell.Location.Index] = cell;
-                        var oCells = cells;
-                        cells.List.ForEach(c => SetCellOdds(ref oCells, cell.Location.Index));                        
-                        Console.WriteLine($"Odd cell: {cell.Location.Index}, val: {cell.Value}");
-                        return true;
-                    }
-                    else
-                    {
-                        continue;
-                    }
+                    var index = cell.Location.Index;
+                    var value = cell.CellPossibilities.List.Where(p => p != 0).FirstOrDefault();
+                    var result = PlaceCellValue(ref cells, index, value);
+                    if (!result)
+                        throw new Exception($"Placing Cell {index} failed @ ProcessOdds");
+
+                    Console.WriteLine($"Odd cell: {cell.Location.Index}, val: {cell.Value}");
+                    return true;
+                }
+                else
+                {
+                    continue;
                 }
             }
             return false;
         }
 
+        int _dualAttempt = 1;
         /// <summary>
         /// Attempts to solve cells with exactly two possible values ("dual odds").
         /// If reload is true, restores the previous board state and tries the alternate value (backtracking).
@@ -348,72 +390,81 @@ namespace WebSudoku_v0._0._7.Classes
         {
             if (reload && !(DualOddsBackups.Count() == 0))
             {
-                var lastBackupCell = DualOddsBackups.Pop();
+                bool found = false;
+                do
+                {
+                    var backupCell = DualOddsBackups.Pop();
+                    var backupRecord = DualOddsRecord.Where(r => r.Index == backupCell.Cell.Location.Index).FirstOrDefault();
+                    if (backupCell.Cell.hasValue)
+                        throw new Exception($"Backed up cells should never contain a value");
 
-                if (lastBackupCell.DualOddsCellCopy.hasValue)
-                    return false;
+                    var index = backupCell.Cell.Location.Index;
+                    cells.List = backupCell.Cells;
+                    cells.List[index] = backupCell.Cell;
+                    var value = backupRecord.AlternateValue;
+                    bool result = PlaceCellValue(ref cells, index, value);
+                    if (!result)
+                        throw new Exception($"Placing Cell {index} failed @ ProcessDualOdds");
 
-                var index = lastBackupCell.DualOddsCellCopy.Location.Index;
-                cells.List = lastBackupCell.CellsCopy;
-                cells.List[index] = lastBackupCell.DualOddsCellCopy;
-                cells.List[index].Value = lastBackupCell.DualOddsCellCopy.CellPossibilities.List.LastOrDefault(p => p > 0);
-                cells.List[index] = ClearCellOdds(cells.List[index]);
-                cells.List[index].DisplayValue = cells.List[index].Value.ToString();
-                cells.List[index].hasValue = true;
+                    //  remove any records from the previous backup reload, if they exist
+                    var previousRecords = DualOddsRecord.Where(o => o.Index != index && o.Attempt > backupRecord.Attempt).ToList();
+                    previousRecords.ForEach(r => DualOddsRecord.Remove(r));
 
-                foreach (var cell in cells.List)
-                    SetCellOdds(ref cells, lastBackupCell.DualOddsCellCopy.Location.Index);
+                    Console.WriteLine($"Reload cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
+                    if (DualOddsBackups.Count == 0)
+                    {
+                        found = false;
+                        break;
+                    }
+                    else
+                    {
+                        found = true;
+                    }
 
-                Console.WriteLine($"Reload cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
-                return true;
+                } while (!found);
+                return found;
             }
             else
             {
-                var dualOddsCell = cells.List
-                    .Where(cell => cell.CellPossibilities.List.Count(p => p > 0) == 2).ToList();
+                bool updated = false;
+                var cell = cells.List
+                    .Where(cell => cell.CellPossibilities.List.Count(p => p > 0) == 2).FirstOrDefault();
 
-                if (dualOddsCell != null && dualOddsCell.Any())
+                if (cell != null)
                 {
-                    for (int i = 0; i < dualOddsCell.Count; i++)
+                    if (cell.hasValue)
+                        throw new Exception($"Cells with a value should not have any odds defined.");
+
+                    if (!IsBackedUp(cell))
                     {
-                        if (dualOddsCell[i].hasValue)
-                            continue;
-
-                        if (!IsBackedUp(dualOddsCell[i]))
+                        if (BackupDualOdds(cells, cell))
                         {
-                            if (BackupDualOdds(cells, dualOddsCell[i]))
-                            {
-                                var index = dualOddsCell[i].Location.Index;
-                                var value = dualOddsCell[i].CellPossibilities.List.FirstOrDefault(p => p > 0);
-                                cells.List[index] = ClearCellOdds(dualOddsCell[i]);
-                                cells.List[index].Value = value;
-                                cells.List[index].DisplayValue = value.ToString();
-                                cells.List[index].hasValue = true;
+                            var index = cell.Location.Index;
+                            var value = cell.CellPossibilities.List.FirstOrDefault(p => p > 0);
+                            var alternate = cell.CellPossibilities.List.LastOrDefault(p => p > 0);
+                            var result = PlaceCellValue(ref cells, index, value);
+                            if (!result)
+                                throw new Exception($"Placing Cell {index} failed @ ProcessDualOdds Reset");
 
-                                foreach (var cell in cells.List)
-                                    SetCellOdds(ref cells, cell.Location.Index);
-
-                                Console.WriteLine($"Dual cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
-                                return true;
-                            }
+                            Console.WriteLine($"Dual cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
+                            _dualAttempt++;
+                            updated = true;
                         }
                     }
-                    return false;
                 }
+                return updated;
             }
-            return false;
         }
 
         private bool ProcessValueCheck(ref Cells cells)
         {
-            for (int val = 1; val <= DevConfig.SudokuSettings.BoardDimensions.LastOrDefault(); val++)
+            for (int value = 1; value <= DevConfig.SudokuSettings.BoardDimensions.LastOrDefault(); value++)
             {
                 cells.List.ForEach(c => c.isHighlighted = false);
-                cells.List.ForEach(c => { if (c.hasValue) c.isHighlighted = true; });
 
                 foreach (var cell in cells.List.Where(c => c.hasValue))
                 {
-                    if (cell.Value == val)
+                    if (cell.Value == value)
                     {
                         var row = cells.List.Where(c => c.Location.Row == cell.Location.Row).ToList();
                         foreach(var c in row) { 
@@ -431,28 +482,24 @@ namespace WebSudoku_v0._0._7.Classes
                         }
                     }
                 }
-                if (ProcessHighlights(ref cells, val)) { return true; }
+                if (ProcessHighlights(ref cells, value))
+                    return true;
             }
             return false;
         }
 
         private bool ProcessHighlights(ref Cells cells, int value)  
         {
-            for (int blk = 1; blk <= DevConfig.SudokuSettings.BoardDimensions.LastOrDefault(); blk++)
+            for (int block = 1; block <= DevConfig.SudokuSettings.BoardDimensions.LastOrDefault(); block++)
             {
-                var block = cells.List.Where(c => c.Location.Block == blk && !c.hasValue && !c.isHighlighted);
-                if (block.Count() == 1)
+                var found = cells.List.Where(c => c.Location.Block == block && !c.hasValue && !c.isHighlighted);
+                if (found.Count() == 1)
                 {
-                    var index = block.FirstOrDefault().Location.Index;
-                    cells.List[index].Value = value;
-                    cells.List[index].DisplayValue = value.ToString();
-                    cells.List[index].hasValue = true;
-                    cells.List[index] = ClearCellOdds(cells.List[index]);
+                    var index = found.FirstOrDefault().Location.Index;
+                    var result = PlaceCellValue(ref cells, index, value);
+                    if (!result)
+                        throw new Exception($"Placing Cell {index} failed @ ProcessHighlights");
 
-                    foreach (var cell in cells.List)
-                    {
-                        SetCellOdds(ref cells, cell.Location.Index);
-                    }
                     Console.WriteLine($"Highlight cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
                     return true;
                 }                
@@ -476,17 +523,45 @@ namespace WebSudoku_v0._0._7.Classes
         public Cells RunSolution(Cells board)
         {
             bool solved = false;
+            int attempts = 0;
+            int maxattempts = 10000;
+            bool progressMade = false;
             while (!solved)
             {
-                var oddSolutionFound = ProcessOdds(ref board);                                
-                var valueSolutionFound = ProcessValueCheck(ref board);
-                if (!oddSolutionFound && !valueSolutionFound)
+                do
                 {
-                    //ProcessDualOdds(ref board);
+                    progressMade = ProcessOdds(ref board);
+                    progressMade = ProcessValueCheck(ref board);
+                } while (progressMade);
+
+                if (IsBoardValid(board, !HasCorruptedOdds(board)))
+                {
+                    ProcessDualOdds(ref board);
                 }
-                solved = board.List.All(c => c.hasValue) && IsBoardValid(board);
-                if (!solved && !IsBoardValid(board))
-                    throw new Exception($"The solver finished, but the solution was invalid.");
+                else
+                {
+                    //  Inalid board, reset to an earlier state if backups exist,
+                    //  otherwise look for another dual odd.
+                    if (DualOddsBackups.Any())
+                    {
+                        ProcessDualOdds(ref board, true);
+                    } else
+                    {
+                        ProcessDualOdds(ref board);
+                    }
+                }
+
+                DebugInfo(board);
+
+                solved = board.List.All(c => c.hasValue);
+
+                if (attempts == maxattempts)
+                {
+                    Console.WriteLine($"Max attempts reach.  Backup count: {DualOddsBackups.Count}");
+                    break;
+                }
+
+                attempts++;
             }
             return board;
         }

@@ -307,34 +307,48 @@ namespace SudokuWeb.Tests
         public void IsBoardValid_ReturnsFalse_OnInvalid()   
         {
             var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
-            var manager = new SudokuManager(devConfig);
-            int size = manager.Dimensions.RowSize;
-            int blockSize = manager.Dimensions.BlockSize;
+            var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
 
-            // Arrange: cell with index not in cells.List
-            var cell1 = new Cell(new CellLocation(1, 1, 1, 0))
-            {
-                Value = 1,
-                hasValue = true,
-                isEnabled = true,
-                CellPossibilities = new CellPossibilities { List = new List<int> { 1, 2, 3 } }
-            };
-            var cells = new Cells { List = new List<Cell> { cell1 } };
-            var dualOddsCell = new Cell(new CellLocation(1, 2, 1, 5))
-            {
-                Value = 0,
-                hasValue = false,
-                isEnabled = true,
-                CellPossibilities = new CellPossibilities { List = new List<int> { 1, 2 } }
-            };
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
+
+            // Arrange: board with invalid puzzle
+            var invalidPuzzle = "108077090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.InitializeBoard(invalidPuzzle);
+            board.InitializeOdds();
+
 
             // Act
             var result = typeof(SudokuManager)
-                .GetMethod("BackupDualOdds", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(manager, new object[] { cells, dualOddsCell });
+                .GetMethod("IsBoardValid", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells });
 
             // Assert
             Assert.False((bool)result);
+        }
+
+        [Fact]
+        public void IsBoardValid_ReturnsTrue_OnValid()  
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
+
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
+
+            // Arrange: board with invalid puzzle
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.InitializeBoard(validPuzzle);
+            board.InitializeOdds();
+
+
+            // Act
+            var result = typeof(SudokuManager)
+                .GetMethod("IsBoardValid", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells });
+
+            // Assert
+            Assert.True((bool)result);
         }
     }
 }
