@@ -6,6 +6,8 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace WebSudoku_v0._0._7.Classes
 {
@@ -194,60 +196,74 @@ namespace WebSudoku_v0._0._7.Classes
             return false;
         }
 
-        private int _attempt = 1;
-        private bool BackupDualOdds(Cells cells, Cell dualCell)
+        private List<Cell> DeepCopyCells(Cells cells)
         {
-            try
+            var cellsCopy = new List<Cell>();
+            foreach (var cell in cells.List)
             {
-                var cellsCopy = new List<Cell>();
-                foreach (var cell in cells.List)
-                {
-                    var cellCopy = new Cell(
-                        new CellLocation(
-                            cell.Location.Row,
-                            cell.Location.Column,
-                            cell.Location.Block,
-                            cell.Location.Index
-                        )
-                    )
-                    {
-                        DisplayValue = cell.DisplayValue,
-                        Value = cell.Value,
-                        isEnabled = cell.isEnabled,
-                        hasValue = cell.hasValue,
-                        isHighlighted = false,
-                        CellPossibilities = new CellPossibilities
-                        {
-                            List = new List<int>(cell.CellPossibilities.List)
-                        }
-                    };
-                    cellsCopy.Add(cellCopy);
-                }
-
-                var dualOddsCellCopy = new Cell(
+                var cellCopy = new Cell(
                     new CellLocation(
-                        dualCell.Location.Row,
-                        dualCell.Location.Column,
-                        dualCell.Location.Block,
-                        dualCell.Location.Index
+                        cell.Location.Row,
+                        cell.Location.Column,
+                        cell.Location.Block,
+                        cell.Location.Index
                     )
                 )
                 {
-                    DisplayValue = dualCell.DisplayValue,
-                    Value = dualCell.Value,
-                    isEnabled = dualCell.isEnabled,
-                    hasValue = dualCell.hasValue,
+                    DisplayValue = cell.DisplayValue,
+                    Value = cell.Value,
+                    isEnabled = cell.isEnabled,
+                    hasValue = cell.hasValue,
                     isHighlighted = false,
                     CellPossibilities = new CellPossibilities
                     {
-                        List = new List<int>(dualCell.CellPossibilities.List)
+                        List = new List<int>(cell.CellPossibilities.List)
+                    }
+                };
+                cellsCopy.Add(cellCopy);
+            }
+            return cellsCopy;
+        }
+
+        private bool CompareBoardCells(List<Cell> cells, List<Cell> cellsCopy)
+        {
+            var cellVals = string.Join("", cells.Select(c => c.Value));
+            var copyVals = string.Join("", cellsCopy.Select(c => c.Value));
+
+            return cellVals == copyVals;
+        }
+
+        private int _attempt = 1;
+        private bool BackupDualOdds(Cells cells, Cell cell)
+        {
+            try
+            {
+                var cellsCopy = DeepCopyCells(cells);
+
+                var cellCopy = new Cell(
+                    new CellLocation(
+                        cell.Location.Row,
+                        cell.Location.Column,
+                        cell.Location.Block,
+                        cell.Location.Index
+                    )
+                )
+                {
+                    DisplayValue = cell.DisplayValue,
+                    Value = cell.Value,
+                    isEnabled = cell.isEnabled,
+                    hasValue = cell.hasValue,
+                    isHighlighted = false,
+                    CellPossibilities = new CellPossibilities
+                    {
+                        List = new List<int>(cell.CellPossibilities.List)
                     }
                 };
 
-                cells.List[dualOddsCellCopy.Location.Index].hasBackup = true;
-                DualOddsBackups.Push((cellsCopy, dualOddsCellCopy));
-                var altValue = dualCell.CellPossibilities.List.Where(p => p > 0).LastOrDefault();
-                DualOddsRecord.Add((_attempt, dualCell.Location.Index, dualCell.Value, altValue));
+                cells.List[cellCopy.Location.Index].hasBackup = true;
+                DualOddsBackups.Push((cellsCopy, cellCopy));
+                var alternate = cell.CellPossibilities.List.Where(p => p > 0).LastOrDefault();
+                DualOddsRecord.Add((_attempt, cell.Location.Index, cell.Value, alternate));
 
                 _attempt++;
                 return true;
@@ -261,19 +277,20 @@ namespace WebSudoku_v0._0._7.Classes
 
         private bool HasCorruptedOdds(Cells cells)
         {
+            var corrupt = false;
             foreach (var cell in cells.List.Where(c => !c.hasValue))
             {
                 if (cell.CellPossibilities.List.Where(p => p > 0).Count() == 0)
                 {
-                    return true;
+                    corrupt = true;
                 }               
             }
-            return false;
+            return corrupt;
         }
 
         private bool CompleteBoard(Cells cells)
         {
-            return cells.List.Where(c => c.hasValue).Count() == 81;
+            return cells.List.All(c => c.hasValue);
         }
 
         public bool IsBoardValid(Cells cells, bool corrupt)   
@@ -348,6 +365,78 @@ namespace WebSudoku_v0._0._7.Classes
             });
         }
 
+        private bool ReloadLastBackup(ref Cells cells)
+        {
+            var backupCell = DualOddsBackups.Pop();
+            var backupRecord = DualOddsRecord.Where(r => r.Index == backupCell.Cell.Location.Index).FirstOrDefault();
+            if (backupCell.Cell.hasValue)
+                throw new Exception($"Backed up cells should never contain a value");
+
+            var index = backupCell.Cell.Location.Index;
+            cells.List = backupCell.Cells;
+            cells.List[index] = backupCell.Cell;
+            var value = backupRecord.AlternateValue;
+
+            bool result = PlaceCellValue(ref cells, index, value);
+            
+            if (!result)
+                throw new Exception($"Placing Cell {index} failed @ ProcessDualOdds");
+
+            //  remove any records from the previous backup reload, if they exist
+            var previousRecords = DualOddsRecord.Where(o => o.Index != index && o.Attempt > backupRecord.Attempt).ToList();
+            previousRecords.ForEach(r => DualOddsRecord.Remove(r));
+
+            var displayBackups = DualOddsBackups.Select(b => $"Index: {b.Cell.Location.Index} ");
+            Console.WriteLine($"Reload cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
+            
+            if (DualOddsBackups.Count == 0)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        private bool FindAndPlaceDualBackup(ref Cells cells)
+        {
+            var cell = FindDualOdd(ref cells);
+
+            if (cell != null)
+            {
+                if (cell.hasValue)
+                    throw new Exception($"Cells with a value should not have any odds defined.");
+
+
+                if (BackupDualOdds(cells, cell))
+                {
+                    var index = cell.Location.Index;
+                    var value = cell.CellPossibilities.List.FirstOrDefault(p => p > 0);
+                    var alternate = cell.CellPossibilities.List.LastOrDefault(p => p > 0);
+
+                    var result = PlaceCellValue(ref cells, index, value);
+
+                    if (!result)
+                        throw new Exception($"Placing Cell {index} failed @ ProcessDualOdds Reset");
+
+                    var displayBackups = DualOddsBackups.Select(b => $"Index: {b.Cell.Location.Index} ");
+                    
+                    Console.WriteLine($"Dual cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
+                    
+                    _dualAttempt++;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private Cell FindDualOdd(ref Cells cells)
+        {
+            return cells.List
+                .Where(cell => cell.CellPossibilities.List.Count(p => p > 0) == 2).FirstOrDefault();
+        }
+
         #endregion
 
         #region SolveProcessors
@@ -393,65 +482,16 @@ namespace WebSudoku_v0._0._7.Classes
                 bool found = false;
                 do
                 {
-                    var backupCell = DualOddsBackups.Pop();
-                    var backupRecord = DualOddsRecord.Where(r => r.Index == backupCell.Cell.Location.Index).FirstOrDefault();
-                    if (backupCell.Cell.hasValue)
-                        throw new Exception($"Backed up cells should never contain a value");
+                    found = ReloadLastBackup(ref cells);
 
-                    var index = backupCell.Cell.Location.Index;
-                    cells.List = backupCell.Cells;
-                    cells.List[index] = backupCell.Cell;
-                    var value = backupRecord.AlternateValue;
-                    bool result = PlaceCellValue(ref cells, index, value);
-                    if (!result)
-                        throw new Exception($"Placing Cell {index} failed @ ProcessDualOdds");
-
-                    //  remove any records from the previous backup reload, if they exist
-                    var previousRecords = DualOddsRecord.Where(o => o.Index != index && o.Attempt > backupRecord.Attempt).ToList();
-                    previousRecords.ForEach(r => DualOddsRecord.Remove(r));
-
-                    Console.WriteLine($"Reload cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
-                    if (DualOddsBackups.Count == 0)
-                    {
-                        found = false;
-                        break;
-                    }
-                    else
-                    {
-                        found = true;
-                    }
-
-                } while (!found);
+                } while (!found && !(DualOddsBackups.Count() == 0));
                 return found;
             }
             else
-            {
+            {                
                 bool updated = false;
-                var cell = cells.List
-                    .Where(cell => cell.CellPossibilities.List.Count(p => p > 0) == 2).FirstOrDefault();
 
-                if (cell != null)
-                {
-                    if (cell.hasValue)
-                        throw new Exception($"Cells with a value should not have any odds defined.");
-
-                    if (!IsBackedUp(cell))
-                    {
-                        if (BackupDualOdds(cells, cell))
-                        {
-                            var index = cell.Location.Index;
-                            var value = cell.CellPossibilities.List.FirstOrDefault(p => p > 0);
-                            var alternate = cell.CellPossibilities.List.LastOrDefault(p => p > 0);
-                            var result = PlaceCellValue(ref cells, index, value);
-                            if (!result)
-                                throw new Exception($"Placing Cell {index} failed @ ProcessDualOdds Reset");
-
-                            Console.WriteLine($"Dual cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
-                            _dualAttempt++;
-                            updated = true;
-                        }
-                    }
-                }
+                updated = FindAndPlaceDualBackup(ref cells);
                 return updated;
             }
         }
@@ -528,20 +568,32 @@ namespace WebSudoku_v0._0._7.Classes
             bool progressMade = false;
             while (!solved)
             {
+                var previousBoard = DeepCopyCells(board);
                 do
                 {
                     progressMade = ProcessOdds(ref board);
                     progressMade = ProcessValueCheck(ref board);
                 } while (progressMade);
 
-                if (IsBoardValid(board, !HasCorruptedOdds(board)))
+                DebugInfo(board);
+
+                solved = CompleteBoard(board);
+                if (solved)
+                    continue;
+
+                if (IsBoardValid(board, HasCorruptedOdds(board)))
                 {
-                    ProcessDualOdds(ref board);
+                    if (!ProcessDualOdds(ref board) && IsBoardValid(board, HasCorruptedOdds(board)))
+                    {
+                        if (DualOddsBackups.Any())
+                        {
+                            ProcessDualOdds(ref board, true);
+
+                        }
+                    }
                 }
                 else
                 {
-                    //  Inalid board, reset to an earlier state if backups exist,
-                    //  otherwise look for another dual odd.
                     if (DualOddsBackups.Any())
                     {
                         ProcessDualOdds(ref board, true);
@@ -551,9 +603,8 @@ namespace WebSudoku_v0._0._7.Classes
                     }
                 }
 
-                DebugInfo(board);
-
-                solved = board.List.All(c => c.hasValue);
+                if (!CompareBoardCells(board.List, previousBoard))
+                    DebugInfo(board);
 
                 if (attempts == maxattempts)
                 {
