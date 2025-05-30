@@ -235,6 +235,23 @@ namespace WebSudoku_v0._0._7.Classes
             return cellVals == copyVals;
         }
 
+        private string DifferenceBoardCells(List<Cell> cells, List<Cell> cellsCopy)
+        {
+            var difference = string.Empty;
+            foreach (var cell in cells)
+            { 
+                if (cell.Value == cellsCopy[cell.Location.Index].Value)
+                {
+                    difference += "X";
+                }
+                else
+                {
+                    difference += cell.Value;
+                }
+            }
+            return difference;
+        }
+
         private int _attempt = 1;
         private bool BackupDualOdds(Cells cells, Cell cell)
         {
@@ -358,8 +375,9 @@ namespace WebSudoku_v0._0._7.Classes
             return false;
         }
 
-        private void DebugInfo(Cells cells)
+        private void DebugInfo(Cells cells, int attempt)
         {
+            Console.WriteLine($"Attempt: {attempt}");
             Console.WriteLine($"Board: {string.Join("", cells.List.Select(c => c.Value))}");
             cells.List.Where(c => !c.hasValue).ToList().ForEach(c =>
             {
@@ -498,9 +516,27 @@ namespace WebSudoku_v0._0._7.Classes
             return false;
         }
 
-        private bool FindOpposingRowPattern(ref List<Cell> opposingRow, List<List<Cell>> blockRow, List<int> initalRowValues)      
+        private bool FindOpposingRowPattern(ref List<Cell> opposingRow, List<List<Cell>> blockRow)
         {
-
+            var index = 1;
+            foreach (var block in blockRow)
+            {
+                foreach (var cell in block)
+                {
+                    if (cell.Value > 0)
+                        opposingRow.Add(cell);
+                    if (opposingRow.Count == 3 && index % 3 == 0)
+                    {
+                        return true;
+                    }
+                    else if (index > 0 && index % 3 == 0)
+                    {
+                        opposingRow.Clear();
+                        index = 0;
+                    }
+                    index++;
+                }
+            }
             return false;
         }
 
@@ -534,18 +570,49 @@ namespace WebSudoku_v0._0._7.Classes
 
             var blockRow = checkBlocks.Where(c => c[0].Location.Block != block).ToList();
 
-            found = FindOpposingRowPattern(ref opposingRow, blockRow, initialRow.Select(i => i.Value).ToList());
+            found = FindOpposingRowPattern(ref opposingRow, blockRow);
             if (!found)
                 return opposingRow;
             
-            Console.WriteLine($"blockRow: {
-                    string.Join(" ", opposingRow.Select(b => b.Location.Index))
-                },{
-                    string.Join(" ", opposingRow.Select(b => b.Location.Index))
-                }");
-
             return opposingRow;
             
+        }
+
+        private int FindPatternValue(List<Cell> filledRow, List<Cell> opposingRow)
+        {
+            var value = 0;
+            var index = 1;
+            var filledRowValues = filledRow.Select(c => c.Value).ToList();
+            var opposingRowValues = opposingRow.Select(c => c.Value).ToList();
+            foreach (var filledValue in filledRowValues)
+            {
+                if (opposingRowValues.Contains(value))
+                    return value;
+
+                if (index == 3)
+                    return filledValue;
+                index++;
+            }
+            return value;
+        }
+
+        private bool FindSingleEmpty(ref List<Cell> finalRow, List<List<List<Cell>>> blockRows, List<Cell> filledRow, List<Cell> opposingRow)
+        {
+            var initialBlock = filledRow[0].Location.Block;
+            var initialRowIndex = filledRow[0].Location.Row;
+            var opposingBlock = opposingRow[0].Location.Block;
+            var opposingRowIndex = opposingRow[0].Location.Row;
+            var finalBlock = blockRows.FirstOrDefault(b => b[0][0].Location.Row == opposingRowIndex &&
+                b[0][0].Location.Block != initialBlock && b[0][0].Location.Block != opposingBlock)?.FirstOrDefault();
+            if (finalBlock == null)
+                return false;
+
+            finalRow = finalBlock.Where(b => b.Location.Row == opposingRowIndex).ToList();
+            var singleCell = finalRow.Where(c => !c.hasValue).Count() == 1;
+            if (!singleCell)
+                return false;
+
+            return true;
         }
 
         #endregion
@@ -559,7 +626,7 @@ namespace WebSudoku_v0._0._7.Classes
                 3. Find opposing block with opposing filled row, if none, exit
                 4. Find first value from #2 row that isn't in #3 row, if none, exit
                 5. Find single empty cell in final block, same row as #3. if none, exit
-                5. Place value from #4 in single empty cell #5
+                6. Place value from #4 in single empty cell #5
             */
 
             //  1.Get list of block rows
@@ -576,13 +643,26 @@ namespace WebSudoku_v0._0._7.Classes
             List<Cell> opposingRow = FindOpposingRow(blockRows, filledRow,
                 filledRow[0].Location.Block,
                 filledRow[0].Location.Row);
-
-            if (opposingRow.Any())
+            if (!opposingRow.Any())
                 return false;
 
-            Console.WriteLine($"Found: {opposingRow.Any()}");
+            //  4. Find first value from #2 row that isn't in #3 row, if none, exit
+            var value = FindPatternValue(filledRow, opposingRow);
+            if (value == 0)
+                return false;
 
-            return false;
+            //  5. Find single empty cell in final block, same row as #3. if none, exit
+            var finalRow = new List<Cell>();
+            var found = FindSingleEmpty(ref finalRow, blockRows, filledRow, opposingRow);
+            if (!found)
+                return false;
+
+            //  6. Place value from #4 in single empty cell #5
+            var result = PlaceCellValue(ref cells, finalRow.FirstOrDefault(c => !c.hasValue).Location.Index, value);
+            if (!result)
+                return false;
+
+            return true;
         }
 
         private bool ProcessOdds(ref Cells cells)
@@ -703,7 +783,7 @@ namespace WebSudoku_v0._0._7.Classes
         public Cells RunSolution(Cells board)
         {
             bool solved = false;
-            int attempts = 0;
+            int attempts = 1;
             int maxattempts = 10000;
             bool progressMade = false;
             while (!solved)
@@ -744,7 +824,10 @@ namespace WebSudoku_v0._0._7.Classes
                 }
 
                 if (!CompareBoardCells(board.List, previousBoard))
-                    DebugInfo(board);
+                {
+                    Console.WriteLine($"Difference: {DifferenceBoardCells(board.List, previousBoard)}");
+                    DebugInfo(board, attempts);
+                }
 
                 if (attempts == maxattempts)
                 {
