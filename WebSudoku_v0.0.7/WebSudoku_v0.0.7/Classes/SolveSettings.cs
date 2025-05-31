@@ -6,6 +6,8 @@
         public bool CellStatistics { get; set; }
         public string CellDisplayValueType { get; set; }
         public bool HiLiteSolvedCell { get; set; }
+        public int MaxAttempts { get; set; }
+        public bool ShowDebugInfo { get; set; }
 
         public SolveSettings(IConfigurationSection devSettings) 
         {
@@ -13,6 +15,8 @@
             CellStatistics = devSettings["Sudoku Settings:GamePlay:Solve Settings:CellStatistics"].ToString() == "ON" ? true : false;
             CellDisplayValueType = devSettings["Sudoku Settings:GamePlay:Solve Settings:CellDisplayValueType"].ToString();
             HiLiteSolvedCell = devSettings["Sudoku Settings:GamePlay:Solve Settings:HiLiteSolvedCell"].ToString() == "ON" ? true : false;
+            MaxAttempts = int.TryParse(devSettings["Sudoku Settings:GamePlay:Solve Settings:MaxAttempts"], out int result) ? result : 0;
+            ShowDebugInfo = devSettings["Sudoku Settings:GamePlay:Solve Settings:ShowDebugInfo"] == "ON" ? true : false;
         }
     }
 }

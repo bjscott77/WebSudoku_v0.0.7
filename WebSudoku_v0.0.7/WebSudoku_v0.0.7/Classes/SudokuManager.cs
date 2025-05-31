@@ -400,7 +400,7 @@ namespace WebSudoku_v0._0._7.Classes
             var backupCell = DualOddsBackups.Pop();
             var backupRecord = DualOddsRecord.Where(r => r.Index == backupCell.Cell.Location.Index).FirstOrDefault();
             if (backupCell.Cell.hasValue)
-                throw new Exception($"Backed up cells should never contain a value");
+                return false;
 
             var index = backupCell.Cell.Location.Index;
             cells.List = backupCell.Cells;
@@ -408,16 +408,19 @@ namespace WebSudoku_v0._0._7.Classes
             var value = backupRecord.AlternateValue;
 
             bool result = PlaceCellValue(ref cells, index, value);
-            
+
             if (!result)
-                throw new Exception($"Placing Cell {index} failed @ ProcessDualOdds");
+                return false;
 
             //  remove any records from the previous backup reload, if they exist
             var previousRecords = DualOddsRecord.Where(o => o.Index != index && o.Attempt > backupRecord.Attempt).ToList();
             previousRecords.ForEach(r => DualOddsRecord.Remove(r));
 
             var displayBackups = DualOddsBackups.Select(b => $"Index: {b.Cell.Location.Index} ");
-            //Console.WriteLine($"Reload cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
+
+
+            if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                Console.WriteLine($"Reload cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
             
             if (DualOddsBackups.Count == 0)
             {
@@ -436,7 +439,7 @@ namespace WebSudoku_v0._0._7.Classes
             if (cell != null)
             {
                 if (cell.hasValue)
-                    throw new Exception($"Cells with a value should not have any odds defined.");
+                    return false;
 
 
                 if (BackupDualOdds(cells, cell))
@@ -448,11 +451,12 @@ namespace WebSudoku_v0._0._7.Classes
                     var result = PlaceCellValue(ref cells, index, value);
 
                     if (!result)
-                        throw new Exception($"Placing Cell {index} failed @ ProcessDualOdds Reset");
+                        return false;
 
                     var displayBackups = DualOddsBackups.Select(b => $"Index: {b.Cell.Location.Index} ");
-                    
-                    //Console.WriteLine($"Dual cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
+
+                    if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                        Console.WriteLine($"Dual cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
                     
                     _dualAttempt++;
                     return true;
@@ -766,6 +770,25 @@ namespace WebSudoku_v0._0._7.Classes
             return true;
         }
 
+        private bool ProcessHighlights(ref Cells cells, int value)
+        {
+            for (int block = 1; block <= Dimensions.BlockSize; block++)
+            {
+                var found = cells.List.Where(c => c.Location.Block == block && !c.hasValue && !c.isHighlighted);
+                if (found.Count() == 1)
+                {
+                    var index = found.FirstOrDefault().Location.Index;
+                    var result = PlaceCellValue(ref cells, index, value);
+                    if (!result)
+                        continue;
+
+                    if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                        Console.WriteLine($"Highlight cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
+                    return true;
+                }
+            }
+            return false;
+        }
         #endregion
 
         #region SolveProcessors
@@ -813,7 +836,8 @@ namespace WebSudoku_v0._0._7.Classes
             if (!result)
                 return false;
 
-            Console.WriteLine($"Row Patterns: cell: {finalRow.FirstOrDefault(c => c.Value == value).Location.Index}, val: {value}");
+            if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                Console.WriteLine($"Row Patterns: cell: {finalRow.FirstOrDefault(c => c.Value == value).Location.Index}, val: {value}");
             return true;
         }
 
@@ -861,6 +885,9 @@ namespace WebSudoku_v0._0._7.Classes
             if (!result)
                 return false;
 
+            if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                Console.WriteLine($"Column Patterns: cell: {finalColumn.FirstOrDefault(c => c.Value == value).Location.Index}, val: {value}");
+
             return true;
         }
 
@@ -878,7 +905,9 @@ namespace WebSudoku_v0._0._7.Classes
                     if (!result)
                         continue;
 
-                    Console.WriteLine($"Odd cell: {cell.Location.Index}, val: {cell.Value}");
+                    if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                        Console.WriteLine($"Odd cell: {cell.Location.Index}, val: {cell.Value}");
+
                     if (!update)
                         update = true;
                 } else
@@ -946,24 +975,6 @@ namespace WebSudoku_v0._0._7.Classes
             return false;
         }
 
-        private bool ProcessHighlights(ref Cells cells, int value)  
-        {
-            for (int block = 1; block <= Dimensions.BlockSize; block++)
-            {
-                var found = cells.List.Where(c => c.Location.Block == block && !c.hasValue && !c.isHighlighted);
-                if (found.Count() == 1)
-                {
-                    var index = found.FirstOrDefault().Location.Index;
-                    var result = PlaceCellValue(ref cells, index, value);
-                    if (!result)
-                        continue;
-
-                    Console.WriteLine($"Highlight cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
-                    return true;
-                }                
-            }
-            return false;
-        }
         #endregion
 
         /// <summary>
@@ -971,8 +982,8 @@ namespace WebSudoku_v0._0._7.Classes
         /// 
         /// The method repeatedly applies the following strategies until the board is solved or no further progress can be made:
         /// 
-        /// 1. ProcessValueCheck: Fills in cells based on unique value placement in rows, columns, or blocks.
-        /// 2. ProcessOdds: Fills in cells that have only one possible value.
+        /// 1. ProcessOdds: Fills in cells that have only one possible value.
+        /// 2. ProcessValueCheck: Fills in cells based on unique value placement in rows, columns, or blocks.
         /// 3. ProcessRowPatterns: Looks for a pattern in blocks on the same row:
         ///     1. Get list of block rows
         ///     2. Find block with filled row, if none, exit
@@ -980,7 +991,7 @@ namespace WebSudoku_v0._0._7.Classes
         ///     4. Find first value from #2 row that isn't in #3 row, if none, exit
         ///     5. Find single empty cell in final block, same row as #3. if none, exit
         ///     6. Place value from #4 in single empty cell #5
-        /// 5. ProcessColumnPatterns: Look for a pattern in blocks on the same Column:
+        /// 5. ProcessColumnPatterns: Looks for a pattern in blocks on the same Column:
         ///     1. Get list of block columns
         ///     2. Find block with filled column, if none, exit
         ///     3. Find opposing block with opposing filled column, if none, exit
@@ -989,18 +1000,28 @@ namespace WebSudoku_v0._0._7.Classes
         ///     6. Place value from #4 in single empty cell #5
         /// 4. ProcessDualOdds: If stuck, tries cells with exactly two possibilities (backtracking if needed).
         /// 
-        /// The process continues until all cells are filled, no more moves are possible, or max attempts
+        /// The process continues until all cells are filled, or max attempts
         /// is reached.
         /// </summary>
         /// <param name="board">The Sudoku board to solve.</param>
-        /// <returns>The solved or partially solved board.</returns>
+        /// <returns>The solved board.</returns>
+        /// configuration:  DEV.Sudoku Settings.GamePlay.SolveSettings.MaxAttempts - set max attempts
+        ///                     between 0 & 2,147,483,647.
+        ///                 DEV.Sudoku Settings.GamePlay.SolveSettings.ShowDebugInfo - if "ON", will
+        ///                     debug info in console.
+        ///                 
         public Cells RunSolution(Cells board)
         {
             bool solved = false;
             int attempts = 1;
-            int maxattempts = 10000;
+            int maxattempts = DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.MaxAttempts;
             bool progressMade = false;
-            DebugInfo(board, 0);
+
+            if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                DebugInfo(board, 0);
+            else
+                Console.WriteLine("Debug Info: DISABLED");
+
             while (!solved)
             {
                 var previousBoard = DeepCopyCells(board);
@@ -1015,8 +1036,13 @@ namespace WebSudoku_v0._0._7.Classes
 
                 solved = CompleteBoard(board);
                 if (solved)
+                {
+                    if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                        Console.WriteLine($"Found Solution: Turns: {attempts}");
+
                     continue;
-                                
+                }
+
                 if (IsBoardValid(board, HasCorruptedOdds(board)))
                 {
                     if (!ProcessDualOdds(ref board) && IsBoardValid(board, HasCorruptedOdds(board)))
@@ -1033,21 +1059,26 @@ namespace WebSudoku_v0._0._7.Classes
                     if (DualOddsBackups.Any())
                     {
                         ProcessDualOdds(ref board, true);
-                    } else
+                    }
+                    else
                     {
                         ProcessDualOdds(ref board);
                     }
-                }                
+                }
 
                 if (!CompareBoardCells(board.List, previousBoard))
                 {
-                    Console.WriteLine($"Difference: {DifferenceBoardCells(board.List, previousBoard)}");
-                    DebugInfo(board, attempts);
+                    if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                    {
+                        Console.WriteLine($"Difference: {DifferenceBoardCells(board.List, previousBoard)}");
+                        DebugInfo(board, attempts);
+                    }
                 }
 
-                if (attempts == maxattempts)
+                if (attempts >= maxattempts)
                 {
-                    Console.WriteLine($"Max attempts reach.  Backup count: {DualOddsBackups.Count}");
+                    if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                        Console.WriteLine($"Max attempts reach.  Backup count: {DualOddsBackups.Count}");
                     break;
                 }
 
