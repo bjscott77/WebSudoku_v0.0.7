@@ -321,7 +321,7 @@ namespace SudokuWeb.Tests
             // Act
             var result = typeof(SudokuManager)
                 .GetMethod("IsBoardValid", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
-                .Invoke(manager, new object[] { board.Cells });
+                .Invoke(manager, new object[] { board.Cells, true });
 
             // Assert
             Assert.False((bool)result);
@@ -336,7 +336,7 @@ namespace SudokuWeb.Tests
             var manager = new SudokuManager(devConfig);
             var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
 
-            // Arrange: board with invalid puzzle
+            // Arrange: board with valid puzzle
             var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
             board.InitializeBoard(validPuzzle);
             board.InitializeOdds();
@@ -345,10 +345,77 @@ namespace SudokuWeb.Tests
             // Act
             var result = typeof(SudokuManager)
                 .GetMethod("IsBoardValid", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
-                .Invoke(manager, new object[] { board.Cells });
+                .Invoke(manager, new object[] { board.Cells, false });
 
             // Assert
             Assert.True((bool)result);
+        }
+
+        [Fact]
+        public void FindFilledColumn_ReturnsAListOfColumns_OnValidBlockColumn() 
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
+
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
+            var cells = board.Cells;
+
+            // Arrange: board with valid puzzle
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.InitializeBoard(validPuzzle);
+            board.InitializeOdds();
+
+            // Arrange: 1.Get list of block columns
+            var paramTypes = new Type[] { typeof(Cells), typeof(int) };
+            List<List<List<Cell>>> blockColumns = new List<List<List<Cell>>>();
+            for (int i = 1; i <= manager.Dimensions.ColumnSize; i += 3)
+            {
+                var blockColumn = (List<List<Cell>>)typeof(SudokuManager)
+                    .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, paramTypes)
+                    .Invoke(manager, [board.Cells, i]);
+                blockColumns.Add(blockColumn);
+            }
+
+            // Act
+            var result = (List<Cell>)typeof(SudokuManager)
+                .GetMethod("FindFilledColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockColumns });
+
+            // Assert
+            Assert.IsType<List<Cell>>(result);
+            Assert.NotNull(result);
+            Assert.Equal(result?.Count(), 3);
+            Assert.Equal(result?[0].Value, 8);
+            Assert.Equal(result?[1].Value, 1);
+            Assert.Equal(result?[2].Value, 7);
+        }
+
+        [Fact]
+        public void FindFilledColumn_ReturnsNull_OnNullBlockColumn()        
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
+
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
+            var cells = board.Cells;
+
+            // Arrange: board with valid puzzle
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.InitializeBoard(validPuzzle);
+            board.InitializeOdds();
+
+            // Arrange: 1.Get list of block columns
+            List<List<List<Cell>>> blockColumns = null;
+
+            // Act
+            var result = typeof(SudokuManager)
+                .GetMethod("FindFilledColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockColumns });
+
+            // Assert
+            Assert.Null(result);
         }
     }
 }

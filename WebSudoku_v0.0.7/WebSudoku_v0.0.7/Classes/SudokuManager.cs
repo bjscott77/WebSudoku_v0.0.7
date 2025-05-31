@@ -358,13 +358,23 @@ namespace WebSudoku_v0._0._7.Classes
         {
             try
             {
+                if (!(cells.List[index].CellPossibilities.List.Contains(value)))
+                    return false;
+
+                var cell = cells.List[index];
+                var rowCleared = !cells.List.Where(c => c.Location.Row == cell.Location.Row).Select(c => c.Value).Contains(value);
+                var columnCleared = !cells.List.Where(c => c.Location.Column == cell.Location.Column).Select(c => c.Value).Contains(value);
+                var blockCleared = !cells.List.Where(c => c.Location.Block == cell.Location.Block).Select(c => c.Value).Contains(value);
+                if (!rowCleared || !columnCleared || !blockCleared)
+                    return false;
+
                 cells.List[index].Value = value;
                 cells.List[index] = ClearCellOdds(cells.List[index]);
                 cells.List[index].DisplayValue = cells.List[index].Value.ToString();
                 cells.List[index].hasValue = true;
 
-                foreach (var cell in cells.List)
-                    SetCellOdds(ref cells, index);
+                foreach (var c in cells.List)
+                    SetCellOdds(ref cells, c.Location.Index);
 
                 return true;
             }
@@ -560,9 +570,8 @@ namespace WebSudoku_v0._0._7.Classes
             return initialRow;
         }
 
-        private List<Cell> FindOpposingRow(List<List<List<Cell>>> blockRows, List<Cell> initialRow, int block, int row)
+        private List<Cell> FindOpposingRow(List<List<List<Cell>>> blockRows, int block, int row)
         {
-            var found = false;
             var opposingRow = new List<Cell>();
             var checkBlocks = blockRows.FirstOrDefault(b => b[0][0].Location.Row == row);
             if (checkBlocks == null)
@@ -570,23 +579,22 @@ namespace WebSudoku_v0._0._7.Classes
 
             var blockRow = checkBlocks.Where(c => c[0].Location.Block != block).ToList();
 
-            found = FindOpposingRowPattern(ref opposingRow, blockRow);
+            var found = FindOpposingRowPattern(ref opposingRow, blockRow);
             if (!found)
                 return opposingRow;
             
-            return opposingRow;
-            
+            return opposingRow;            
         }
 
-        private int FindPatternValue(List<Cell> filledRow, List<Cell> opposingRow)
+        private int FindPatternValue(List<Cell> filled, List<Cell> opposing)
         {
             var value = 0;
             var index = 1;
-            var filledRowValues = filledRow.Select(c => c.Value).ToList();
-            var opposingRowValues = opposingRow.Select(c => c.Value).ToList();
-            foreach (var filledValue in filledRowValues)
+            var filledValues = filled.Select(c => c.Value).ToList();
+            var opposingValues = opposing.Select(c => c.Value).ToList();
+            foreach (var filledValue in filledValues)
             {
-                if (opposingRowValues.Contains(value))
+                if (opposingValues.Contains(value))
                     return value;
 
                 if (index == 3)
@@ -596,7 +604,7 @@ namespace WebSudoku_v0._0._7.Classes
             return value;
         }
 
-        private bool FindSingleEmpty(ref List<Cell> finalRow, List<List<List<Cell>>> blockRows, List<Cell> filledRow, List<Cell> opposingRow)
+        private bool FindSingleEmptyRow(ref List<Cell> finalRow, Cells cells, List<List<List<Cell>>> blockRows, List<Cell> filledRow, List<Cell> opposingRow, int value)
         {
             var initialBlock = filledRow[0].Location.Block;
             var initialRowIndex = filledRow[0].Location.Row;
@@ -608,8 +616,151 @@ namespace WebSudoku_v0._0._7.Classes
                 return false;
 
             finalRow = finalBlock.Where(b => b.Location.Row == opposingRowIndex).ToList();
-            var singleCell = finalRow.Where(c => !c.hasValue).Count() == 1;
-            if (!singleCell)
+            if (finalRow.Where(c => !c.hasValue).Count() > 1 || finalRow.Where(c => !c.hasValue).Count() < 1)
+                return false;
+
+            return true;
+        }
+
+        private List<List<Cell>> GetBlockColumn(Cells cells, int selectColumn)
+        {
+            var blockColumn = new List<List<Cell>>();
+            try
+            {
+                switch (selectColumn)
+                {
+                    case 1:
+                        {
+                            blockColumn.Add(cells.List.Where(c => c.Location.Block == 1).ToList());
+                            blockColumn.Add(cells.List.Where(c => c.Location.Block == 4).ToList());
+                            blockColumn.Add(cells.List.Where(c => c.Location.Block == 7).ToList());
+                            break;
+                        }
+                    case 4:
+                        {
+                            blockColumn.Add(cells.List.Where(c => c.Location.Block == 2).ToList());
+                            blockColumn.Add(cells.List.Where(c => c.Location.Block == 5).ToList());
+                            blockColumn.Add(cells.List.Where(c => c.Location.Block == 8).ToList());
+                            break;
+                        }
+                    case 7:
+                        {
+                            blockColumn.Add(cells.List.Where(c => c.Location.Block == 3).ToList());
+                            blockColumn.Add(cells.List.Where(c => c.Location.Block == 6).ToList());
+                            blockColumn.Add(cells.List.Where(c => c.Location.Block == 9).ToList());
+                            break;
+                        }
+                }
+                return blockColumn;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in GetBlockColumn: {ex.Message}, Inner: {ex?.InnerException?.Message}");
+                return null;
+            }
+        }
+
+        private List<Cell> FindFilledColumn(List<List<List<Cell>>> blockColumns)
+        {
+            if (blockColumns == null || blockColumns.Count == 0)
+                return null;
+
+            var found = false;
+            var initialColumn = new List<Cell>();
+            foreach (var blockColumn in blockColumns)
+            {
+                foreach (var block in blockColumn)
+                {
+                    found = FindInitialColumnPattern(ref initialColumn, block); 
+                    if (!found)
+                        continue;
+                    else
+                        break;
+                }
+                if (found)
+                    break;
+            }
+            return initialColumn;
+        }
+
+        private bool FindInitialColumnPattern(ref List<Cell> initialColumn, List<Cell> block)
+        {
+            var index = 1;
+            var col = block.FirstOrDefault().Location.Column;
+            for (int column = col; column <= Dimensions.ColumnSize; column++)
+            {
+                foreach (var cell in block.Where(b => b.Location.Column == column))
+                {
+                    if (cell.Value > 0)
+                        initialColumn.Add(cell);
+                    if (initialColumn.Count == 3 && index % 3 == 0)
+                    {
+                        return true;
+                    }
+                    else if (index > 0 && index % 3 == 0)
+                    {
+                        initialColumn.Clear();
+                        index = 0;
+                    }
+                    index++;
+                }
+            }
+            return false;
+        }
+
+        private List<Cell> FindOpposingColumn(List<List<List<Cell>>> blockColumns, int block, int column)
+        {
+            var opposingColumn = new List<Cell>();
+            var checkBlocks = blockColumns.FirstOrDefault(b => b[0][0].Location.Column == column);
+            if (checkBlocks == null)
+                return opposingColumn;
+
+            var blockColumn = checkBlocks.Where(c => c[0].Location.Block != block).ToList();
+
+            var found = FindOpposingColumnPattern(ref opposingColumn, blockColumn);
+            if (!found)
+                return opposingColumn;
+
+            return opposingColumn;
+        }
+
+        private bool FindOpposingColumnPattern(ref List<Cell> opposingColumn, List<List<Cell>> blockColumn)
+        {
+            var index = 1;
+            foreach (var block in blockColumn)
+            {
+                foreach (var cell in block)
+                {
+                    if (cell.Value > 0)
+                        opposingColumn.Add(cell);
+                    if (opposingColumn.Count == 3 && index % 3 == 0)
+                    {
+                        return true;
+                    }
+                    else if (index > 0 && index % 3 == 0)
+                    {
+                        opposingColumn.Clear();
+                        index = 0;
+                    }
+                    index++;
+                }
+            }
+            return false;
+        }
+
+        private bool FindSingleEmptyColumn(ref List<Cell> finalColumn, Cells cells, List<List<List<Cell>>> blockColumns, List<Cell> filledColumn, List<Cell> opposingColumn, int value)
+        {
+            var initialBlock = filledColumn[0].Location.Block;
+            var initialColumnIndex = filledColumn[0].Location.Column;
+            var opposingBlock = opposingColumn[0].Location.Block;
+            var opposingColumnIndex = opposingColumn[0].Location.Column;
+            var finalBlock = blockColumns.FirstOrDefault(b => b[0][0].Location.Column == opposingColumnIndex &&
+                b[0][0].Location.Block != initialBlock && b[0][0].Location.Block != opposingBlock)?.FirstOrDefault();
+            if (finalBlock == null)
+                return false;
+
+            finalColumn = finalBlock.Where(b => b.Location.Column == opposingColumnIndex).ToList();
+            if (finalColumn.Where(c => !c.hasValue).Count() > 1 || finalColumn.Where(c => !c.hasValue).Count() < 1)
                 return false;
 
             return true;
@@ -640,7 +791,7 @@ namespace WebSudoku_v0._0._7.Classes
                 return false;
 
             //  3. Find opposing block with opposing filled row, if none, exit
-            List<Cell> opposingRow = FindOpposingRow(blockRows, filledRow,
+            List<Cell> opposingRow = FindOpposingRow(blockRows,
                 filledRow[0].Location.Block,
                 filledRow[0].Location.Row);
             if (!opposingRow.Any())
@@ -653,12 +804,60 @@ namespace WebSudoku_v0._0._7.Classes
 
             //  5. Find single empty cell in final block, same row as #3. if none, exit
             var finalRow = new List<Cell>();
-            var found = FindSingleEmpty(ref finalRow, blockRows, filledRow, opposingRow);
+            var found = FindSingleEmptyRow(ref finalRow, cells, blockRows, filledRow, opposingRow, value);
             if (!found)
                 return false;
 
             //  6. Place value from #4 in single empty cell #5
             var result = PlaceCellValue(ref cells, finalRow.FirstOrDefault(c => !c.hasValue).Location.Index, value);
+            if (!result)
+                return false;
+
+            Console.WriteLine($"Row Patterns: cell: {finalRow.FirstOrDefault(c => c.Value == value).Location.Index}, val: {value}");
+            return true;
+        }
+
+        private bool ProcessColumnPatterns(ref Cells cells)
+        {
+            /*
+                1. Get list of block columns
+                2. Find block with filled column, if none, exit
+                3. Find opposing block with opposing filled column, if none, exit
+                4. Find first value from #2 column that isn't in #3 column, if none, exit
+                5. Find single empty cell in final block, same column as #3. if none, exit
+                6. Place value from #4 in single empty cell #5
+            */
+
+            //  1.Get list of block columns
+            List<List<List<Cell>>> blockColumns = new List<List<List<Cell>>>();
+            for (int i = 1; i <= Dimensions.ColumnSize; i += 3)
+                blockColumns.Add(GetBlockColumn(cells, i));
+
+            //  2. Find block with filled column, if none, exit
+            List<Cell> filledColumn = FindFilledColumn(blockColumns);
+            if (!filledColumn.Any())
+                return false;
+
+            //  3. Find opposing block with opposing filled column, if none, exit
+            List<Cell> opposingColumn = FindOpposingColumn(blockColumns,
+                filledColumn[0].Location.Block,
+                filledColumn[0].Location.Column);
+            if (!opposingColumn.Any())
+                return false;
+
+            //  4. Find first value from #2 column that isn't in #3 column, if none, exit
+            var value = FindPatternValue(filledColumn, opposingColumn);
+            if (value == 0)
+                return false;
+
+            //  5. Find single empty cell in final block, same column as #3. if none, exit
+            var finalColumn = new List<Cell>();
+            var found = FindSingleEmptyColumn(ref finalColumn, cells, blockColumns, filledColumn, opposingColumn, value);
+            if (!found)
+                return false;
+
+            //  6. Place value from #4 in single empty cell #5
+            var result = PlaceCellValue(ref cells, finalColumn.FirstOrDefault(c => !c.hasValue).Location.Index, value);
             if (!result)
                 return false;
 
@@ -668,6 +867,7 @@ namespace WebSudoku_v0._0._7.Classes
         private bool ProcessOdds(ref Cells cells)
         {
             var emptyCells = cells.List.Where(c  => !c.hasValue).ToList();
+            var update = false;
             foreach (var cell in emptyCells)
             {
                 if (cell.CellPossibilities.List.Where(p => p != 0).Count() == 1 && !cell.hasValue)
@@ -676,17 +876,17 @@ namespace WebSudoku_v0._0._7.Classes
                     var value = cell.CellPossibilities.List.Where(p => p != 0).FirstOrDefault();
                     var result = PlaceCellValue(ref cells, index, value);
                     if (!result)
-                        throw new Exception($"Placing Cell {index} failed @ ProcessOdds");
+                        continue;
 
-                    //Console.WriteLine($"Odd cell: {cell.Location.Index}, val: {cell.Value}");
-                    return true;
-                }
-                else
+                    Console.WriteLine($"Odd cell: {cell.Location.Index}, val: {cell.Value}");
+                    if (!update)
+                        update = true;
+                } else
                 {
                     continue;
                 }
             }
-            return false;
+            return update;
         }
 
         int _dualAttempt = 1;
@@ -718,28 +918,26 @@ namespace WebSudoku_v0._0._7.Classes
 
         private bool ProcessValueCheck(ref Cells cells)
         {
-            for (int value = 1; value <= DevConfig.SudokuSettings.BoardDimensions.LastOrDefault(); value++)
+            for (int value = 1; value <= Dimensions.Size/9; value++)
             {
                 cells.List.ForEach(c => c.isHighlighted = false);
 
-                foreach (var cell in cells.List.Where(c => c.hasValue))
+                foreach (var cell in cells.List.Where(c => c.hasValue && c.Value == value))
                 {
-                    if (cell.Value == value)
+                    var row = cells.List.Where(c => c.Location.Row == cell.Location.Row).ToList();
+                    foreach (var c in row)
                     {
-                        var row = cells.List.Where(c => c.Location.Row == cell.Location.Row).ToList();
-                        foreach(var c in row) { 
-                            c.isHighlighted = true; 
-                        }
-                        var column = cells.List.Where(c => c.Location.Column == cell.Location.Column).ToList();
-                        foreach (var c in column)
-                        {
-                            c.isHighlighted = true;
-                        }
-                        var block = cells.List.Where(c => c.Location.Block == cell.Location.Block).ToList();
-                        foreach (var c in block)
-                        {
-                            c.isHighlighted = true;
-                        }
+                        c.isHighlighted = true;
+                    }
+                    var column = cells.List.Where(c => c.Location.Column == cell.Location.Column).ToList();
+                    foreach (var c in column)
+                    {
+                        c.isHighlighted = true;
+                    }
+                    var block = cells.List.Where(c => c.Location.Block == cell.Location.Block).ToList();
+                    foreach (var c in block)
+                    {
+                        c.isHighlighted = true;
                     }
                 }
                 if (ProcessHighlights(ref cells, value))
@@ -750,7 +948,7 @@ namespace WebSudoku_v0._0._7.Classes
 
         private bool ProcessHighlights(ref Cells cells, int value)  
         {
-            for (int block = 1; block <= DevConfig.SudokuSettings.BoardDimensions.LastOrDefault(); block++)
+            for (int block = 1; block <= Dimensions.BlockSize; block++)
             {
                 var found = cells.List.Where(c => c.Location.Block == block && !c.hasValue && !c.isHighlighted);
                 if (found.Count() == 1)
@@ -758,9 +956,9 @@ namespace WebSudoku_v0._0._7.Classes
                     var index = found.FirstOrDefault().Location.Index;
                     var result = PlaceCellValue(ref cells, index, value);
                     if (!result)
-                        throw new Exception($"Placing Cell {index} failed @ ProcessHighlights");
+                        continue;
 
-                    //Console.WriteLine($"Highlight cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
+                    Console.WriteLine($"Highlight cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}");
                     return true;
                 }                
             }
@@ -772,11 +970,27 @@ namespace WebSudoku_v0._0._7.Classes
         /// Attempts to solve the given Sudoku board using a combination of logical deduction and backtracking.
         /// 
         /// The method repeatedly applies the following strategies until the board is solved or no further progress can be made:
-        /// 1. ProcessOdds: Fills in cells that have only one possible value.
-        /// 2. ProcessValueCheck: Fills in cells based on unique value placement in rows, columns, or blocks.
-        /// 3. ProcessDualOdds: If stuck, tries cells with exactly two possibilities (backtracking if needed).
         /// 
-        /// The process continues until all cells are filled or no more moves are possible.
+        /// 1. ProcessValueCheck: Fills in cells based on unique value placement in rows, columns, or blocks.
+        /// 2. ProcessOdds: Fills in cells that have only one possible value.
+        /// 3. ProcessRowPatterns: Looks for a pattern in blocks on the same row:
+        ///     1. Get list of block rows
+        ///     2. Find block with filled row, if none, exit
+        ///     3. Find opposing block with opposing filled row, if none, exit
+        ///     4. Find first value from #2 row that isn't in #3 row, if none, exit
+        ///     5. Find single empty cell in final block, same row as #3. if none, exit
+        ///     6. Place value from #4 in single empty cell #5
+        /// 5. ProcessColumnPatterns: Look for a pattern in blocks on the same Column:
+        ///     1. Get list of block columns
+        ///     2. Find block with filled column, if none, exit
+        ///     3. Find opposing block with opposing filled column, if none, exit
+        ///     4. Find first value from #2 column that isn't in #3 column, if none, exit
+        ///     5. Find single empty cell in final block, same column as #3. if none, exit
+        ///     6. Place value from #4 in single empty cell #5
+        /// 4. ProcessDualOdds: If stuck, tries cells with exactly two possibilities (backtracking if needed).
+        /// 
+        /// The process continues until all cells are filled, no more moves are possible, or max attempts
+        /// is reached.
         /// </summary>
         /// <param name="board">The Sudoku board to solve.</param>
         /// <returns>The solved or partially solved board.</returns>
@@ -786,6 +1000,7 @@ namespace WebSudoku_v0._0._7.Classes
             int attempts = 1;
             int maxattempts = 10000;
             bool progressMade = false;
+            DebugInfo(board, 0);
             while (!solved)
             {
                 var previousBoard = DeepCopyCells(board);
@@ -794,13 +1009,14 @@ namespace WebSudoku_v0._0._7.Classes
                     var oddsProgress = ProcessOdds(ref board);
                     var valueProgress = ProcessValueCheck(ref board);
                     var rowPatternProgress = ProcessRowPatterns(ref board);
-                    progressMade = oddsProgress || valueProgress || rowPatternProgress;
+                    var columnPatternProgress = ProcessColumnPatterns(ref board);
+                    progressMade = oddsProgress || valueProgress || rowPatternProgress || columnPatternProgress;
                 } while (progressMade);
 
                 solved = CompleteBoard(board);
                 if (solved)
                     continue;
-
+                                
                 if (IsBoardValid(board, HasCorruptedOdds(board)))
                 {
                     if (!ProcessDualOdds(ref board) && IsBoardValid(board, HasCorruptedOdds(board)))
@@ -821,7 +1037,7 @@ namespace WebSudoku_v0._0._7.Classes
                     {
                         ProcessDualOdds(ref board);
                     }
-                }
+                }                
 
                 if (!CompareBoardCells(board.List, previousBoard))
                 {

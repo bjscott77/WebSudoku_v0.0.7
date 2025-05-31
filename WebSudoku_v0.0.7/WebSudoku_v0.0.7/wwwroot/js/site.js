@@ -1,34 +1,34 @@
 ﻿window.onload = function () {
     this.getAllPuzzles();
 
-    let selectElem = document.getElementById("puzzleSelect");
+    const selectElem = document.getElementById("puzzleSelect");
     selectElem.addEventListener("change", function (event) {
         getPuzzle();
     });
 
-    let AddElem = document.getElementById("newPuzzleInput");
+    const AddElem = document.getElementById("newPuzzleInput");
     AddElem.addEventListener("focus", function (event) {
         let btn = document.getElementById("addNew");
         btn.innerHTML = "Add";
     });
 
-    let AddRatingElem = document.getElementById("newPuzzleRating");
+    const AddRatingElem = document.getElementById("newPuzzleRating");
     AddRatingElem.addEventListener("focus", function (event) {
         let btn = document.getElementById("addNew");
         btn.innerHTML = "Add";
     });
 
-    let updateElem = document.getElementById("updatePuzzleInput");
+    const updateElem = document.getElementById("updatePuzzleInput");
     updateElem.addEventListener("focus", function (event) {
         let btn = document.getElementById("updatePuzzle");
         btn.innerHTML = "Update";
     });
 
-    let updateRatingElem = document.getElementById("updatePuzzleRating");
+    const updateRatingElem = document.getElementById("updatePuzzleRating");
     updateRatingElem.addEventListener("focus", function (event) {
         let btn = document.getElementById("updatePuzzle");
         btn.innerHTML = "Update";
-    });
+    });        
 };
 
 function getAllPuzzles() {
@@ -144,8 +144,15 @@ function updatePuzzle() {
 function solvePuzzle() {
     disableAll();
 
-    let selectElem = document.getElementById("puzzleSelect");
-    let puzzle = selectElem?.value?.toString();
+    const rootElem = document.getElementById("root");
+    let puzzle = "";
+    for (let i = 0; i < rootElem.children.length; i++)
+        if (rootElem.children[i].innerHTML == "&nbsp;")
+            puzzle += "0";
+        else
+            puzzle += rootElem.children[i].innerHTML;
+
+    console.log("Solve Puzzle", puzzle);
 
     if (puzzle == null) {
         showModal("Please select a puzzle to solve it.");
@@ -319,6 +326,24 @@ function hydrateRootElem(puzzles) {
     }
 
     root.innerHTML = rootInnerHTML;
+
+    for (let i = 0; i < root.children.length; i++) {
+        root.children[i].addEventListener("click", function (event) {
+            let value = 0;
+            if (event.target.innerHTML == "&nbsp;") {
+                value++;
+            } else {
+                value = +event.target.innerHTML;
+                value++;
+            }
+
+            if (value > 9)
+                value = "&nbsp;";
+
+            event.target.innerHTML = value;
+
+        });
+    }
 }
 
 function showModal(message) {
