@@ -1044,7 +1044,6 @@ namespace WebSudoku_v0._0._7.Classes
                 }
 
                 if (IsBoardValid(board, HasCorruptedOdds(board)))
-                {
                     if (!ProcessDualOdds(ref board) && IsBoardValid(board, HasCorruptedOdds(board)))
                     {
                         if (DualOddsBackups.Any())
@@ -1053,9 +1052,7 @@ namespace WebSudoku_v0._0._7.Classes
 
                         }
                     }
-                }
                 else
-                {
                     if (DualOddsBackups.Any())
                     {
                         ProcessDualOdds(ref board, true);
@@ -1064,17 +1061,14 @@ namespace WebSudoku_v0._0._7.Classes
                     {
                         ProcessDualOdds(ref board);
                     }
-                }
 
                 if (!CompareBoardCells(board.List, previousBoard))
-                {
                     if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
                     {
                         Console.WriteLine($"Difference: {DifferenceBoardCells(board.List, previousBoard)}");
                         DebugInfo(board, attempts);
                     }
-                }
-
+          
                 if (attempts >= maxattempts)
                 {
                     if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
