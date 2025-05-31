@@ -35,8 +35,12 @@ function getAllPuzzles() {
     fetch("api/sudoku/getallpuzzles")
         .then(res => res.json())
         .then((rawData) => {
-            let data = translateResponseData(rawData);
-            hydrateAll(data);   
+            const data = translateResponseData(rawData);
+            if (data.StatusCode == 200) 
+                hydrateAll(data);
+            else
+                modal(data.Status + ": " + data.ErrorMessage);
+            
         })
         .catch(err => {
             console.log(err);
@@ -44,18 +48,22 @@ function getAllPuzzles() {
 }
 
 function getPuzzle() {
-    let selectElem = document.getElementById("puzzleSelect");
-    let puzzle = selectElem.value.toString();
+    const selectElem = document.getElementById("puzzleSelect");
+    const puzzle = selectElem.value.toString();
 
     if (puzzle == null) {
-        showModal("Please select a puzzle to load it.");
+        modal("Please select a puzzle to load it.");
     } else {
         fetch("api/sudoku/getpuzzle?puzzle=" + puzzle)
             .then(res => res.json())
             .then((rawData) => {
-                let data = translateResponseData(rawData);
-                hydrateRootElem(data);
-                hydrateRatingElem(data);
+                const data = translateResponseData(rawData);
+                if (data.StatusCode == 200) {
+                    hydrateRootElem(data);
+                    hydrateRatingElem(data);
+                } else {
+                    modal(data.Status + ": " + data.ErrorMessage);
+                }
             })
             .catch(err => console.log(err));
     }
@@ -63,17 +71,17 @@ function getPuzzle() {
 }
 
 function addPuzzle() {
-    let puzzle = document.getElementById("newPuzzleInput");
-    let rating = document.getElementById("newPuzzleRating");
+    const puzzle = document.getElementById("newPuzzleInput");
+    const rating = document.getElementById("newPuzzleRating");
 
     if ((puzzle.value == null && rating.value == null) || (puzzle.value == "" && rating.value == "") || (puzzle.value == 'undefined' && rating.value == 'undefined')) {
-        showModal("Please enter a puzzle and rating to save it.");
+        modal("Please enter a puzzle and rating to save it.");
         return;
     }
     if (rating.value == null || rating.value == "" || rating.value == 'undefined')
         rating.value = 0;
 
-    let newObj = { boardValues: puzzle.value, id: 0, difficulty: +rating.value };
+    const newObj = { boardValues: puzzle.value, id: 0, difficulty: +rating.value };
 
     fetch("api/sudoku/addpuzzle", {
         method: 'POST',
@@ -87,37 +95,36 @@ function addPuzzle() {
             return response.json();
         })
         .then(rawData => {
-            let data = translateResponseData(rawData);
-            if (data.StatusCode == "409") {
-                showModal(data.Status + ": " + data.ErrorMessage);
-            } else if (data.StatusCode == "200") {
+            const data = translateResponseData(rawData);
+            if (data.StatusCode == "200") 
                 hydrateAll(data);   
-            }
+            else 
+                modal(data.Status + ": " + data.ErrorMessage);       
 
         })
         .catch(error => console.error('Error:', error));
 }
 
 function updatePuzzle() {
-    let uPuzzle = document.getElementById("updatePuzzleInput");
-    let sPuzzle = document.getElementById("puzzleSelect");
-    let uRating = document.getElementById("updatePuzzleRating");
-    let sRating = document.getElementById("selectPuzzleRating");
+    const uPuzzle = document.getElementById("updatePuzzleInput");
+    const sPuzzle = document.getElementById("puzzleSelect");
+    const uRating = document.getElementById("updatePuzzleRating");
+    const sRating = document.getElementById("selectPuzzleRating");
 
     if ((uPuzzle.value == null && uRating.value == null) || (uPuzzle.value == "" && uRating.value == "") || (uPuzzle.value == 'undefined' && uRating.value == 'undefined')) {
-        showModal("Please select a puzzle to update it.");
+        modal("Please select a puzzle to update it.");
         return;
     }
 
     if (uPuzzle.value == sPuzzle.value && uRating.value == sRating.value) {
-        showModal("No changes were specified, so no updates were made.");
+        modal("No changes were specified, so no updates were made.");
         return;
     }
 
     if (uRating.value == null || uRating.value == "" || uRating.value == 'undefined')
         uRating.value = 0;
 
-    let putObj = [{ boardValues: sPuzzle.value, id: 0, difficulty: 0 }, { boardValues: uPuzzle.value, id: 0, difficulty: +uRating.value }];
+    const putObj = [{ boardValues: sPuzzle.value, id: 0, difficulty: 0 }, { boardValues: uPuzzle.value, id: 0, difficulty: +uRating.value }];
 
     fetch("api/sudoku/updatepuzzle", {
         method: 'PUT',
@@ -131,11 +138,15 @@ function updatePuzzle() {
             return response.json();
         })
         .then(rawData => {
-            data = translateResponseData(rawData);
-            hydrateRootElem(data)
-            data.Payload = data.Payload.slice(1, data.length);
-            hydrateSelectElem(data);
-            hydrateRatingElem(data);
+            const data = translateResponseData(rawData);
+            if (data.StatusCode == 200) {
+                hydrateRootElem(data)
+                data.Payload = data.Payload.slice(1, data.length);
+                hydrateSelectElem(data);
+                hydrateRatingElem(data);
+            } else {
+                modal(data.Status + ": " + data.ErrorMessage);
+            }
 
         })
         .catch(error => console.error('Error:', error));
@@ -155,13 +166,16 @@ function solvePuzzle() {
     console.log("Solve Puzzle", puzzle);
 
     if (puzzle == null) {
-        showModal("Please select a puzzle to solve it.");
+        modal("Please select a puzzle to solve it.");
     } else {
         fetch("api/sudoku/getsolvedpuzzle?puzzle=" + puzzle)
             .then(res => res.json())
             .then((rawData) => {
-                let data = translateResponseData(rawData);
-                hydrateRootElem(data);
+                const data = translateResponseData(rawData);
+                if (data.StatusCode == 200)
+                    hydrateRootElem(data);
+                else
+                    modal(data.Status + ": " + data.ErrorMessage);
 
                 enableAll();
             })
@@ -170,10 +184,10 @@ function solvePuzzle() {
 }
 
 function deletePuzzle() {
-    let puzzle = document.getElementById("puzzleSelect")?.value;
+    const puzzle = document.getElementById("puzzleSelect")?.value;
 
     if (puzzle == null || puzzle == "" || puzzle == 'undefined') {
-        showModal("Please select a puzzle to delete it.");
+        modal("Please select a puzzle to delete it.");
     } else {
         fetch("api/sudoku/deletepuzzle", {
             method: 'POST',
@@ -187,7 +201,10 @@ function deletePuzzle() {
                 response.json();
             })
             .then(data => {
-                console.log('Success:', data);
+                if (data.StatusCode == 200)
+                    modal('Puzzle deleted successfully.');
+                else
+                    modal(data.Status + ": " + data.ErrorMessage);
             })
             .catch(error => console.error('Error:', error));
     }
@@ -195,19 +212,19 @@ function deletePuzzle() {
 
 let even = false;
 function toggleNewPuzzleForm() {
-    let elem = document.getElementById("addToggle");
-    let button = document.getElementById("addNew");
-    let updatebtn = document.getElementById("updatePuzzle");
-    let deletebtn = document.getElementById("deletePuzzle");
-    let showbtn = document.getElementById("showPuzzle");
-    let resetbtn = document.getElementById("resetPuzzle");
+    const elem = document.getElementById("addToggle");
+    const button = document.getElementById("addNew");
+    const updatebtn = document.getElementById("updatePuzzle");
+    const deletebtn = document.getElementById("deletePuzzle");
+    const showbtn = document.getElementById("showPuzzle");
+    const resetbtn = document.getElementById("resetPuzzle");
 
     if (even) {
-        let newPuzzle = document.getElementById("newPuzzleInput")?.value;
+        const newPuzzle = document.getElementById("newPuzzleInput")?.value;
 
         if (newPuzzle == null || newPuzzle == "" || newPuzzle == 'undefined') {
             if (button.innerHTML == "Add")
-                showModal("No puzzle was entered, so no new puzzles were added.");
+                modal("No puzzle was entered, so no new puzzles were added.");
 
             button.innerHTML = "Add..."
             elem.style.display = 'none';
@@ -240,19 +257,19 @@ function toggleNewPuzzleForm() {
 
 let odd = true;
 function toggleUpdatePuzzleForm() {
-    let elem = document.getElementById("updateToggle");
-    let button = document.getElementById("updatePuzzle");
-    let addbtn = document.getElementById("addNew");
-    let deletebtn = document.getElementById("deletePuzzle");
-    let showbtn = document.getElementById("showPuzzle");
-    let resetbtn = document.getElementById("resetPuzzle");
+    const elem = document.getElementById("updateToggle");
+    const button = document.getElementById("updatePuzzle");
+    const addbtn = document.getElementById("addNew");
+    const deletebtn = document.getElementById("deletePuzzle");
+    const showbtn = document.getElementById("showPuzzle");
+    const resetbtn = document.getElementById("resetPuzzle");
 
     if (!odd) {
-        let updatePuzzle = document.getElementById("updatePuzzleInput")?.value;
+        const updatePuzzle = document.getElementById("updatePuzzleInput")?.value;
 
         if (updatePuzzle == null || updatePuzzle == "" || updatePuzzle == 'undefined') {
             if (button.innerHTML == "Update")
-                showModal("No puzzle was entered, so no puzzles were updated.");
+                modal("No puzzle was entered, so no puzzles were updated.");
 
             button.innerHTML = "Update..."
             elem.style.display = 'none';
@@ -271,8 +288,8 @@ function toggleUpdatePuzzleForm() {
         }
 
     } else {
-        let selectPuzzle = document.getElementById("puzzleSelect");
-        let updatePuzzle = document.getElementById("updatePuzzleInput");
+        const selectPuzzle = document.getElementById("puzzleSelect");
+        const updatePuzzle = document.getElementById("updatePuzzleInput");
 
         updatePuzzle.value = selectPuzzle.value;
         button.innerHTML = "Back"
@@ -287,7 +304,7 @@ function toggleUpdatePuzzleForm() {
 }   
 
 function translateResponseData(puzzles) {
-    let data = JSON.parse(puzzles);
+    const data = JSON.parse(puzzles);
     return data;
 }
 
@@ -298,12 +315,12 @@ function hydrateAll(puzzles) {
 }
 
 function hydrateRatingElem(puzzles) {
-    let rating = document.getElementById("selectPuzzleRating");
+    const rating = document.getElementById("selectPuzzleRating");
     rating.value = puzzles.Payload[0].difficulty;
 }
 
 function hydrateSelectElem(puzzles) {
-    let select = document.getElementById("puzzleSelect");
+    const select = document.getElementById("puzzleSelect");
     select.innerHTML = "";
 
     for (let i = 0; i < puzzles.Payload.length; i++) {
@@ -312,10 +329,10 @@ function hydrateSelectElem(puzzles) {
 }
 
 function hydrateRootElem(puzzles) {
-    let select = document.getElementById("puzzleSelect").value;
-    let root = document.getElementById("root");
+    const select = document.getElementById("puzzleSelect").value;
+    const root = document.getElementById("root");
     let rootInnerHTML = "";
-    let puzzle = puzzles.Payload[0].boardValues;
+    const puzzle = puzzles.Payload[0].boardValues;
 
     for (let i = 0; i < puzzle.length; i++) {
         rootInnerHTML += "<div class='cell'>" + puzzle[i] + "</div>";
@@ -346,8 +363,8 @@ function hydrateRootElem(puzzles) {
     }
 }
 
-function showModal(message) {
-    var modal = document.getElementById('customModal');
+function modal(message) {
+    const modal = document.getElementById('customModal');
     modal.querySelector('p').textContent = message;
     modal.style.display = 'block';
     modal.querySelector('.close').onclick = function () {
