@@ -15,8 +15,9 @@ namespace WebSudoku_v0._0._7.Classes
 {
     public class SudokuManager : ISudokuManager
     {
-        #region Definitions
+        #region Declarations
         private Stack<(List<Cell> Cells, Cell Cell)> DualOddsBackups = new Stack<(List<Cell>, Cell)>();
+        
         private List<(int Attempt, int Index, int Value, int AlternateValue)> DualOddsRecord = new List<(int, int, int, int)>();
 
         public SudokuDimensions Dimensions { get; set; } = null;
@@ -28,7 +29,7 @@ namespace WebSudoku_v0._0._7.Classes
         }
         #endregion
 
-        #region InitializationAndUpdates
+        #region Initialization And Updates
         public void InitialOddsSetup(ref Cells cells, int index)
         {
             if (index < 0 || index > 80)
@@ -177,7 +178,7 @@ namespace WebSudoku_v0._0._7.Classes
         }
         #endregion
 
-        #region SolveHelpers
+        #region Solution Helpers
         private Cell ClearCellOdds(Cell cell)
         {
             for (int i = 0; i < cell.CellPossibilities.List.Count; i++)
@@ -791,7 +792,7 @@ namespace WebSudoku_v0._0._7.Classes
         }
         #endregion
 
-        #region SolveProcessors
+        #region Solution Processors
         private bool ProcessRowPatterns(ref Cells cells)    
         {
             /*
@@ -997,12 +998,12 @@ namespace WebSudoku_v0._0._7.Classes
         ///     6. Place value from #4 in single empty cell #5
         /// 4. ProcessDualOdds: If stuck, tries cells with exactly two possibilities (backtracking if needed).
         /// 
-        /// The process continues until all cells are filled, or max attempts
+        /// The process continues until all cells are filled, or max turns
         /// is reached.
         /// </summary>
         /// <param name="board">The Sudoku board to solve.</param>
         /// <returns>The solved board.</returns>
-        /// configuration:  DEV.Sudoku Settings.GamePlay.SolveSettings.MaxAttempts - set max attempts
+        /// configuration:  DEV.Sudoku Settings.GamePlay.SolveSettings.MaxAttempts - set max turns
         ///                     between 0 & 2,147,483,647.
         ///                 DEV.Sudoku Settings.GamePlay.SolveSettings.ShowDebugInfo - if "ON", will
         ///                     debug info in console.
@@ -1010,8 +1011,8 @@ namespace WebSudoku_v0._0._7.Classes
         public Cells RunSolution(Cells board)
         {
             bool solved = false;
-            int attempts = 1;
-            int maxattempts = DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.MaxAttempts;
+            int turns = 1;
+            int maxTurns = DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.MaxAttempts;
             bool progressMade = false;
 
             if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
@@ -1035,7 +1036,7 @@ namespace WebSudoku_v0._0._7.Classes
                 {
                     solved = true;
                     if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
-                        Console.WriteLine($"Found Solution: Turns: {attempts}");
+                        Console.WriteLine($"Found Solution: Turns: {turns}");
 
                     continue;
                 } else
@@ -1061,18 +1062,18 @@ namespace WebSudoku_v0._0._7.Classes
                     if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
                     {
                         Console.WriteLine($"Difference: {DifferenceBoardCells(board.List, previousBoard)}");
-                        DebugInfo(board, attempts);
+                        DebugInfo(board, turns);
                     }
                 }
           
-                if (attempts >= maxattempts)
+                if (turns >= maxTurns)
                 {
                     if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
                         Console.WriteLine($"Max attempts reach.  Backup count: {DualOddsBackups.Count}");
                     break;
                 }
 
-                attempts++;
+                turns++;
             }
             return board;
         }
