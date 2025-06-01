@@ -926,23 +926,20 @@ namespace WebSudoku_v0._0._7.Classes
         /// </summary>
         private bool ProcessDualOdds(ref Cells cells, bool reload = false)
         {
+            bool found = false;
             if (reload && !(DualOddsBackups.Count() == 0))
             {
-                bool found = false;
                 do
                 {
                     found = ReloadLastBackup(ref cells);
 
                 } while (!found && !(DualOddsBackups.Count() == 0));
-                return found;
             }
             else
-            {                
-                bool updated = false;
-
-                updated = FindAndPlaceDualBackup(ref cells);
-                return updated;
+            {
+                found = FindAndPlaceDualBackup(ref cells);
             }
+            return found;
         }
 
         private bool ProcessValueCheck(ref Cells cells)
@@ -1034,36 +1031,29 @@ namespace WebSudoku_v0._0._7.Classes
                     progressMade = oddsProgress || valueProgress || rowPatternProgress || columnPatternProgress;
                 } while (progressMade);
 
-                solved = CompleteBoard(board);
-                if (solved)
+                if (CompleteBoard(board))
                 {
+                    solved = true;
                     if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
                         Console.WriteLine($"Found Solution: Turns: {attempts}");
 
                     continue;
-                }
-
-                if (IsBoardValid(board, HasCorruptedOdds(board)))
+                } else
                 {
-                    if (!ProcessDualOdds(ref board) && IsBoardValid(board, HasCorruptedOdds(board)))
+                    if (IsBoardValid(board, HasCorruptedOdds(board)))
                     {
-                        if (DualOddsBackups.Any())
-                        {
-                            ProcessDualOdds(ref board, true);
-
-                        }
-                    }
-                }
-                else
-                {
-                    if (DualOddsBackups.Any())
-                    {
-                        ProcessDualOdds(ref board, true);
+                        if (!ProcessDualOdds(ref board) && IsBoardValid(board, HasCorruptedOdds(board)))
+                            if (DualOddsBackups.Any())
+                                ProcessDualOdds(ref board, true);
                     }
                     else
                     {
-                        ProcessDualOdds(ref board);
+                        if (DualOddsBackups.Any())
+                            ProcessDualOdds(ref board, true);
+                        else
+                            ProcessDualOdds(ref board);
                     }
+
                 }
 
                 if (!CompareBoardCells(board.List, previousBoard))
