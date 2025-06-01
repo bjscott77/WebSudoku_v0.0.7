@@ -30,35 +30,32 @@ namespace WebSudoku_v0._0._7.Classes
         #endregion
 
         #region Initialization And Updates
-        public void InitialOddsSetup(ref Cells cells, int index)
+        public void SetupProbabilities(ref Cells cells, int index)
         {
-            if (index < 0 || index > 80)
-                throw new ArgumentOutOfRangeException("index", $"Index must be between {0}:{Dimensions.Size - 1} inclusivley.  Expected: 0-80, Received: {index}");
+                try
+                {
+                    Cell cell = cells.List[index];
+                    cells.List[index].CellPossibilities.List.Clear();
+                    if (!cell.hasValue)
+                    {
+                        cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsInitial);
+                    }
+                    else
+                    {
+                        cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsEmpty);
+                    }
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    Console.WriteLine($"Error in SetUpProbabilities: {ex.Message}");
 
-            try
-            {
-                Cell cell = cells.List[index];
-                cells.List[index].CellPossibilities.List.Clear();
-                if (!cell.hasValue)
-                {
-                    cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsInitial);
+                    Cell cell = new Cell(new CellLocation(0, 0, 0, 0));
+                    cell.isEnabled = false;
+                    cell.hasValue = false;
                 }
-                else
-                {
-                    cells.List[index].CellPossibilities.List.AddRange(DevConfig.SudokuSettings.CellStatisticsEmpty);
-                }
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                Console.WriteLine($"Error in InitialOddsSetup: {ex.Message}");
-                
-                Cell cell = new Cell(new CellLocation(0, 0, 0, 0));
-                cell.isEnabled = false;
-                cell.hasValue = false;
-            }
         }
 
-        public Cell SetNextCell(string cellValue,  int index)
+        public Cell createNextCell(string cellValue,  int index)
         {
             Cell cell;
             try
@@ -92,7 +89,7 @@ namespace WebSudoku_v0._0._7.Classes
             return cell;
         }
 
-        public void SetCellOdds(ref Cells cells, int index)
+        public void SetCellProbabilities(ref Cells cells, int index)
         {
             Cell cell = cells.List[index];
             if (!cell.hasValue)
@@ -149,7 +146,7 @@ namespace WebSudoku_v0._0._7.Classes
             }
         }
 
-        private int SetBlock(int index)
+        public int SetBlock(int index)
         {
             if (index < 0 || index > 80)
                 return -1;
@@ -161,7 +158,7 @@ namespace WebSudoku_v0._0._7.Classes
             return (blockRow * 3) + blockCol + 1;
         }
 
-        private int SetColumn(int index)
+        public int SetColumn(int index)
         {
             if (index < 0 || index > 80)
                 return -1;
@@ -181,6 +178,9 @@ namespace WebSudoku_v0._0._7.Classes
         #region Solution Helpers
         private Cell ClearCellOdds(Cell cell)
         {
+            if (!cell.hasValue && cell.Value == 0)
+                return cell;
+
             for (int i = 0; i < cell.CellPossibilities.List.Count; i++)
             {
                 cell.CellPossibilities.List[i] = 0;
@@ -239,17 +239,11 @@ namespace WebSudoku_v0._0._7.Classes
         private string DifferenceBoardCells(List<Cell> cells, List<Cell> cellsCopy)
         {
             var difference = string.Empty;
-            foreach (var cell in cells)
-            { 
-                if (cell.Value == cellsCopy[cell.Location.Index].Value)
-                {
-                    difference += "X";
-                }
-                else
-                {
-                    difference += cell.Value;
-                }
-            }
+            cells.ForEach(cell => 
+                difference += cell.Value == cellsCopy[cell.Location.Index].Value
+                ? "X" 
+                : cell.Value
+            );
             return difference;
         }
 
@@ -300,10 +294,11 @@ namespace WebSudoku_v0._0._7.Classes
             var corrupt = false;
             foreach (var cell in cells.List.Where(c => !c.hasValue))
             {
-                if (cell.CellPossibilities.List.Where(p => p > 0).Count() == 0)
+                if (!cell.CellPossibilities.List.Where(p => p > 0).Any())
                 {
                     corrupt = true;
-                }               
+                    break;
+                }                
             }
             return corrupt;
         }
@@ -375,7 +370,7 @@ namespace WebSudoku_v0._0._7.Classes
                 cells.List[index].hasValue = true;
 
                 foreach (var c in cells.List)
-                    SetCellOdds(ref cells, c.Location.Index);
+                    SetCellProbabilities(ref cells, c.Location.Index);
 
                 return true;
             }
@@ -386,13 +381,13 @@ namespace WebSudoku_v0._0._7.Classes
             return false;
         }
 
-        private void DebugInfo(Cells cells, int attempt)
+        private void DebugInfo(Cells cells)
         {
-            Console.WriteLine($"Attempt: {attempt}");
             Console.WriteLine($"Board: {string.Join("", cells.List.Select(c => c.Value))}");
+            Console.WriteLine("Updated Probabilities:");
             cells.List.Where(c => !c.hasValue).ToList().ForEach(c =>
             {
-                Console.WriteLine($"Cell: {c.Location.Index}, Value: {c.Value}, Odds: {string.Join("", c.CellPossibilities.List.Where(c => c > 0))}");
+                Console.Write($"{c.Location.Index}:{string.Join("", c.CellPossibilities.List.Where(c => c > 0))},");
             });
         }
 
@@ -1016,13 +1011,25 @@ namespace WebSudoku_v0._0._7.Classes
             bool progressMade = false;
 
             if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
-                DebugInfo(board, 0);
+            {
+                Console.WriteLine($"Attempt: 0");
+                DebugInfo(board);
+            }
             else
+            {
                 Console.WriteLine("Debug Info: DISABLED");
+            }
 
             while (!solved)
             {
                 var previousBoard = DeepCopyCells(board);
+                if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine();
+                    Console.WriteLine($"Turn: {turns}");
+                    Console.WriteLine("Updates Made:");
+                }
                 do
                 {
                     var oddsProgress = ProcessOdds(ref board);
@@ -1057,15 +1064,14 @@ namespace WebSudoku_v0._0._7.Classes
 
                 }
 
-                if (!CompareBoardCells(board.List, previousBoard))
+                if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
                 {
-                    if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
+                    if (!CompareBoardCells(board.List, previousBoard))
                     {
-                        Console.WriteLine($"Difference: {DifferenceBoardCells(board.List, previousBoard)}");
-                        DebugInfo(board, turns);
+                        Console.WriteLine($"Diff : {DifferenceBoardCells(board.List, previousBoard)}");
+                        DebugInfo(board);
                     }
                 }
-          
                 if (turns >= maxTurns)
                 {
                     if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)

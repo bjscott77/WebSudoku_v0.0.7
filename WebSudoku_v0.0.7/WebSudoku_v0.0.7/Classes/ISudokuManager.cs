@@ -2,11 +2,11 @@
 {
     public interface ISudokuManager
     {
-        void InitialOddsSetup(ref Cells cells, int index);
+        void SetupProbabilities(ref Cells cells, int index);
 
-        Cell SetNextCell(string puzzle, int index);
+        Cell createNextCell(string puzzle, int index);
 
-        void SetCellOdds(ref Cells cells, int index);
+        void SetCellProbabilities(ref Cells cells, int index);
 
         Cells RunSolution(Cells board);  
     }

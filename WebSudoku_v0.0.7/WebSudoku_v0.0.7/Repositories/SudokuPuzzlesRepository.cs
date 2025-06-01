@@ -101,8 +101,8 @@ namespace WebSudoku_v0._0._7.Repositories
                 if (string.IsNullOrEmpty(puzzle) || _sudokuBoard == null)
                     return null;
 
-                _sudokuBoard.InitializeBoard(puzzle);
-                _sudokuBoard.InitializeOdds();
+                _sudokuBoard.createSudokuBoard(puzzle);
+                _sudokuBoard.InitializeProbabilities();
                 _sudokuBoard.SudokuManager.RunSolution(_sudokuBoard.GetCells());
 
                 if (_sudokuBoard.GetCells().List == null || _sudokuBoard.GetCells().List.Count == 0)

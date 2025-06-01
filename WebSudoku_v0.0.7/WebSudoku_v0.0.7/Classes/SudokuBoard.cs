@@ -4,7 +4,7 @@
     {
         public ISudokuManager SudokuManager { get; set; } = null;
         public Cells Cells { get; set; } = new Cells();
-        public required ISudokuDimensions Dimensions { get; set; }
+        public ISudokuDimensions Dimensions { get; set; } = new SudokuDimensions(0, 0);
 
         public SudokuBoard() : this(null)
         {
@@ -14,25 +14,27 @@
         {
             return Cells;
         }
-        public void InitializeOdds()
+        public void InitializeProbabilities()
         {
             var Cells = GetCells();
             for (int i = 0; i < Cells.List.Count; i++)
             {
-                SudokuManager.InitialOddsSetup(ref Cells, i);
-                SudokuManager.SetCellOdds(ref Cells, i);
+                SudokuManager.SetupProbabilities(ref Cells, i);
+                SudokuManager.SetCellProbabilities(ref Cells, i);
             }
         }
 
-        public void InitializeBoard(string puzzle)
+        public void createSudokuBoard(string puzzle)
         {
             SudokuManager = new SudokuManager(_devConfig);
+            
             var dims = _devConfig.SudokuSettings.BoardDimensions;
             Dimensions = new SudokuDimensions(dims.FirstOrDefault(), dims.LastOrDefault());
+            
             int index = 0;
             foreach (var cellValue in puzzle.ToCharArray())
             {
-                this.Cells.List.Add(SudokuManager.SetNextCell(cellValue.ToString(), index));
+                this.Cells.List.Add(SudokuManager.createNextCell(cellValue.ToString(), index));
                 index++;
             }
         }
