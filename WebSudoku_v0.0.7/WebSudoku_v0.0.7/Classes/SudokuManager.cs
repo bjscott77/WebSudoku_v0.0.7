@@ -354,6 +354,9 @@ namespace WebSudoku_v0._0._7.Classes
         {
             try
             {
+                if (index < 0 || index > 80)
+                    return false;
+
                 if (!(cells.List[index].CellPossibilities.List.Contains(value)))
                     return false;
 
@@ -393,6 +396,9 @@ namespace WebSudoku_v0._0._7.Classes
 
         private bool ReloadLastBackup(ref Cells cells)
         {
+            if (!DualOddsBackups.Any())
+                return false;
+
             var backupCell = DualOddsBackups.Pop();
             var backupRecord = DualOddsRecord.Where(r => r.Index == backupCell.Cell.Location.Index).FirstOrDefault();
             if (backupCell.Cell.hasValue)
@@ -417,15 +423,8 @@ namespace WebSudoku_v0._0._7.Classes
 
             if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
                 Console.WriteLine($"Reload cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
-            
-            if (DualOddsBackups.Count == 0)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
-            }
+
+            return true;
         }
 
         private bool FindAndPlaceDualBackup(ref Cells cells)
@@ -454,7 +453,6 @@ namespace WebSudoku_v0._0._7.Classes
                     if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
                         Console.WriteLine($"Dual cell: {cells.List[index].Location.Index}, val: {cells.List[index].Value}, Backups: {string.Join('|', displayBackups)}, Count: {displayBackups.Count()}");
                     
-                    _dualAttempt++;
                     return true;
                 }
             }
@@ -475,6 +473,8 @@ namespace WebSudoku_v0._0._7.Classes
                 switch (selectBlock)
                 {
                     case 1:
+                    case 2:
+                    case 3:
                         {
                             blockRow.Add(cells.List.Where(c => c.Location.Block == 1).ToList());
                             blockRow.Add(cells.List.Where(c => c.Location.Block == 2).ToList());
@@ -482,6 +482,8 @@ namespace WebSudoku_v0._0._7.Classes
                             break;
                         }
                     case 4:
+                    case 5:
+                    case 6:
                         {
                             blockRow.Add(cells.List.Where(c => c.Location.Block == 4).ToList());
                             blockRow.Add(cells.List.Where(c => c.Location.Block == 5).ToList());
@@ -489,6 +491,8 @@ namespace WebSudoku_v0._0._7.Classes
                             break;
                         }
                     case 7:
+                    case 8:
+                    case 9:
                         {
                             blockRow.Add(cells.List.Where(c => c.Location.Block == 7).ToList());
                             blockRow.Add(cells.List.Where(c => c.Location.Block == 8).ToList());
@@ -630,20 +634,26 @@ namespace WebSudoku_v0._0._7.Classes
                 switch (selectColumn)
                 {
                     case 1:
+                    case 4:
+                    case 7:
                         {
                             blockColumn.Add(cells.List.Where(c => c.Location.Block == 1).ToList());
                             blockColumn.Add(cells.List.Where(c => c.Location.Block == 4).ToList());
                             blockColumn.Add(cells.List.Where(c => c.Location.Block == 7).ToList());
                             break;
                         }
-                    case 4:
+                    case 2:
+                    case 5:
+                    case 8:
                         {
                             blockColumn.Add(cells.List.Where(c => c.Location.Block == 2).ToList());
                             blockColumn.Add(cells.List.Where(c => c.Location.Block == 5).ToList());
                             blockColumn.Add(cells.List.Where(c => c.Location.Block == 8).ToList());
                             break;
                         }
-                    case 7:
+                    case 3:
+                    case 6:
+                    case 9:
                         {
                             blockColumn.Add(cells.List.Where(c => c.Location.Block == 3).ToList());
                             blockColumn.Add(cells.List.Where(c => c.Location.Block == 6).ToList());
@@ -914,7 +924,6 @@ namespace WebSudoku_v0._0._7.Classes
             return update;
         }
 
-        int _dualAttempt = 1;
         /// <summary>
         /// Attempts to solve cells with exactly two possible values ("dual odds").
         /// If reload is true, restores the previous board state and tries the alternate value (backtracking).
@@ -923,13 +932,13 @@ namespace WebSudoku_v0._0._7.Classes
         private bool ProcessDualOdds(ref Cells cells, bool reload = false)
         {
             bool found = false;
-            if (reload && !(DualOddsBackups.Count() == 0))
+            if (reload)
             {
                 do
                 {
                     found = ReloadLastBackup(ref cells);
 
-                } while (!found && !(DualOddsBackups.Count() == 0));
+                } while (!found && DualOddsBackups.Any());
             }
             else
             {

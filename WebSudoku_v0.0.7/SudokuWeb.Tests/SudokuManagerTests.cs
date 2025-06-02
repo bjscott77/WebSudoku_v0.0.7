@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
 using WebSudoku_v0._0._7.Classes;
 using WebSudoku_v0._0._7.Data;
 using WebSudoku_v0._0._7.Repositories;
@@ -553,6 +554,275 @@ namespace SudokuWeb.Tests
             Assert.True((bool)result);
         }
 
+        [Theory]        
+        [InlineData(4, 5, 5)] 
+        [InlineData(6, 3, 3)] 
+        [InlineData(10, 4, 4)] 
+        [InlineData(79, 5, 5)] 
+        public void PlaceCellValue_UpdatesBoardWithValue_OnValidIndexAndValue(int index, int value, int expected)
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig);
+
+            // Arrange
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            // Act
+            var result = (bool)typeof(SudokuManager)
+                .GetMethod("PlaceCellValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, index, value });
+
+            // Assert
+            Assert.True((bool)result);
+            Assert.Equal(board.Cells.List[index].Value, expected);
+        }
+
+        [Theory]
+        [InlineData(-1, 6, 0)]
+        [InlineData(81, 5, 0)]
+        public void PlaceCellValue_DoesNotUpdateBoard_OnInvalidIndex(int index, int value, int expected)
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig);
+
+            // Arrange
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            // Act
+            var result = (bool)typeof(SudokuManager)
+                .GetMethod("PlaceCellValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, index, value });
+
+            // Assert
+            Assert.False((bool)result);
+        }
+
+        [Theory]
+        [InlineData(22, 8, 0)]
+        [InlineData(38, 2, 0)]
+        public void PlaceCellValue_DoesNotUpdateBoard_OnInvalidValue(int index, int value, int expected)
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig);
+
+            // Arrange
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            // Act
+            var result = (bool)typeof(SudokuManager)
+                .GetMethod("PlaceCellValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, index, value });
+
+            // Assert
+            Assert.False((bool)result);
+            Assert.Equal(board.Cells.List[index].Value, expected);
+        }
+
+        [Theory]
+        [InlineData(1, 1)]
+        [InlineData(2, 1)]
+        [InlineData(6, 4)]
+        [InlineData(8, 7)]
+        public void GetBlockRow_ReturnsListOfBlocks_WhenValidBlock(int block, int expected)
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig);
+
+            // Arrange
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            // Act
+            var result = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, block });
+
+            // Assert
+            Assert.Equal(result[0][0].Location.Block, expected);
+        }
+
+        [Theory]
+        [InlineData(10)]
+        [InlineData(-1)]
+        public void GetBlockRow_ReturnsEmptyList_WheninvalidBlock(int block)
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig);
+
+            // Arrange
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            // Act
+            var result = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, block });
+
+            // Assert
+            Assert.True(!result.Any());
+        }
+
+        [Theory]
+        [InlineData(1, 1)]
+        [InlineData(2, 2)]
+        [InlineData(6, 3)]
+        [InlineData(8, 2)]
+        public void GetBlockColumn_ReturnsListOfBlocks_WhenValidBlock(int block, int expected)
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig);
+
+            // Arrange
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            // Act
+            var result = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, block });
+
+            // Assert
+            Assert.Equal(result[0][0].Location.Block, expected);
+        }
+
+        [Theory]
+        [InlineData(10)]
+        [InlineData(-1)]
+        public void GetBlockColumn_ReturnsEmptyList_WheninvalidBlock(int block)
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig);
+
+            // Arrange
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            // Act
+            var result = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, block });
+
+            // Assert
+            Assert.True(!result.Any());
+        }
+
+        [Fact]
+        public void FindInitialRowPattern_ReturnsTrue_WhenValidRowFound()
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig);
+
+            // Arrange
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+            var initialRow = new List<Cell>();
+            // Act
+            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, 5 });
+
+            var result = (bool)typeof(SudokuManager)
+                .GetMethod("FindInitialRowPattern", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { initialRow, blockRow[1] });
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void FindInitialRowPattern_ReturnsFalse_WhenNoneFound()
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig);
+
+            // Arrange
+            var validPuzzle = "108007090000098000060000700000086000370905082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+            var initialRow = new List<Cell>();
+            // Act
+            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, 5 });
+
+            var result = (bool)typeof(SudokuManager)
+                .GetMethod("FindInitialRowPattern", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { initialRow, blockRow[1] });
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void FindInitialColumnPattern_ReturnsTrue_WhenValidRowFound()
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig);
+
+            // Arrange
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+            var initialColumn = new List<Cell>();
+            // Act
+            var blockColumn = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, 5 });
+
+            var result = (bool)typeof(SudokuManager)
+                .GetMethod("FindInitialColumnPattern", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { initialColumn, blockColumn[1] });
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void FindInitialColumnPattern_ReturnsFalse_WhenNoneFound()
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig);
+
+            // Arrange
+            var validPuzzle = "108007090000098000060000700000086000370905082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+            var initialColumn = new List<Cell>();
+            // Act
+            var blockColumn = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, 5 });
+
+            var result = (bool)typeof(SudokuManager)
+                .GetMethod("FindInitialColumnPattern", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { initialColumn, blockColumn[1] });
+
+            // Assert
+            Assert.False(result);
+        }
+
         [Fact]
         public void FindFilledColumn_ReturnsAListOfColumns_OnValidBlockColumn() 
         {
@@ -571,13 +841,10 @@ namespace SudokuWeb.Tests
             // Arrange: 1.Get list of block columns
             var paramTypes = new Type[] { typeof(Cells), typeof(int) };
             List<List<List<Cell>>> blockColumns = new List<List<List<Cell>>>();
-            for (int i = 1; i <= manager.Dimensions.ColumnSize; i += 3)
-            {
-                var blockColumn = (List<List<Cell>>)typeof(SudokuManager)
-                    .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, paramTypes)
-                    .Invoke(manager, [board.Cells, i]);
-                blockColumns.Add(blockColumn);
-            }
+            var blockColumn = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, paramTypes)
+                .Invoke(manager, [board.Cells, 5]);
+            blockColumns.Add(blockColumn);
 
             // Act
             var result = (List<Cell>)typeof(SudokuManager)
@@ -594,7 +861,7 @@ namespace SudokuWeb.Tests
         }
 
         [Fact]
-        public void FindFilledColumn_ReturnsNull_OnNullBlockColumn()        
+        public void FindFilledColumn_ReturnsNull_OnNullBlockColumn() 
         {
             var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
             var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
@@ -619,8 +886,76 @@ namespace SudokuWeb.Tests
             // Assert
             Assert.Null(result);
         }
+
+        [Theory]
+        [InlineData(2)]
+        public void ProcessHighlights_ReturnsTrue_WhenFoundInBlock(int value)
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
+
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
+            var cells = board.Cells;
+
+            // Arrange: board with valid puzzle
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+            board.Cells.List[3].isHighlighted = true;
+            board.Cells.List[4].isHighlighted = true;
+            board.Cells.List[5].isHighlighted = true;
+            board.Cells.List[12].isHighlighted = true;
+            board.Cells.List[13].isHighlighted = true;
+            board.Cells.List[14].isHighlighted = true;
+            board.Cells.List[21].isHighlighted = true;
+            board.Cells.List[22].isHighlighted = true;
+
+            // Arrange: 1.Get list of block columns
+            List<List<List<Cell>>> blockColumns = null;
+
+            // Act
+            var result = (bool)typeof(SudokuManager)
+                .GetMethod("ProcessHighlights", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, value });
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData(2)]
+        public void ProcessHighlights_ReturnsFalse_WhenNotFoundInBlock(int value)
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
+
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
+            var cells = board.Cells;
+
+            // Arrange: board with valid puzzle
+            var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+            board.Cells.List[3].isHighlighted = true;
+            board.Cells.List[4].isHighlighted = true;
+            board.Cells.List[5].isHighlighted = true;
+            board.Cells.List[13].isHighlighted = true;
+            board.Cells.List[14].isHighlighted = true;
+            board.Cells.List[21].isHighlighted = true;
+            board.Cells.List[22].isHighlighted = true;
+
+            // Arrange: 1.Get list of block columns
+            List<List<List<Cell>>> blockColumns = null;
+
+            // Act
+            var result = (bool)typeof(SudokuManager)
+                .GetMethod("ProcessHighlights", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, value });
+
+            // Assert
+            Assert.False(result);
+        }
     }
 }
-
-
-
