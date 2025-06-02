@@ -824,6 +824,120 @@ namespace SudokuWeb.Tests
         }
 
         [Fact]
+        public void FindFilledRow_ReturnsListOfCell_WhenFound()
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
+
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
+            var cells = board.Cells;
+
+            // Arrange
+            var validPuzzle = "000547096743090021005002740000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            List<List<List<Cell>>> blockRows = new List<List<List<Cell>>>();
+            var finalRow = new List<Cell>();
+            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, 1 });
+            blockRows.Add(blockRow);
+
+            var filledRow = (List<Cell>)typeof(SudokuManager)
+                .GetMethod("FindFilledRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockRows });
+
+            // Assert
+            Assert.True(filledRow.Any());
+            Assert.True(filledRow.Count() == 3);
+            Assert.Equal(filledRow[0].Value, 7);
+            Assert.Equal(filledRow[1].Value, 4);
+            Assert.Equal(filledRow[2].Value, 3);
+
+
+        }
+
+        [Fact]
+        public void FindOpposing_ReturnsListOfCell_WhenFound()
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
+
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
+            var cells = board.Cells;
+
+            // Arrange
+            var validPuzzle = "000547096743090021005002740000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            List<List<List<Cell>>> blockRows = new List<List<List<Cell>>>();
+            var finalRow = new List<Cell>();
+            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, 1 });
+            blockRows.Add(blockRow);
+
+            var filledRow = (List<Cell>)typeof(SudokuManager)
+                .GetMethod("FindFilledRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockRows });
+
+            var opposingRow = (List<Cell>)typeof(SudokuManager)
+                .GetMethod("FindOpposing", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row, false });
+
+            // Assert
+            Assert.True(opposingRow.Any());
+            Assert.True(opposingRow.Count() == 3);
+            Assert.Equal(opposingRow[0].Value, 5);
+            Assert.Equal(opposingRow[1].Value, 4);
+            Assert.Equal(opposingRow[2].Value, 7);
+        }
+
+        [Fact]
+        public void FindPatternValue_ReturnsValue_WhenFound()
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
+
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
+            var cells = board.Cells;
+
+            // Arrange
+            var validPuzzle = "000547096743090021005002740000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            List<List<List<Cell>>> blockRows = new List<List<List<Cell>>>();
+            var finalRow = new List<Cell>();
+            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, 1 });
+            blockRows.Add(blockRow);
+
+            var filledRow = (List<Cell>)typeof(SudokuManager)
+                .GetMethod("FindFilledRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockRows });
+
+            var opposingRow = (List<Cell>)typeof(SudokuManager)
+                .GetMethod("FindOpposing", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row, false });
+
+            var result = (int)typeof(SudokuManager)
+                .GetMethod("FindPatternValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { filledRow, opposingRow });
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result > 0);
+            Assert.Equal(result, 3);
+        }
+
+        [Fact]
         public void FindFilledColumn_ReturnsAListOfColumns_OnValidBlockColumn() 
         {
             var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
@@ -833,17 +947,15 @@ namespace SudokuWeb.Tests
             var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
             var cells = board.Cells;
 
-            // Arrange: board with valid puzzle
+            // Arrange
             var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
             board.createSudokuBoard(validPuzzle);
             board.InitializeProbabilities();
 
-            // Arrange: 1.Get list of block columns
-            var paramTypes = new Type[] { typeof(Cells), typeof(int) };
             List<List<List<Cell>>> blockColumns = new List<List<List<Cell>>>();
             var blockColumn = (List<List<Cell>>)typeof(SudokuManager)
-                .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance, paramTypes)
-                .Invoke(manager, [board.Cells, 5]);
+                .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, 5 });
             blockColumns.Add(blockColumn);
 
             // Act
@@ -956,6 +1068,49 @@ namespace SudokuWeb.Tests
 
             // Assert
             Assert.False(result);
+        }
+
+        [Fact]
+        public void FindSingleEmptyRow_ReturnsTrue_WhenFound()
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
+
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
+            var cells = board.Cells;
+
+            // Arrange
+            var validPuzzle = "000547096743090021005002740000086000370915082000370000009000060000420000030700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            List<List<List<Cell>>> blockRows = new List<List<List<Cell>>>();
+            var finalRow = new List<Cell>();
+            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, 1 });
+            blockRows.Add(blockRow);
+
+            var filledRow = (List<Cell>)typeof(SudokuManager)
+                .GetMethod("FindFilledRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockRows });
+
+            var opposingRow = (List<Cell>)typeof(SudokuManager)
+                .GetMethod("FindOpposing", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row, false });
+
+            var value = (int)typeof(SudokuManager)
+                .GetMethod("FindPatternValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { filledRow, opposingRow });
+
+            // Act
+            var result = (bool)typeof(SudokuManager)
+                .GetMethod("FindSingleEmptyRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { finalRow, board.Cells, blockRows, filledRow, opposingRow, value });
+
+            // Assert
+            Assert.True(result);
         }
     }
 }
