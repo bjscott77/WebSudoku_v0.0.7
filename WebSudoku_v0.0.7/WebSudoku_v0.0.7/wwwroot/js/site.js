@@ -262,7 +262,7 @@ function deletePuzzle() {
     }
 }
 
-let toggleNew = false;
+let toggleNew = true;
 function toggleNewPuzzleForm() {
     const elem = document.getElementById("addToggle");
     const button = document.getElementById("addNew");
@@ -274,12 +274,6 @@ function toggleNewPuzzleForm() {
     if (toggleNew) {
         const newPuzzle = document.getElementById("newPuzzleInput")?.value;
 
-        if (newPuzzle == null || newPuzzle == "" || newPuzzle == 'undefined') {
-            if (button.innerHTML == "Add")
-                modal("No puzzle was entered, so no new puzzles were added.");
-        } else {
-            this.addPuzzle();
-        }
         button.innerHTML = "Add..."
         elem.style.display = 'none';
         updatebtn.style.display = 'block';
@@ -287,6 +281,12 @@ function toggleNewPuzzleForm() {
         solvebtn.style.display = 'block';
         resetbtn.style.display = 'block';
 
+        if (newPuzzle == null || newPuzzle == "" || newPuzzle == 'undefined') {
+            if (button.innerHTML == "Add")
+                modal("No puzzle was entered, so no new puzzles were added.");
+        } else {
+            this.addPuzzle();
+        }
     } else {
         button.innerHTML = "Back"
         elem.style.display = 'block';
@@ -294,7 +294,6 @@ function toggleNewPuzzleForm() {
         deletebtn.style.display = 'none';
         solvebtn.style.display = 'none';
         resetbtn.style.display = 'none';
-
     }
     toggleNew = !toggleNew;
 }
@@ -319,16 +318,9 @@ function toggleUpdatePuzzleForm() {
         deletebtn.style.display = 'none';
         solvebtn.style.display = 'none';
         resetbtn.style.display = 'none';
-
     } else {
         const updatePuzzle = document.getElementById("updatePuzzleInput")?.value;
 
-        if (updatePuzzle == null || updatePuzzle == "" || updatePuzzle == 'undefined') {
-            if (button.innerHTML == "Update")
-                modal("No puzzle was entered, so no puzzles were updated.");
-        } else {
-            this.updatePuzzle();
-        }
         button.innerHTML = "Update..."
         elem.style.display = 'none';
         addbtn.style.display = 'block';
@@ -336,6 +328,12 @@ function toggleUpdatePuzzleForm() {
         solvebtn.style.display = 'block';
         resetbtn.style.display = 'block';
 
+        if (updatePuzzle == null || updatePuzzle == "" || updatePuzzle == 'undefined') {
+            if (button.innerHTML == "Update")
+                modal("No puzzle was entered, so no puzzles were updated.");
+        } else {
+            this.updatePuzzle();
+        }
     }
     toggleUpdate = !toggleUpdate;
 }   
@@ -361,7 +359,6 @@ function toggleSolvePuzzleForm() {
         updatebtn.style.display = 'block';
         deletebtn.style.display = 'block';
     }
-
     toggleSolve = !toggleSolve;
 }
 
