@@ -25,7 +25,7 @@
 			<input type="text" id="updatePuzzleRating" placeholder="Rating..."><br><br>
 		</div>
 
-		<button type="button" id="deletePuzzle" class="btn" onclick="deletePuzzle();">Delete</button>
+		<button type="button" id="deletePuzzle" class="btn" onclick="testDeleteConfirm();">Delete</button>
 
 		<button type="button" id="solvePuzzle" class="btn" onclick="toggleSolvePuzzleForm();">Solve...</button>
 		<div id="solveToggle" class="add-toggle" style="display:none;">
@@ -44,8 +44,16 @@
 	<div id="customModal" class="modal">
 		<div class="modal-content">
 			<span class="close">&times;</span>
-			<p>Your custom message here!</p>
+			<p></p>
+		</div>
+	</div>
+
+	<div id="customConfirmModal" class="modal">
+		<div class="modal-content">
+			<span class="close">&times;</span>
+			<p></p>
+			<button id="modalConfirm" class="inner-btn">Confirm</button>
+			<button id="modalCancel" class="inner-btn">Cancel</button>
 		</div>
 	</div>
 </div>
-
