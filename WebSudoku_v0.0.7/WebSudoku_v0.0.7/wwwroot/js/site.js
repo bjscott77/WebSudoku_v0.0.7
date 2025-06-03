@@ -214,24 +214,23 @@ function stepPuzzle() {
     }
 }
 
-
-async function confirmDelete() {
+function confirmDelete() {
     const puzzle = document.getElementById("puzzleSelect")?.value;
 
     if (puzzle == null || puzzle == "" || puzzle == 'undefined') {
         modal("Please select a puzzle to delete it.");
     } else {
-        try {
-            const confirmed = await modalConfirm("Are you sure you want to delete?");
-
-            if (confirmed) {
-                deletePuzzle();
-            } else {
-                modal("Delete was cancelled, no action taken.");
-            }
-        } catch (error) {
-            console.log(error);
-        }
+        modalConfirm("Are you sure you want to delete?")
+            .then(confirmed => {
+                if (confirmed) {
+                    deletePuzzle();
+                } else {
+                    modal("Delete was cancelled, no action taken.");
+                }
+            })
+            .catch(error => {
+                console.log(error);
+            });
     }
 }
 
