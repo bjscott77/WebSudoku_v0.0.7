@@ -122,6 +122,45 @@ namespace WebSudoku_v0._0._7.Controllers
             }
         }
 
+        [HttpGet("GetStepPuzzle")]
+        [Route("/getsteppuzzle")]
+        public async Task<JsonResult> GetStep([FromQuery] string puzzle)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(puzzle))
+                {
+                    var empty = _sudokuRepo.GetEmptyListReturnModel();
+                    var errResonse = new SudokuApiResponse(empty, 400, "Bad Request", "Query string is malformed is null or empty.");
+                    var mtJson = JsonSerializer.Serialize(errResonse);
+                    return new JsonResult(mtJson);
+                }
+
+                var model = await _sudokuRepo.GetStepPuzzleAsync(puzzle);
+
+                if (model == null)
+                {
+                    var empty = _sudokuRepo.GetEmptyListReturnModel();
+                    var errResonse = new SudokuApiResponse(empty, 400, "Bad Request", "Unable to parse puzzle from entered text.");
+                    var mtJson = JsonSerializer.Serialize(errResonse);
+                    return new JsonResult(mtJson);
+                }
+
+                var successResponse = new SudokuApiResponse(model, 200, "OK", string.Empty);
+                successResponse.CellDisplayValueType = _devConfig.SudokuSettings.GamePlaySettings.SolveSettings.CellDisplayValueType;
+                var json = JsonSerializer.Serialize(successResponse);
+                return new JsonResult(json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SudokuController GETStep.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
+                var model = _sudokuRepo.GetEmptyListReturnModel();
+                var errorModel = new SudokuApiResponse(model, 500, "Server Error", $"Sudoku GetStep: {ex?.Message}. Inner: {ex?.InnerException?.Message}");
+                var json = JsonSerializer.Serialize(errorModel);
+                return new JsonResult(json);
+            }
+        }
+
         [HttpPost("AddPuzzle")]
         [Route("/addpuzzle")]
         public async Task<JsonResult> AddPuzzle()

@@ -14,20 +14,31 @@
 
 	<div class="buttonPanel">
 		<button type="button" id="addNew" class="btn" onclick="toggleNewPuzzleForm();">Add...</button>
-		<button type="button" id="updatePuzzle" class="btn" onclick="toggleUpdatePuzzleForm();">Update...</button>
-		<button type="button" id="deletePuzzle" class="btn" onclick="deletePuzzle();">Delete</button>
-		<br><br>
 		<div id="addToggle" class="add-toggle" style="display:none;">
 			<input type="text" id="newPuzzleInput" placeholder="Enter a new puzzle here...">
 			<input type="text" id="newPuzzleRating" placeholder="Rating..."><br><br>
 		</div>
+
+		<button type="button" id="updatePuzzle" class="btn" onclick="toggleUpdatePuzzleForm();">Update...</button>
 		<div id="updateToggle" class="add-toggle" style="display:none;">
 			<input type="text" id="updatePuzzleInput" name="update" placeholder="Enter updated puzzle here...">
 			<input type="text" id="updatePuzzleRating" placeholder="Rating..."><br><br>
 		</div>
-		<br><br>
-		<button type="button" id="showPuzzle" class="btn" onclick="solvePuzzle();">Solve</button>
+
+		<button type="button" id="deletePuzzle" class="btn" onclick="deletePuzzle();">Delete</button>
+
+		<button type="button" id="solvePuzzle" class="btn" onclick="toggleSolvePuzzleForm();">Solve...</button>
+		<div id="solveToggle" class="add-toggle" style="display:none;">
+			<br />
+			<button type="button" id="showPuzzle" class="inner-btn" onclick="solvePuzzle();">Solve</button>
+			<button type="button" id="stepPuzzle" class="inner-btn" onclick="stepPuzzle();">Next</button>
+		</div>
+
 		<button type="button" id="resetPuzzle" class="btn" onclick="getPuzzle();">Reset</button>
+	</div>
+	<br />
+	<div id="root" class="container">
+		<!--Sudoku puzzle is generated here via javascript-->
 	</div>
 
 	<div id="customModal" class="modal">
@@ -35,10 +46,6 @@
 			<span class="close">&times;</span>
 			<p>Your custom message here!</p>
 		</div>
-	</div>
-
-	<div id="root" class="container">
-		<!--Sudoku puzzle is generated here via javascript-->
 	</div>
 </div>
 

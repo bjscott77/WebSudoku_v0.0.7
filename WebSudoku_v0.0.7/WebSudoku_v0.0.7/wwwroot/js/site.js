@@ -28,7 +28,7 @@
     updateRatingElem.addEventListener("focus", function (event) {
         let btn = document.getElementById("updatePuzzle");
         btn.innerHTML = "Update";
-    });        
+    });     
 };
 
 function getAllPuzzles() {
@@ -183,6 +183,37 @@ function solvePuzzle() {
     }
 }
 
+function stepPuzzle() {
+    disableAll();
+
+    const rootElem = document.getElementById("root");
+    let puzzle = "";
+    for (let i = 0; i < rootElem.children.length; i++)
+        if (rootElem.children[i].innerHTML == "&nbsp;")
+            puzzle += "0";
+        else
+            puzzle += rootElem.children[i].innerHTML;
+
+    console.log("Step Puzzle", puzzle);
+
+    if (puzzle == null) {
+        modal("Please select a puzzle to solve it.");
+    } else {
+        fetch("api/sudoku/getsteppuzzle?puzzle=" + puzzle)
+            .then(res => res.json())
+            .then((rawData) => {
+                const data = translateResponseData(rawData);
+                if (data.StatusCode == 200)
+                    hydrateRootElem(data);
+                else
+                    modal(data.Status + ": " + data.ErrorMessage);
+
+                enableAll();
+            })
+            .catch(err => console.log(err));
+    }
+}
+
 function deletePuzzle() {
     const puzzle = document.getElementById("puzzleSelect")?.value;
 
@@ -210,84 +241,53 @@ function deletePuzzle() {
     }
 }
 
-let even = false;
+let toggleNew = false;
 function toggleNewPuzzleForm() {
     const elem = document.getElementById("addToggle");
     const button = document.getElementById("addNew");
     const updatebtn = document.getElementById("updatePuzzle");
     const deletebtn = document.getElementById("deletePuzzle");
-    const showbtn = document.getElementById("showPuzzle");
+    const solvebtn = document.getElementById("solvePuzzle");
     const resetbtn = document.getElementById("resetPuzzle");
 
-    if (even) {
+    if (toggleNew) {
         const newPuzzle = document.getElementById("newPuzzleInput")?.value;
 
         if (newPuzzle == null || newPuzzle == "" || newPuzzle == 'undefined') {
             if (button.innerHTML == "Add")
                 modal("No puzzle was entered, so no new puzzles were added.");
-
-            button.innerHTML = "Add..."
-            elem.style.display = 'none';
-            updatebtn.style.display = 'block';
-            deletebtn.style.display = 'block';
-            showbtn.style.display = 'block';
-            resetbtn.style.display = 'block';
         } else {
             this.addPuzzle();
-            button.innerHTML = "Add..."
-            elem.style.display = 'none';
-            updatebtn.style.display = 'block';
-            deletebtn.style.display = 'block';
-            showbtn.style.display = 'block';
-            resetbtn.style.display = 'block';
         }
+        button.innerHTML = "Add..."
+        elem.style.display = 'none';
+        updatebtn.style.display = 'block';
+        deletebtn.style.display = 'block';
+        solvebtn.style.display = 'block';
+        resetbtn.style.display = 'block';
 
     } else {
         button.innerHTML = "Back"
         elem.style.display = 'block';
         updatebtn.style.display = 'none';
         deletebtn.style.display = 'none';
-        showbtn.style.display = 'none';
+        solvebtn.style.display = 'none';
         resetbtn.style.display = 'none';
 
     }
-    even = !even;
+    toggleNew = !toggleNew;
 }
 
-
-let odd = true;
+let toggleUpdate = true;
 function toggleUpdatePuzzleForm() {
     const elem = document.getElementById("updateToggle");
     const button = document.getElementById("updatePuzzle");
     const addbtn = document.getElementById("addNew");
     const deletebtn = document.getElementById("deletePuzzle");
-    const showbtn = document.getElementById("showPuzzle");
+    const solvebtn = document.getElementById("solvePuzzle");
     const resetbtn = document.getElementById("resetPuzzle");
 
-    if (!odd) {
-        const updatePuzzle = document.getElementById("updatePuzzleInput")?.value;
-
-        if (updatePuzzle == null || updatePuzzle == "" || updatePuzzle == 'undefined') {
-            if (button.innerHTML == "Update")
-                modal("No puzzle was entered, so no puzzles were updated.");
-
-            button.innerHTML = "Update..."
-            elem.style.display = 'none';
-            addbtn.style.display = 'block';
-            deletebtn.style.display = 'block';
-            showbtn.style.display = 'block';
-            resetbtn.style.display = 'block';
-        } else {
-            this.updatePuzzle();
-            button.innerHTML = "Update..."
-            elem.style.display = 'none';
-            addbtn.style.display = 'block';
-            deletebtn.style.display = 'block';
-            showbtn.style.display = 'block';
-            resetbtn.style.display = 'block';
-        }
-
-    } else {
+    if (toggleUpdate) {
         const selectPuzzle = document.getElementById("puzzleSelect");
         const updatePuzzle = document.getElementById("updatePuzzleInput");
 
@@ -296,12 +296,53 @@ function toggleUpdatePuzzleForm() {
         elem.style.display = 'block';
         addbtn.style.display = 'none';
         deletebtn.style.display = 'none';
-        showbtn.style.display = 'none';
+        solvebtn.style.display = 'none';
         resetbtn.style.display = 'none';
 
+    } else {
+        const updatePuzzle = document.getElementById("updatePuzzleInput")?.value;
+
+        if (updatePuzzle == null || updatePuzzle == "" || updatePuzzle == 'undefined') {
+            if (button.innerHTML == "Update")
+                modal("No puzzle was entered, so no puzzles were updated.");
+        } else {
+            this.updatePuzzle();
+        }
+        button.innerHTML = "Update..."
+        elem.style.display = 'none';
+        addbtn.style.display = 'block';
+        deletebtn.style.display = 'block';
+        solvebtn.style.display = 'block';
+        resetbtn.style.display = 'block';
+
     }
-    odd = !odd;
+    toggleUpdate = !toggleUpdate;
 }   
+
+let toggleSolve = true;
+function toggleSolvePuzzleForm() {
+    const solveToggle = document.getElementById("solveToggle");
+    const solvePuzzle = document.getElementById("solvePuzzle");
+    const addbtn = document.getElementById("addNew");
+    const updatebtn = document.getElementById("updatePuzzle");
+    const deletebtn = document.getElementById("deletePuzzle");
+
+    if (toggleSolve) {
+        solvePuzzle.innerHTML = "Back";
+        solveToggle.style.display = 'block';
+        addbtn.style.display = 'none';
+        updatebtn.style.display = 'none';
+        deletebtn.style.display = 'none';
+    } else {
+        solvePuzzle.innerHTML = "Solve...";
+        solveToggle.style.display = 'none';
+        addbtn.style.display = 'block';
+        updatebtn.style.display = 'block';
+        deletebtn.style.display = 'block';
+    }
+
+    toggleSolve = !toggleSolve;
+}
 
 function translateResponseData(puzzles) {
     const data = JSON.parse(puzzles);
