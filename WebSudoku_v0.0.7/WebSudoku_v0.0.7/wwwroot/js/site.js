@@ -272,6 +272,13 @@ function toggleNewPuzzleForm() {
     const resetbtn = document.getElementById("resetPuzzle");
 
     if (toggleNew) {
+        button.innerHTML = "Back"
+        elem.style.display = 'block';
+        updatebtn.style.display = 'none';
+        deletebtn.style.display = 'none';
+        solvebtn.style.display = 'none';
+        resetbtn.style.display = 'none';
+    } else {
         const newPuzzle = document.getElementById("newPuzzleInput")?.value;
 
         button.innerHTML = "Add..."
@@ -287,13 +294,6 @@ function toggleNewPuzzleForm() {
         } else {
             this.addPuzzle();
         }
-    } else {
-        button.innerHTML = "Back"
-        elem.style.display = 'block';
-        updatebtn.style.display = 'none';
-        deletebtn.style.display = 'none';
-        solvebtn.style.display = 'none';
-        resetbtn.style.display = 'none';
     }
     toggleNew = !toggleNew;
 }

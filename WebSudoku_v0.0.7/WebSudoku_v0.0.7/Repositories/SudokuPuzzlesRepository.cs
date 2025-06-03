@@ -84,7 +84,7 @@ namespace WebSudoku_v0._0._7.Repositories
             if (_appDbContext == null)
                 return await new Task<List<SudokuPuzzledto>>(null);
 
-            return await _appDbContext.Puzzle
+            var result = await _appDbContext.Puzzle
                 .Where(p => p != null)
                 .Select(p => new SudokuPuzzledto
                 {
@@ -92,6 +92,7 @@ namespace WebSudoku_v0._0._7.Repositories
                     Difficulty = p.Difficulty,
                     BoardValues = p.BoardValues,
                 }).ToListAsync();
+            return result;
         }
 
         public async Task<List<SudokuPuzzledto>> GetSolvedPuzzleAsync(string puzzle)
