@@ -214,13 +214,24 @@ function stepPuzzle() {
     }
 }
 
-function testDeleteConfirm() {
+
+async function confirmDelete() {
     const puzzle = document.getElementById("puzzleSelect")?.value;
 
     if (puzzle == null || puzzle == "" || puzzle == 'undefined') {
         modal("Please select a puzzle to delete it.");
     } else {
-        modalConfirm("Are you sure you want to delete?");
+        try {
+            const confirmed = await modalConfirm("Are you sure you want to delete?");
+
+            if (confirmed) {
+                deletePuzzle();
+            } else {
+                modal("Delete was cancelled, no action taken.");
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
 }
 
@@ -429,30 +440,36 @@ function modal(message) {
 }
 
 function modalConfirm(message) {
-    const modal = document.getElementById('customConfirmModal');
-    const cancelBtn = modal.querySelector('#modalCancel');
-    const confirmBtn = modal.querySelector('#modalConfirm');
+    return new Promise((resolve, reject) => {
+        const modal = document.getElementById('customConfirmModal');
+        const cancelBtn = modal.querySelector('#modalCancel');
+        const confirmBtn = modal.querySelector('#modalConfirm');
 
-    modal.querySelector('p').textContent = message;
-    modal.style.display = 'block';
+        modal.querySelector('p').textContent = message;
+        modal.style.display = 'block';
 
-    modal.querySelector('.close').onclick = function () {
-        modal.style.display = 'none';
-    };
-
-    cancelBtn.onclick = function (event) {
-        modal.style.display = 'none';
-    };
-
-    confirmBtn.onclick = function (event) {
-        modal.style.display = 'none';
-    };
-
-    window.onclick = function (event) {
-        if (event.target == modal) {
+        modal.querySelector('.close').onclick = function () {
+            resolve(false);
             modal.style.display = 'none';
-        }
-    };
+        };
+
+        cancelBtn.onclick = function (event) {
+            resolve(false);
+            modal.style.display = 'none';
+        };
+
+        confirmBtn.onclick = function (event) {
+            resolve(true);
+            modal.style.display = 'none';
+        };
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                resolve(false);
+                modal.style.display = 'none';
+            }
+        };
+    });
 }
 
 function disableAll() {
