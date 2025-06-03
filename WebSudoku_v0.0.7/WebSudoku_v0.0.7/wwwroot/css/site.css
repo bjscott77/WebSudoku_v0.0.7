@@ -15,6 +15,18 @@ body {
     font-family: 'Roboto Slab', Arial, sans-serif;
 }
 
+.footer {
+    color: var(--text-color);
+}
+
+.footer a {
+    color: var(--text-color);
+}
+
+.footer a:hover {
+    color: var(--hover-color);
+}
+
 .boardSelection {
     display: flex;
     justify-content: center;
@@ -70,8 +82,8 @@ h1 {
     color: var(--text-color);
 }
 
-h2 {
-    text-align: center;
+.select-label {
+    margin-left: 125px;
     color: var(--text-color);
 }
 
@@ -198,8 +210,11 @@ h2 {
     }
 
         #root > *:hover {
-            background: var(--hover-background-color);
             cursor: pointer;
+            background-color: var(--hover-background-color);
+            color: var(--hover-color);
+            border: 1px solid var(--border-color);
+            transform: scale(1.2, 1.2);
         }
 
     /* Thicker borders for 3x3 subgrids */
