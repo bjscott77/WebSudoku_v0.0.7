@@ -136,7 +136,7 @@ namespace WebSudoku_v0._0._7.Controllers
                     return new JsonResult(mtJson);
                 }
 
-                var model = await _sudokuRepo.GetStepPuzzleAsync(puzzle);
+                List<SudokuPuzzledto> model = null; // await _sudokuRepo.GetStepPuzzleAsync(puzzle);
 
                 if (model == null)
                 {
