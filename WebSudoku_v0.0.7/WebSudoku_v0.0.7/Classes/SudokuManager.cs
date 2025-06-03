@@ -574,54 +574,88 @@ namespace WebSudoku_v0._0._7.Classes
             return initialRow;
         }
 
-        private List<Cell> FindOpposing(List<List<List<Cell>>> blocks, int blockIndex, int seqIndex, bool isColumn = false)
+        private List<Cell> FindOpposingRow(List<List<List<Cell>>> blockRows, int blockIndex, int rowIndex)
         {
-            var opposing = new List<Cell>();
+            var opposingRow = new List<Cell>();
             var checkBlocks = new List<List<Cell>>();
 
-            foreach (var block in blocks)
+            foreach (var blockRow in blockRows)
             {
-                foreach(var sequence in block)
+                foreach (var block in blockRow)
                 {
-                    if (sequence.FirstOrDefault().Location.Block != blockIndex
-                        && sequence.FirstOrDefault().Location.Row != seqIndex)
+                    if (block.FirstOrDefault().Location.Block != blockIndex)
                     {
-                        checkBlocks.Add(sequence);
+                        var rowSelect = new List<Cell>();
+                        //  add rows from opposing blocks that are opposing rows
+                        foreach (var cell in block)
+                        {
+                            if (cell.Location.Row != rowIndex)
+                            {
+                                rowSelect.Add(cell);
+                            }
+                        }
+                        checkBlocks.Add(rowSelect);
                     }
                 }
             }
 
             if (checkBlocks == null || !checkBlocks.Any())
-                return opposing;
+                return opposingRow;
 
-            bool found = false;
-            if (isColumn)
-               found = FindOpposingColumnPattern(ref opposing, checkBlocks);
-            else
-               found = FindOpposingRowPattern(ref opposing, checkBlocks);
-
+            var found = FindOpposingRowPattern(ref opposingRow, checkBlocks);
             if (!found)
-                return opposing;
-            
-            return opposing;            
+                return opposingRow;
+
+            return opposingRow;
+        }
+
+        private List<Cell> FindOpposingColumn(List<List<List<Cell>>> blockColumns, int blockIndex, int columnIndex)
+        {
+            var opposingColumn = new List<Cell>();
+            var checkBlocks = new List<List<Cell>>();
+
+            foreach (var blockColumn in blockColumns)
+            {
+                foreach (var block in blockColumn)
+                {
+                    if (block.FirstOrDefault().Location.Block != blockIndex)
+                    {
+                        var columnSelect = new List<Cell>();
+                        foreach (var cell in block)
+                        {
+                            if (cell.Location.Column != columnIndex)
+                            {
+                                columnSelect.Add(cell);
+                            }
+                        }
+                        checkBlocks.Add(columnSelect);
+                    }
+                }
+            }
+
+            if (checkBlocks == null || !checkBlocks.Any())
+                return opposingColumn;
+
+            var found = FindOpposingColumnPattern(ref opposingColumn, checkBlocks);
+            if (!found)
+                return opposingColumn;
+
+            return opposingColumn;
         }
 
         private int FindPatternValue(List<Cell> filled, List<Cell> opposing)
         {
-            var value = 0;
             var index = 1;
             var filledValues = filled.Select(c => c.Value).ToList();
             var opposingValues = opposing.Select(c => c.Value).ToList();
             foreach (var filledValue in filledValues)
             {
-                if (opposingValues.Contains(value))
-                    return value;
-
-                if (index == 3)
+                if (!opposingValues.Contains(filledValue))
                     return filledValue;
+
                 index++;
             }
-            return value;
+            return 0;
         }
 
         private bool FindSingleEmptyRow(ref List<Cell> finalRow, Cells cells, List<List<List<Cell>>> blockRows, List<Cell> filledRow, List<Cell> opposingRow, int value)
@@ -769,7 +803,7 @@ namespace WebSudoku_v0._0._7.Classes
                     {
                         return true;
                     }
-                    else if (index > 0 && index % 3 == 0)
+                    else if (index >= 6 && index % 3 == 0)
                     {
                         opposingColumn.Clear();
                         index = 0;
@@ -788,14 +822,15 @@ namespace WebSudoku_v0._0._7.Classes
             var opposingColumnIndex = opposingColumn[0].Location.Column;
             var finalBlock = new List<Cell>();
 
-            foreach (var block in blockColumns)
+            foreach (var blockColumn in blockColumns)
             {
-                foreach (var row in block)
+                foreach (var block in blockColumn)
                 {
-                    if (row.FirstOrDefault().Location.Block != initialBlock &&
-                        row.FirstOrDefault().Location.Block != opposingBlock)
+                    
+                    if (block.FirstOrDefault().Location.Block != initialBlock &&
+                        block.FirstOrDefault().Location.Block != opposingBlock)
                     {
-                        finalBlock.AddRange(row);
+                        finalBlock.AddRange(block);
                     }
                 }
             }
@@ -805,7 +840,7 @@ namespace WebSudoku_v0._0._7.Classes
 
             foreach (var cell in finalBlock)
             {
-                if (cell.Location.Row == opposingColumnIndex)
+                if (cell.Location.Column == opposingColumnIndex)
                 {
                     finalColumn.Add(cell);
                 }
@@ -864,7 +899,7 @@ namespace WebSudoku_v0._0._7.Classes
                 return false;
 
             //  3. Find opposing block with opposing filled row, if none, exit
-            List<Cell> opposingRow = FindOpposing(blockRows,
+            List<Cell> opposingRow = FindOpposingRow(blockRows,
                 filledRow[0].Location.Block,
                 filledRow[0].Location.Row);
             if (!opposingRow.Any())
@@ -913,10 +948,9 @@ namespace WebSudoku_v0._0._7.Classes
                 return false;
 
             //  3. Find opposing block with opposing filled column, if none, exit
-            List<Cell> opposingColumn = FindOpposing(blockColumns,
+            List<Cell> opposingColumn = FindOpposingColumn(blockColumns,
                 filledColumn[0].Location.Block,
-                filledColumn[0].Location.Column,
-                true);
+                filledColumn[0].Location.Column);
             if (!opposingColumn.Any())
                 return false;
 
@@ -924,7 +958,6 @@ namespace WebSudoku_v0._0._7.Classes
             var value = FindPatternValue(filledColumn, opposingColumn);
             if (value == 0)
                 return false;
-
 
             //  5. Find single empty cell in final block, same column as #3. if none, exit
             var finalColumn = new List<Cell>();

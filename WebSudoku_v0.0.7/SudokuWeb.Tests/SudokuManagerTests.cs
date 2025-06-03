@@ -860,7 +860,7 @@ namespace SudokuWeb.Tests
         }
 
         [Fact]
-        public void FindOpposing_ReturnsListOfCell_WhenFound()
+        public void FindOpposingRow_ReturnsListOfCell_WhenFound()
         {
             var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
             var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
@@ -886,8 +886,8 @@ namespace SudokuWeb.Tests
                 .Invoke(manager, new object[] { blockRows });
 
             var opposingRow = (List<Cell>)typeof(SudokuManager)
-                .GetMethod("FindOpposing", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row, false });
+                .GetMethod("FindOpposingRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row });
 
             // Assert
             Assert.True(opposingRow.Any());
@@ -924,8 +924,8 @@ namespace SudokuWeb.Tests
                 .Invoke(manager, new object[] { blockRows });
 
             var opposingRow = (List<Cell>)typeof(SudokuManager)
-                .GetMethod("FindOpposing", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row, false });
+                .GetMethod("FindOpposingRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row });
 
             var result = (int)typeof(SudokuManager)
                 .GetMethod("FindPatternValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
@@ -1097,8 +1097,8 @@ namespace SudokuWeb.Tests
                 .Invoke(manager, new object[] { blockRows });
 
             var opposingRow = (List<Cell>)typeof(SudokuManager)
-                .GetMethod("FindOpposing", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row, false });
+                .GetMethod("FindOpposingRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row });
 
             var value = (int)typeof(SudokuManager)
                 .GetMethod("FindPatternValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
@@ -1108,6 +1108,50 @@ namespace SudokuWeb.Tests
             var result = (bool)typeof(SudokuManager)
                 .GetMethod("FindSingleEmptyRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { finalRow, board.Cells, blockRows, filledRow, opposingRow, value });
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void FindSingleEmptyColumn_ReturnsTrue_WhenFound()
+        {
+            var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
+            var appConfig = _serviceProvider.GetRequiredService<IConfigurationSection>();
+
+            var manager = new SudokuManager(devConfig);
+            var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
+            var cells = board.Cells;
+
+            // Arrange
+            var testyPuzzle = "128547396743698521965132748591286473374915682286374915419853267657421839832769154";
+            var validPuzzle = "100547396700698521900132748090286473070915682080370000009000060657420000032700104";
+            board.createSudokuBoard(validPuzzle);
+            board.InitializeProbabilities();
+
+            List<List<List<Cell>>> blockColumns = new List<List<List<Cell>>>();
+            var finalColumn = new List<Cell>();
+            var blockColumn = (List<List<Cell>>)typeof(SudokuManager)
+                .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { board.Cells, 1 });
+            blockColumns.Add(blockColumn);
+
+            var filledColumn = (List<Cell>)typeof(SudokuManager)
+                .GetMethod("FindFilledColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockColumns });
+
+            var opposingColumn = (List<Cell>)typeof(SudokuManager)
+                .GetMethod("FindOpposingColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { blockColumns, filledColumn[0].Location.Block, filledColumn[0].Location.Column });
+
+            var value = (int)typeof(SudokuManager)
+                .GetMethod("FindPatternValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { filledColumn, opposingColumn });
+
+            // Act
+            var result = (bool)typeof(SudokuManager)
+                .GetMethod("FindSingleEmptyColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
+                .Invoke(manager, new object[] { finalColumn, board.Cells, blockColumns, filledColumn, opposingColumn, value });
 
             // Assert
             Assert.True(result);
