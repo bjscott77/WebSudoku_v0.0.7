@@ -1063,6 +1063,7 @@ namespace WebSudoku_v0._0._7.Classes
         /// 
         /// The method repeatedly applies the following strategies until the board is solved or no further progress can be made:
         /// 
+        ///     LOGICAL DEDUCTION
         /// 1. ProcessOdds: Fills in cells that have only one possible value.
         /// 2. ProcessValueCheck: Fills in cells based on unique value placement in rows, columns, or blocks.
         /// 3. ProcessRowPatterns: Looks for a pattern in blocks on the same row:
@@ -1072,15 +1073,17 @@ namespace WebSudoku_v0._0._7.Classes
         ///     4. Find first value from #2 row that isn't in #3 row, if none, exit
         ///     5. Find single empty cell in final block, same row as #3. if none, exit
         ///     6. Place value from #4 in single empty cell #5
-        /// 5. ProcessColumnPatterns: Looks for a pattern in blocks on the same Column:
+        /// 4. ProcessColumnPatterns: Looks for a pattern in blocks on the same Column:
         ///     1. Get list of block columns
         ///     2. Find block with filled column, if none, exit
         ///     3. Find opposing block with opposing filled column, if none, exit
         ///     4. Find first value from #2 column that isn't in #3 column, if none, exit
         ///     5. Find single empty cell in final block, same column as #3. if none, exit
         ///     6. Place value from #4 in single empty cell #5
-        /// 4. ProcessDualOdds: If stuck, tries cells with exactly two possibilities (backtracking if needed).
-        /// 
+        ///     
+        ///     BACKTRACKING
+        /// 5. ProcessDualOdds: If stuck, tries cells with exactly two possibilities (backtracking if needed).
+        ///     
         /// The process continues until all cells are filled, or max turns
         /// is reached.
         /// </summary>
