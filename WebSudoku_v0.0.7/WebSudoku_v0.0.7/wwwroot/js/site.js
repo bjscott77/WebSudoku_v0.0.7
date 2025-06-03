@@ -206,7 +206,8 @@ function stepPuzzle() {
                 if (data.StatusCode == 200)
                     hydrateRootElem(data);
                 else
-                    modal(data.Status + ": " + data.ErrorMessage);
+                    modal("Not Ready: Single step solution is under construction.");
+                    //modal(data.Status + ": " + data.ErrorMessage);
 
                 enableAll();
             })
