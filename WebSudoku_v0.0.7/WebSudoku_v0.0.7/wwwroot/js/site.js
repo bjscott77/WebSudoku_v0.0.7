@@ -281,7 +281,6 @@ function toggleNewPuzzleForm() {
     } else {
         const newPuzzle = document.getElementById("newPuzzleInput")?.value;
 
-        button.innerHTML = "Add..."
         elem.style.display = 'none';
         updatebtn.style.display = 'block';
         deletebtn.style.display = 'block';
@@ -292,6 +291,7 @@ function toggleNewPuzzleForm() {
             if (button.innerHTML == "Add")
                 modal("No puzzle was entered, so no new puzzles were added.");
         } else {
+            button.innerHTML = "Add..."
             this.addPuzzle();
         }
     }

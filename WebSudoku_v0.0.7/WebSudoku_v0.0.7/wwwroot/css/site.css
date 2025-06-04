@@ -193,6 +193,10 @@ h1 {
     font-family: 'Roboto Slab', Arial, sans-serif;
 }
 
+.modal-content .inner-btn {
+    align-self: center;
+}
+
 .close {
     color: var(--text-color);
     float: right;
