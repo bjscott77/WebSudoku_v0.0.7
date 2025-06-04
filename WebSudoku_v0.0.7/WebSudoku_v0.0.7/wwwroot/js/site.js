@@ -47,14 +47,21 @@ function getAllPuzzles() {
         });
 }
 
-function getPuzzle() {
+function getPuzzle(puzzle) {
     const selectElem = document.getElementById("puzzleSelect");
-    const puzzle = selectElem.value.toString();
+    const id = selectElem.value;
+
+    if (puzzle == null || puzzle == "" || puzzle == 'undefined') {
+        for (let i = 0; i < selectElem.length; i++) {
+            if (selectElem[i].value == id)
+                puzzle = selectElem[i].innerHTML;
+        }
+    }
 
     if (puzzle == null) {
         modal("Please select a puzzle to load it.");
     } else {
-        fetch("api/sudoku/getpuzzle?puzzle=" + puzzle)
+        fetch("api/sudoku/getpuzzle?puzzle=" + puzzle + "&id=" + id)
             .then(res => res.json())
             .then((rawData) => {
                 const data = translateResponseData(rawData);
@@ -154,15 +161,7 @@ function updatePuzzle() {
 
 function solvePuzzle() {
     disableAll();
-
-    const rootElem = document.getElementById("root");
-    let puzzle = "";
-    for (let i = 0; i < rootElem.children.length; i++)
-        if (rootElem.children[i].innerHTML == "&nbsp;")
-            puzzle += "0";
-        else
-            puzzle += rootElem.children[i].innerHTML;
-
+    let puzzle = getCurrentPuzzle();
     console.log("Solve Puzzle", puzzle);
 
     if (puzzle == null) {
@@ -383,7 +382,7 @@ function hydrateSelectElem(puzzles) {
     select.innerHTML = "";
 
     for (let i = 0; i < puzzles.Payload.length; i++) {
-        select.innerHTML += "<option>" + puzzles.Payload[i].boardValues + "</option>\r\n";
+        select.innerHTML += `<option value='${puzzles.Payload[i].Id}'>${puzzles.Payload[i].boardValues}</option>\r\n`;
     }
 }
 
@@ -394,7 +393,12 @@ function hydrateRootElem(puzzles) {
     const puzzle = puzzles.Payload[0].boardValues;
 
     for (let i = 0; i < puzzle.length; i++) {
-        rootInnerHTML += "<div class='cell'>" + puzzle[i] + "</div>";
+        let possible = puzzles.Payload[0].possibles[i] != undefined ? puzzles.Payload[0].possibles[i] : "";
+        if (possible == "") {
+            rootInnerHTML += `<div class="cell">${puzzle[i]}</div>`;
+        } else {
+            rootInnerHTML += `<div class="cell" data-title=${possible}>${puzzle[i]}</div>`;
+        }
     }
 
     if (puzzles.CellDisplayValueType == "SPACE") {
@@ -417,7 +421,8 @@ function hydrateRootElem(puzzles) {
                 value = "&nbsp;";
 
             event.target.innerHTML = value;
-
+            let current = getCurrentPuzzle();
+            getPuzzle(current);
         });
     }
 }
@@ -467,6 +472,18 @@ function modalConfirm(message) {
             }
         };
     });
+}
+
+function getCurrentPuzzle() {
+    const rootElem = document.getElementById("root");
+    let puzzle = "";
+    for (let i = 0; i < rootElem.children.length; i++)
+        if (rootElem.children[i].innerHTML == "&nbsp;")
+            puzzle += "0";
+        else
+            puzzle += rootElem.children[i].innerHTML;
+
+    return puzzle;
 }
 
 function disableAll() {

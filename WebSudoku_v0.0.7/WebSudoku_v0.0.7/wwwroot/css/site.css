@@ -76,9 +76,27 @@ body {
     justify-content: center;
 }
 
-.cell {
+div.cell {
 
 }
+
+div.cell[data-title] {
+    position: relative;
+    display: inline-block;
+}
+
+    div.cell[data-title]:hover::after {
+        content: attr(data-title);
+        background-color: var(--background-color);
+        color: var(--text-color);
+        border: 1px solid var(--border-color);
+        font-size: .75em;
+        padding: 5px;
+        position: absolute;
+        bottom: 100%;
+        left: -50%;
+        z-index: 999;
+    }
 
 .container {
     height: 100%;

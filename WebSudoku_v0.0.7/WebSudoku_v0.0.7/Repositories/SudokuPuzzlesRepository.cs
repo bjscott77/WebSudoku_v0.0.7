@@ -63,18 +63,24 @@ namespace WebSudoku_v0._0._7.Repositories
             return await GetAllPuzzlesAsync();
         }
 
-        public async Task<List<SudokuPuzzledto>>? GetPuzzleAsync(string puzzle)
+        public async Task<List<SudokuPuzzledto>>? GetPuzzleAsync(string puzzle, string id)
         {
             if (string.IsNullOrEmpty(puzzle) || _appDbContext == null)
                 return await Task.FromResult<List<SudokuPuzzledto>>(null);
 
+            _sudokuBoard.createSudokuBoard(puzzle);
+            _sudokuBoard.InitializeProbabilities();
+
+            var possibles = _sudokuBoard.GetCells().List.Select(c => string.Join(",", c.CellPossibilities.List.Where(p => p > 0)));
+
             return await _appDbContext.Puzzle
-                .Where(p => p.BoardValues == puzzle)
+                .Where(p => p.Id == Guid.Parse(id))
                 .Select(record => new SudokuPuzzledto
                 {
                     Id = record.Id,
                     Difficulty = record.Difficulty,
-                    BoardValues = record.BoardValues,
+                    BoardValues = puzzle,
+                    Possibles = possibles
                 })
                     .ToListAsync();
         }
@@ -92,6 +98,12 @@ namespace WebSudoku_v0._0._7.Repositories
                     Difficulty = p.Difficulty,
                     BoardValues = p.BoardValues,
                 }).ToListAsync();
+
+            _sudokuBoard.createSudokuBoard(result[0].BoardValues);
+            _sudokuBoard.InitializeProbabilities();
+
+            result[0].Possibles = _sudokuBoard.GetCells().List.Select(c => string.Join(",", c.CellPossibilities.List.Where(p => p > 0)));
+
             return result;
         }
 
