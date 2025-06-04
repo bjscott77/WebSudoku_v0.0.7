@@ -20,41 +20,65 @@ namespace WebSudoku_v0._0._7.Models
         [RegularExpression(@"^[0-9\]{81}$", ErrorMessage = "Board values must be a string of 81 characters, using digits 0-9.")]
         public string BoardValues { get; set; }
 
+        [Required]
+        [Display(Name = "Possibles")]
+        [JsonPropertyName("possibles")]
+        public IEnumerable<string> Possibles { get; set; }
+
         #region Constructors
         public SudokuPuzzledto() : base()
         {
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
+            Possibles = new List<string>();
         }
         public SudokuPuzzledto(Guid id) : base(id)
         {
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
+            Possibles = new List<string>();
         }
         public SudokuPuzzledto(string id) : base(id)
         {
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
+            Possibles = new List<string>();
         }
         public SudokuPuzzledto(string id, int difficulty) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = string.Empty;
+            Possibles = new List<string>();
         }
         public SudokuPuzzledto(Guid id, int difficulty) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = string.Empty;
+            Possibles = new List<string>();
         }
         public SudokuPuzzledto(string id, int difficulty, string boardValues) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = boardValues;
+            Possibles = new List<string>();
         }
         public SudokuPuzzledto(Guid id, int difficulty, string boardValues) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = boardValues;
+            Possibles = new List<string>();
+        }
+        public SudokuPuzzledto(string id, int difficulty, string boardValues, IEnumerable<string> possibles) : base(id)
+        {
+            Difficulty = difficulty;
+            BoardValues = boardValues;
+            Possibles = possibles;
+        }
+        public SudokuPuzzledto(Guid id, int difficulty, string boardValues, IEnumerable<string> possibles) : base(id)
+        {
+            Difficulty = difficulty;
+            BoardValues = boardValues;
+            Possibles = possibles;
         }
         #endregion
 
