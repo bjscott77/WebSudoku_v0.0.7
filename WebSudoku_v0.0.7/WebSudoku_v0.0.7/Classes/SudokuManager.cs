@@ -1067,20 +1067,8 @@ namespace WebSudoku_v0._0._7.Classes
         ///     LOGICAL DEDUCTION
         /// 1. ProcessOdds: Fills in cells that have only one possible value.
         /// 2. ProcessValueCheck: Fills in cells based on unique value placement in rows, columns, or blocks.
-        /// 3. ProcessRowPatterns: Looks for a pattern in blocks on the same row:
-        ///     1. Get list of block rows
-        ///     2. Find block with filled row, if none, exit
-        ///     3. Find opposing block with opposing filled row, if none, exit
-        ///     4. Find first value from #2 row that isn't in #3 row, if none, exit
-        ///     5. Find single empty cell in final block, same row as #3. if none, exit
-        ///     6. Place value from #4 in single empty cell #5
-        /// 4. ProcessColumnPatterns: Looks for a pattern in blocks on the same Column:
-        ///     1. Get list of block columns
-        ///     2. Find block with filled column, if none, exit
-        ///     3. Find opposing block with opposing filled column, if none, exit
-        ///     4. Find first value from #2 column that isn't in #3 column, if none, exit
-        ///     5. Find single empty cell in final block, same column as #3. if none, exit
-        ///     6. Place value from #4 in single empty cell #5
+        /// 3. ProcessRowPatterns: Looks for a pattern in blocks on the same row
+        /// 4. ProcessColumnPatterns: Looks for a pattern in blocks on the same Column
         ///     
         ///     BACKTRACKING
         /// 5. ProcessDualOdds: If stuck, tries cells with exactly two possibilities (backtracking if needed).
@@ -1090,7 +1078,7 @@ namespace WebSudoku_v0._0._7.Classes
         /// </summary>
         /// <param name="board">The Sudoku board to solve.</param>
         /// <returns>The solved board.</returns>
-        /// configuration:  DEV.Sudoku Settings.GamePlay.SolveSettings.MaxAttempts - set max turns
+        /// Configuration:  DEV.Sudoku Settings.GamePlay.SolveSettings.MaxAttempts - set max turns
         ///                     between 0 & 2,147,483,647.
         ///                 DEV.Sudoku Settings.GamePlay.SolveSettings.ShowDebugInfo - if "ON", will
         ///                     debug info in console.

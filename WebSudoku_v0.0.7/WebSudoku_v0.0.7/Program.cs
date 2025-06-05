@@ -3,7 +3,6 @@ using WebSudoku_v0._0._7.Classes;
 using WebSudoku_v0._0._7.Controllers;
 using WebSudoku_v0._0._7.Data;
 using WebSudoku_v0._0._7.Repositories;
-using Microsoft.Extensions.Logging;
 using WebSudoku_v0._0._7.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);

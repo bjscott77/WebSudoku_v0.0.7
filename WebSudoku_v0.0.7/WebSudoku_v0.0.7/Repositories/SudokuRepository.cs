@@ -11,13 +11,13 @@ namespace WebSudoku_v0._0._7.Repositories
         private readonly ApplicationDbContext _appDbContext;
         private readonly ISudokuBoard _sudokuBoard;
         private readonly DevConfiguration _devConfig;
-        private readonly ILogger<SudokuRepository> _logger;
+        private readonly ILogger<SudokuRepository> _debugLogger;
         public SudokuRepository(ApplicationDbContext appDbContext, ISudokuBoard sudokuBoard, DevConfiguration devConfig, ILogger<SudokuRepository> logger)
         {
             _appDbContext = appDbContext;
             _sudokuBoard = sudokuBoard;
             _devConfig = devConfig;
-            _logger = logger;
+            _debugLogger = logger;
         }
         public async Task<List<SudokuDTO>>? AddPuzzleAsync(SudokuDTO? puzzle)
         {
@@ -34,7 +34,7 @@ namespace WebSudoku_v0._0._7.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error in SudokuPuzzleRepository AddPuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
+                _debugLogger.LogError($"Error in SudokuPuzzleRepository AddPuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
                 return await Task.FromResult<List<SudokuDTO>>(null);
             }
 
@@ -67,7 +67,7 @@ namespace WebSudoku_v0._0._7.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Error in SudokuPuzzleRepository DeletePuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
+                _debugLogger.LogError($"Error in SudokuPuzzleRepository DeletePuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
                 return await Task.FromResult<List<SudokuDTO>>(null);
             }
 
@@ -100,7 +100,7 @@ namespace WebSudoku_v0._0._7.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError($"GetPuzzleAsync(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
+                _debugLogger.LogError($"GetPuzzleAsync(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
             }
             return GetEmptyListReturnModel();
         }
@@ -130,7 +130,7 @@ namespace WebSudoku_v0._0._7.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError($"GetAllPuzzlesAsync(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
+                _debugLogger.LogError($"GetAllPuzzlesAsync(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
             }
             return GetEmptyListReturnModel();
         }
@@ -163,7 +163,7 @@ namespace WebSudoku_v0._0._7.Repositories
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"GetSolvedPuzzleAsync(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
+                    _debugLogger.LogError($"GetSolvedPuzzleAsync(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
                 }
                 return GetEmptyListReturnModel();
             });
@@ -186,7 +186,7 @@ namespace WebSudoku_v0._0._7.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError($"UpdatePuzzleAsync(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
+                _debugLogger.LogError($"UpdatePuzzleAsync(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
                 return await Task.FromResult<List<SudokuDTO>>(null);
             }
             if (_appDbContext == null)
