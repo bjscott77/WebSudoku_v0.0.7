@@ -18,32 +18,32 @@ namespace WebSudoku_v0._0._7.Repositories
             _devConfig = devConfig;
             _logger = logger;
         }
-        public async Task<List<SudokuPuzzledto>>? AddPuzzleAsync(SudokuPuzzledto? puzzle)
+        public async Task<List<DTOSudoku>>? AddPuzzleAsync(DTOSudoku? puzzle)
         {
             try
             {
                 if (puzzle == null || _appDbContext == null)
-                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
+                    return await Task.FromResult<List<DTOSudoku>>(null);
 
                 var existingPuzzle = await _appDbContext.Puzzle.FirstOrDefaultAsync(p => p.BoardValues == puzzle.BoardValues);
                 if (existingPuzzle != null)
-                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
+                    return await Task.FromResult<List<DTOSudoku>>(null);
 
                 await _appDbContext.Puzzle.AddAsync(puzzle);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error in SudokuPuzzleRepository AddPuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
-                return await Task.FromResult<List<SudokuPuzzledto>>(null);
+                return await Task.FromResult<List<DTOSudoku>>(null);
             }
 
             await _appDbContext.SaveChangesAsync();
 
-            List<SudokuPuzzledto> added;
+            List<DTOSudoku> added;
 
             if (_devConfig.SudokuSettings.GamePlaySettings.SolveSettings.Selection == "NEW")
             {
-                added = new List<SudokuPuzzledto>() { puzzle, };
+                added = new List<DTOSudoku>() { puzzle, };
                 added.AddRange(_appDbContext.Puzzle.Where(p => !(p.BoardValues == puzzle.BoardValues)).ToList());
                 return added;
             }
@@ -51,33 +51,33 @@ namespace WebSudoku_v0._0._7.Repositories
             return await GetAllPuzzlesAsync();
         }
 
-        public async Task<List<SudokuPuzzledto>>? DeletePuzzleAsync(string puzzle)
+        public async Task<List<DTOSudoku>>? DeletePuzzleAsync(string puzzle)
         {
             try
             {
                 if (_appDbContext == null || string.IsNullOrEmpty(puzzle))
-                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
+                    return await Task.FromResult<List<DTOSudoku>>(null);
 
                 var existingPuzzle = await _appDbContext.Puzzle.FirstOrDefaultAsync(p => p.BoardValues == puzzle);
                 if (existingPuzzle == null)
-                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
+                    return await Task.FromResult<List<DTOSudoku>>(null);
 
                 _appDbContext.Puzzle.Remove(existingPuzzle);
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Error in SudokuPuzzleRepository DeletePuzzle(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
-                return await Task.FromResult<List<SudokuPuzzledto>>(null);
+                return await Task.FromResult<List<DTOSudoku>>(null);
             }
 
             await _appDbContext.SaveChangesAsync();
             return await GetAllPuzzlesAsync();
         }
 
-        public async Task<List<SudokuPuzzledto>>? GetPuzzleAsync(string puzzle, string id)
+        public async Task<List<DTOSudoku>>? GetPuzzleAsync(string puzzle, string id)
         {
             if (string.IsNullOrEmpty(puzzle) || _appDbContext == null)
-                return await Task.FromResult<List<SudokuPuzzledto>>(null);
+                return await Task.FromResult<List<DTOSudoku>>(null);
 
             try
             {
@@ -88,7 +88,7 @@ namespace WebSudoku_v0._0._7.Repositories
 
                 return await _appDbContext.Puzzle
                     .Where(p => p.Id == Guid.Parse(id))
-                    .Select(record => new SudokuPuzzledto
+                    .Select(record => new DTOSudoku
                     {
                         Id = record.Id,
                         Difficulty = record.Difficulty,
@@ -104,16 +104,16 @@ namespace WebSudoku_v0._0._7.Repositories
             return GetEmptyListReturnModel();
         }
 
-        public async Task<List<SudokuPuzzledto>>? GetAllPuzzlesAsync()
+        public async Task<List<DTOSudoku>>? GetAllPuzzlesAsync()
         {
             if (_appDbContext == null)
-                return await new Task<List<SudokuPuzzledto>>(null);
+                return await new Task<List<DTOSudoku>>(null);
 
             try
             {
                 var result = await _appDbContext.Puzzle
                     .Where(p => p != null)
-                    .Select(p => new SudokuPuzzledto
+                    .Select(p => new DTOSudoku
                     {
                         Id = p.Id,
                         Difficulty = p.Difficulty,
@@ -134,7 +134,7 @@ namespace WebSudoku_v0._0._7.Repositories
             return GetEmptyListReturnModel();
         }
 
-        public async Task<List<SudokuPuzzledto>> GetSolvedPuzzleAsync(string puzzle)
+        public async Task<List<DTOSudoku>> GetSolvedPuzzleAsync(string puzzle)
         {
             return await Task.Run(() =>
             {
@@ -150,9 +150,9 @@ namespace WebSudoku_v0._0._7.Repositories
                     if (_sudokuBoard.GetCells().List == null || _sudokuBoard.GetCells().List.Count == 0)
                         return null;
 
-                    return new List<SudokuPuzzledto>
+                    return new List<DTOSudoku>
                 {
-                    new SudokuPuzzledto
+                    new DTOSudoku
                     {
                         Id = Guid.Empty,
                         Difficulty = 0,
@@ -168,16 +168,16 @@ namespace WebSudoku_v0._0._7.Repositories
             });
         }
 
-        public async Task<List<SudokuPuzzledto>>? UpdatePuzzleAsync(List<SudokuPuzzledto> puzzles)
+        public async Task<List<DTOSudoku>>? UpdatePuzzleAsync(List<DTOSudoku> puzzles)
         {
             try
             {
                 if (_appDbContext == null || puzzles == null)
-                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
+                    return await Task.FromResult<List<DTOSudoku>>(null);
 
                 var existingPuzzle = await _appDbContext.Puzzle.FirstOrDefaultAsync(p => p.BoardValues == puzzles[0].BoardValues);
                 if (existingPuzzle == null)
-                    return await Task.FromResult<List<SudokuPuzzledto>>(null);
+                    return await Task.FromResult<List<DTOSudoku>>(null);
 
                 existingPuzzle.BoardValues = puzzles[1].BoardValues;
                 existingPuzzle.Difficulty = puzzles[1].Difficulty;
@@ -186,16 +186,16 @@ namespace WebSudoku_v0._0._7.Repositories
             catch (Exception ex)
             {
                 _logger.LogError($"UpdatePuzzleAsync(...).  Error: {ex.Message}.  InnerMessage: {ex.InnerException?.Message}.");
-                return await Task.FromResult<List<SudokuPuzzledto>>(null);
+                return await Task.FromResult<List<DTOSudoku>>(null);
             }
             if (_appDbContext == null)
-                return await Task.FromResult<List<SudokuPuzzledto>>(null);
+                return await Task.FromResult<List<DTOSudoku>>(null);
 
             await _appDbContext.SaveChangesAsync();
 
-            var retObj = new List<SudokuPuzzledto>()
+            var retObj = new List<DTOSudoku>()
             {
-                new SudokuPuzzledto()
+                new DTOSudoku()
                 {
                     BoardValues = puzzles[1].BoardValues
                 }
@@ -205,11 +205,11 @@ namespace WebSudoku_v0._0._7.Repositories
             return retObj;
         }
 
-        public List<SudokuPuzzledto> GetEmptyListReturnModel()
+        public List<DTOSudoku> GetEmptyListReturnModel()
         {
-            return new List<SudokuPuzzledto>
+            return new List<DTOSudoku>
                 {
-                    new SudokuPuzzledto
+                    new DTOSudoku
                     {
                         Id = Guid.Empty,
                         Difficulty = int.MinValue,
@@ -218,9 +218,9 @@ namespace WebSudoku_v0._0._7.Repositories
                 };
         }
 
-        public SudokuPuzzledto GetEmptyReturnModel()
+        public DTOSudoku GetEmptyReturnModel()
         {
-            return new SudokuPuzzledto
+            return new DTOSudoku
             {
                 Id = Guid.Empty,
                 Difficulty = int.MinValue,

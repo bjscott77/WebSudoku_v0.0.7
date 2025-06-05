@@ -1,32 +1,32 @@
 ﻿namespace WebSudoku_v0._0._7.Models
 {
-    public class SudokuApiResponse : ISudokuApiResponse
+    public class SudokuResponse : ISudokuResponse
     {
-        public List<SudokuPuzzledto> Payload { get; set; } = new List<SudokuPuzzledto>();
+        public List<DTOSudoku> Payload { get; set; } = new List<DTOSudoku>();
         public int? StatusCode { get; set; } = 200;
         public string? Status { get; set; } = "OK";
         public string? ErrorMessage { get; set; } = string.Empty;
         public string? CellDisplayValueType { get; set; }
-        public SudokuApiResponse()
+        public SudokuResponse()
         {
         }
 
-        public SudokuApiResponse(int statusCode, string status, string errorMessage)
+        public SudokuResponse(int statusCode, string status, string errorMessage)
         {
-            Payload = new List<SudokuPuzzledto>();
+            Payload = new List<DTOSudoku>();
             StatusCode = statusCode;
             Status = status;
             ErrorMessage = errorMessage;
         }
 
-        public SudokuApiResponse(List<SudokuPuzzledto> model, int statusCode, string status, string errorMessage)
+        public SudokuResponse(List<DTOSudoku> model, int statusCode, string status, string errorMessage)
         {
             Payload = model;
             StatusCode = statusCode;
             Status = status;
             ErrorMessage = errorMessage;
         }
-        public SudokuApiResponse(List<SudokuPuzzledto> data)
+        public SudokuResponse(List<DTOSudoku> data)
         {
             Payload = data;
         }

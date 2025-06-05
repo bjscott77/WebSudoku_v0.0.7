@@ -4,13 +4,13 @@ namespace WebSudoku_v0._0._7.Repositories
 {
     public interface ISudokuRepository
     {
-        public Task<List<SudokuPuzzledto>>? GetAllPuzzlesAsync();
-        public Task<List<SudokuPuzzledto>>? GetPuzzleAsync(string puzzle, string id);
-        public Task<List<SudokuPuzzledto>>? GetSolvedPuzzleAsync(string puzzle);
-        public Task<List<SudokuPuzzledto>>? AddPuzzleAsync(SudokuPuzzledto puzzle);
-        public Task<List<SudokuPuzzledto>>? UpdatePuzzleAsync(List<SudokuPuzzledto> puzzles);  
-        public Task<List<SudokuPuzzledto>>? DeletePuzzleAsync(string puzzle);     
-        public List<SudokuPuzzledto> GetEmptyListReturnModel();
-        public SudokuPuzzledto GetEmptyReturnModel();
+        public Task<List<DTOSudoku>>? GetAllPuzzlesAsync();
+        public Task<List<DTOSudoku>>? GetPuzzleAsync(string puzzle, string id);
+        public Task<List<DTOSudoku>>? GetSolvedPuzzleAsync(string puzzle);
+        public Task<List<DTOSudoku>>? AddPuzzleAsync(DTOSudoku puzzle);
+        public Task<List<DTOSudoku>>? UpdatePuzzleAsync(List<DTOSudoku> puzzles);  
+        public Task<List<DTOSudoku>>? DeletePuzzleAsync(string puzzle);     
+        public List<DTOSudoku> GetEmptyListReturnModel();
+        public DTOSudoku GetEmptyReturnModel();
     }
 }
