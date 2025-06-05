@@ -10,8 +10,19 @@ namespace WebSudoku_v0._0._7.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [EnableCors()]
-    public class SudokuController(ISudokuRepository _sudokuRepo, DevConfiguration _devConfig) : ControllerBase
+    public class SudokuController : ControllerBase
     {
+        private readonly ILogger<SudokuController> _debugLogger;
+        private readonly ISudokuRepository _sudokuRepo;
+        private readonly DevConfiguration _devConfig;
+
+        public SudokuController(ISudokuRepository sudokuRepo, DevConfiguration devConfig, ILogger<SudokuController> logger)
+        {
+            _debugLogger = logger;
+            _sudokuRepo = sudokuRepo;
+            _devConfig = devConfig;
+        }
+
         [HttpGet("GetAllPuzzles")]
         [Route("/getallpuzzles")]
         public async Task<JsonResult> Get()
@@ -34,8 +45,8 @@ namespace WebSudoku_v0._0._7.Controllers
                 return new JsonResult(json);
             }
             catch (Exception ex)
-            {
-                Console.WriteLine($"SudokuController GET.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
+            {               
+                _debugLogger.LogError($"SudokuController GET.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
                 var model = _sudokuRepo.GetEmptyListReturnModel();
                 var errorModel = new SudokuApiResponse(model, 500, "Server Error", $"Sudoku GetAllPuzzles: {ex?.Message}. Inner: {ex?.InnerException?.Message}");
                 var json = JsonSerializer.Serialize(errorModel);
@@ -74,7 +85,7 @@ namespace WebSudoku_v0._0._7.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"SudokuController GETSelected.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
+                _debugLogger.LogError($"SudokuController GETSelected.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
                 var model = _sudokuRepo.GetEmptyListReturnModel();
                 var errorModel = new SudokuApiResponse(model, 500, "Server Error", $"Sudoku Selected: {ex?.Message}. Inner: {ex?.InnerException?.Message}");
                 var json = JsonSerializer.Serialize(errorModel);
@@ -113,7 +124,7 @@ namespace WebSudoku_v0._0._7.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"SudokuController GETSolved.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
+                _debugLogger.LogError($"SudokuController GETSolved.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
                 var model = _sudokuRepo.GetEmptyListReturnModel();
                 var errorModel = new SudokuApiResponse(model, 500, "Server Error", $"Sudoku GetSolved: {ex?.Message}. Inner: {ex?.InnerException?.Message}");
                 var json = JsonSerializer.Serialize(errorModel);
@@ -172,7 +183,7 @@ namespace WebSudoku_v0._0._7.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"SudokuController POST.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
+                _debugLogger.LogError($"SudokuController POST.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
                 var errorModel = _sudokuRepo.GetEmptyListReturnModel();
                 var errorResponse = new SudokuApiResponse(errorModel, 500, "Server Error", $"ErrorMessage: {ex?.Message} || {ex?.InnerException?.Message}");
                 var json = JsonSerializer.Serialize(errorResponse);
@@ -228,7 +239,7 @@ namespace WebSudoku_v0._0._7.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"SudokuController POST.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
+                _debugLogger.LogError($"SudokuController POST.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
                 var errorModel = _sudokuRepo.GetEmptyListReturnModel();
                 var errorResponse = new SudokuApiResponse(errorModel, 500, "Server Error", $"ErrorMessage: {ex?.Message} || {ex?.InnerException?.Message}");
                 var json = JsonSerializer.Serialize(errorResponse);
@@ -268,6 +279,7 @@ namespace WebSudoku_v0._0._7.Controllers
             }
             catch (Exception ex)
             {
+                _debugLogger.LogError($"SudokuController POST Delete.  Error Message: {ex.Message}.  Inner Exception: {ex?.InnerException?.Message}");
                 var errorModel = _sudokuRepo.GetEmptyListReturnModel();
                 var errorResponse = new SudokuApiResponse(errorModel, 500, "Server Error", $"ErrorMessage: {ex?.Message} || {ex?.InnerException?.Message}");
                 var json = JsonSerializer.Serialize(errorResponse);

@@ -13,18 +13,20 @@
         public IEnumerable<int> CellStatisticsEmpty { get; set; }
         public GamePlaySettings GamePlaySettings { get; set; }
 
+        private readonly IConfigurationSection _devSettings;
         public SudokuSettings(IConfigurationSection devSettings)
         {
-            BoardDimensions = devSettings["Sudoku Settings:Board Dimensions"].Split(',').Select(d => int.Parse(d));
-            ModeOptions = devSettings["Sudoku Settings:ModeOptions"].Split(',');
-            Mode = devSettings["Sudoku Settings:Mode"].ToString();
-            SelectionOptions = devSettings["Sudoku Settings:SelectionOptions"].Split(',');
-            DisplayValueTypeOptions = devSettings["Sudoku Settings:DisplayValueTypeOptions"].Split(',');
-            SolvedCellValueOptions = devSettings["Sudoku Settings:SolvedCellValueOptions"].Split(',');
-            CellValueChangeOptions = devSettings["Sudoku Settings:CellValueChangeOptions"].Split(',');
-            CellStatisticsInitial = devSettings["Sudoku Settings:CellStatisticsInitial"].Split(',').Select(s => int.Parse(s));
-            CellStatisticsEmpty = devSettings["Sudoku Settings:CellStatisticsEmpty"].Split(',').Select(s => int.Parse(s));
-            GamePlaySettings = new GamePlaySettings(devSettings);
+            _devSettings = devSettings;
+            BoardDimensions = _devSettings["Sudoku Settings:Board Dimensions"].Split(',').Select(d => int.Parse(d));
+            ModeOptions = _devSettings["Sudoku Settings:ModeOptions"].Split(',');
+            Mode = _devSettings["Sudoku Settings:Mode"].ToString();
+            SelectionOptions = _devSettings["Sudoku Settings:SelectionOptions"].Split(',');
+            DisplayValueTypeOptions = _devSettings["Sudoku Settings:DisplayValueTypeOptions"].Split(',');
+            SolvedCellValueOptions = _devSettings["Sudoku Settings:SolvedCellValueOptions"].Split(',');
+            CellValueChangeOptions = _devSettings["Sudoku Settings:CellValueChangeOptions"].Split(',');
+            CellStatisticsInitial = _devSettings["Sudoku Settings:CellStatisticsInitial"].Split(',').Select(s => int.Parse(s));
+            CellStatisticsEmpty = _devSettings["Sudoku Settings:CellStatisticsEmpty"].Split(',').Select(s => int.Parse(s));
+            GamePlaySettings = new GamePlaySettings(_devSettings);
         }
     }
 }

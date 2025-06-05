@@ -1,13 +1,14 @@
 ﻿namespace WebSudoku_v0._0._7.Classes
 {
-    public class SudokuBoard(DevConfiguration _devConfig) : ISudokuBoard   
+    public class SudokuBoard : ISudokuBoard   
     {
         public ISudokuManager SudokuManager { get; set; } = null;
         public Cells Cells { get; set; } = new Cells();
         public ISudokuDimensions Dimensions { get; set; } = new SudokuDimensions(0, 0);
-
-        public SudokuBoard() : this(null)
+        private readonly DevConfiguration _devConfig;
+        public SudokuBoard(DevConfiguration devConfig)
         {
+            _devConfig = devConfig;
         }
 
         public Cells GetCells()

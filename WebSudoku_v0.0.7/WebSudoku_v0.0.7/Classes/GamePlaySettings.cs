@@ -5,11 +5,15 @@
         public PlaySettings PlaySettings { get; set; }
         public SolveSettings SolveSettings { get; set; }
         public PlayerSettings PlayerSettings { get; set; }
+
+        private readonly IConfigurationSection _devSettings;
         public GamePlaySettings(IConfigurationSection devSettings)  
         {
-            PlaySettings = new PlaySettings(devSettings);
-            SolveSettings = new SolveSettings(devSettings);
-            PlayerSettings = new PlayerSettings(devSettings);
+            _devSettings = devSettings;
+            PlaySettings = new PlaySettings(_devSettings);
+            SolveSettings = new SolveSettings(_devSettings);
+            PlayerSettings = new PlayerSettings(_devSettings);
+
         }
     }
 }

@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using WebSudoku_v0._0._7.Classes;
+using WebSudoku_v0._0._7.Controllers;
 using WebSudoku_v0._0._7.Data;
 using WebSudoku_v0._0._7.Repositories;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,13 @@ builder.Services.AddCors(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+using ILoggerFactory factory = LoggerFactory.Create(b => b.AddDebug());
+var apiDebugLogger = factory.CreateLogger<SudokuController>();
+var repoDebugLogger = factory.CreateLogger<SudokuPuzzlesRepository>();
+
+builder.Services.AddSingleton<ILogger<SudokuController>>(apiDebugLogger);
+builder.Services.AddSingleton<ILogger<SudokuPuzzlesRepository>>(repoDebugLogger);
 
 builder.Services.AddSingleton<IConfigurationSection>(builder.Configuration.GetSection("DEV"));
 

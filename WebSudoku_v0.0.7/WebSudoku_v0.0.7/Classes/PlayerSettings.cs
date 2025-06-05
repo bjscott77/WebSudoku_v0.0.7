@@ -10,15 +10,17 @@
         public bool UseInGameScoring { get; set; }
         public string CellValueChangeMode { get; set; }
 
+        private readonly IConfigurationSection _devSettings;
         public PlayerSettings(IConfigurationSection devSettings)    
         {
-            CellStatistics = devSettings["Sudoku Settings:GamePlay:Player Settings:CellStatistics"].ToString() == "ON" ? true : false;
-            CellDisplayValueType = devSettings["Sudoku Settings:GamePlay:Player Settings:CellDisplayValueType"].ToString();
-            HiLiteSolvedCell = devSettings["Sudoku Settings:GamePlay:Player Settings:HiLiteSolvedCell"].ToString() == "ON" ? true : false;
-            SolveNextCell = devSettings["Sudoku Settings:GamePlay:Player Settings:SolveNextCell"].ToString() == "ON" ? true : false;
-            UseInGameTimer = devSettings["Sudoku Settings:GamePlay:Player Settings:UseInGameTimer"].ToString() == "ON" ? true : false;
-            UseInGameScoring = devSettings["Sudoku Settings:GamePlay:Player Settings:UseInGameScoring"].ToString() == "ON" ? true : false;
-            CellValueChangeMode = devSettings["Sudoku Settings:GamePlay:Player Settings:CellValueChangeMode"].ToString();
+            _devSettings = devSettings;
+            CellStatistics = _devSettings["Sudoku Settings:GamePlay:Player Settings:CellStatistics"].ToString() == "ON" ? true : false;
+            CellDisplayValueType = _devSettings["Sudoku Settings:GamePlay:Player Settings:CellDisplayValueType"].ToString();
+            HiLiteSolvedCell = _devSettings["Sudoku Settings:GamePlay:Player Settings:HiLiteSolvedCell"].ToString() == "ON" ? true : false;
+            SolveNextCell = _devSettings["Sudoku Settings:GamePlay:Player Settings:SolveNextCell"].ToString() == "ON" ? true : false;
+            UseInGameTimer = _devSettings["Sudoku Settings:GamePlay:Player Settings:UseInGameTimer"].ToString() == "ON" ? true : false;
+            UseInGameScoring = _devSettings["Sudoku Settings:GamePlay:Player Settings:UseInGameScoring"].ToString() == "ON" ? true : false;
+            CellValueChangeMode = _devSettings["Sudoku Settings:GamePlay:Player Settings:CellValueChangeMode"].ToString();
         }
     }
 }

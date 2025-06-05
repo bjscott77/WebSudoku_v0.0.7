@@ -3,9 +3,10 @@
     public class DevConfiguration
     {
         public SudokuSettings SudokuSettings { get; set; } = null;
-        public IConfigurationSection DevConfig { get; set; } = null;
-        public DevConfiguration(IConfigurationSection _devConfig)
+        private readonly IConfigurationSection _devConfig;
+        public DevConfiguration(IConfigurationSection devConfig)
         {
+            _devConfig = devConfig;
             SudokuSettings = new SudokuSettings(_devConfig);
         }
     }
