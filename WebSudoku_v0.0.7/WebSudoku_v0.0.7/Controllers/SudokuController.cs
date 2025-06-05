@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using WebSudoku_v0._0._7.Models;
 using WebSudoku_v0._0._7.Repositories;
-using WebSudoku_v0._0._7.Classes;
+using WebSudoku_v0._0._7.Configuration;
 
 namespace WebSudoku_v0._0._7.Controllers
 {
@@ -150,7 +150,7 @@ namespace WebSudoku_v0._0._7.Controllers
                     return new JsonResult(jsonResult);
                 }
 
-                var puzzle = JsonSerializer.Deserialize<DTOSudoku>(json);
+                var puzzle = JsonSerializer.Deserialize<SudokuDTO>(json);
                 if (puzzle == null)
                 {
                     var errorModel = _sudokuRepo.GetEmptyListReturnModel();
@@ -206,7 +206,7 @@ namespace WebSudoku_v0._0._7.Controllers
                     return new JsonResult(jsonResult);
                 }
 
-                var puzzles = JsonSerializer.Deserialize<List<DTOSudoku>>(json);
+                var puzzles = JsonSerializer.Deserialize<List<SudokuDTO>>(json);
                 if (puzzles == null)
                 {
                     var errorModel = _sudokuRepo.GetEmptyListReturnModel();

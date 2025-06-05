@@ -4,6 +4,7 @@ using WebSudoku_v0._0._7.Controllers;
 using WebSudoku_v0._0._7.Data;
 using WebSudoku_v0._0._7.Repositories;
 using Microsoft.Extensions.Logging;
+using WebSudoku_v0._0._7.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,10 +26,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 using ILoggerFactory factory = LoggerFactory.Create(b => b.AddDebug());
 var apiDebugLogger = factory.CreateLogger<SudokuController>();
-var repoDebugLogger = factory.CreateLogger<SudokuPuzzlesRepository>();
+var repoDebugLogger = factory.CreateLogger<SudokuRepository>();
 
 builder.Services.AddSingleton<ILogger<SudokuController>>(apiDebugLogger);
-builder.Services.AddSingleton<ILogger<SudokuPuzzlesRepository>>(repoDebugLogger);
+builder.Services.AddSingleton<ILogger<SudokuRepository>>(repoDebugLogger);
 
 builder.Services.AddSingleton<IConfigurationSection>(builder.Configuration.GetSection("DEV"));
 
@@ -36,7 +37,7 @@ builder.Services.AddSingleton<IConfigurationSection>(builder.Configuration.GetSe
 var devConfig = new DevConfiguration(builder.Configuration.GetSection("DEV"));
 builder.Services.AddSingleton<DevConfiguration>(devConfig);
 builder.Services.AddScoped<ISudokuBoard, SudokuBoard>();
-builder.Services.AddScoped<ISudokuRepository,SudokuPuzzlesRepository>();
+builder.Services.AddScoped<ISudokuRepository,SudokuRepository>();
 builder.Services.AddScoped<ISudokuManager, SudokuManager>();
 
 // Add services to the container.

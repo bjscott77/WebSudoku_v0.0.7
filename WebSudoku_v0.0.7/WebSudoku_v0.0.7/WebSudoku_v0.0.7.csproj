@@ -10,14 +10,9 @@
   <ItemGroup>
     <Compile Remove="Classes\CustomRouting.cs" />
     <Compile Remove="Configuration\DevSudokuConfigurationSection.cs" />
-    <Compile Remove="Configuration\GamePlaySettings.cs" />
     <Compile Remove="Configuration\GamePlaySettingsProperty.cs" />
     <Compile Remove="Configuration\IGamePlaySettingsProperty.cs" />
     <Compile Remove="Configuration\ILocalConfigurationSection.cs" />
-    <Compile Remove="Configuration\PlayerSettings.cs" />
-    <Compile Remove="Configuration\PlaySettings.cs" />
-    <Compile Remove="Configuration\SolveSettings.cs" />
-    <Compile Remove="Configuration\SudokuSettings.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,10 +30,6 @@
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.Text.Json" Version="9.0.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Configuration\" />
   </ItemGroup>
 
 </Project>

@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using WebSudoku_v0._0._7.Classes;
+using WebSudoku_v0._0._7.Configuration;
 using WebSudoku_v0._0._7.Data;
 using WebSudoku_v0._0._7.Repositories;
 using Xunit;
@@ -41,7 +42,7 @@ namespace SudokuWeb.Tests
 
             // Register other services as in Program.cs
             services.AddScoped<ISudokuBoard, SudokuBoard>();
-            services.AddScoped<ISudokuRepository, SudokuPuzzlesRepository>();
+            services.AddScoped<ISudokuRepository, SudokuRepository>();
             services.AddScoped<ISudokuManager, SudokuManager>();
 
             _serviceProvider = services.BuildServiceProvider();

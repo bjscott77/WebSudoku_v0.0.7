@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace WebSudoku_v0._0._7.Models
 {
-    public class DTOSudoku : EntityBase
+    public class SudokuDTO : EntityBase
     {
         [Required]
         [Display(Name = "Difficulty")]
@@ -26,55 +26,55 @@ namespace WebSudoku_v0._0._7.Models
         public IEnumerable<string> Possibles { get; set; }
 
         #region Constructors
-        public DTOSudoku() : base()
+        public SudokuDTO() : base()
         {
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
             Possibles = new List<string>();
         }
-        public DTOSudoku(Guid id) : base(id)
+        public SudokuDTO(Guid id) : base(id)
         {
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
             Possibles = new List<string>();
         }
-        public DTOSudoku(string id) : base(id)
+        public SudokuDTO(string id) : base(id)
         {
             Difficulty = int.MinValue;
             BoardValues = string.Empty;
             Possibles = new List<string>();
         }
-        public DTOSudoku(string id, int difficulty) : base(id)
+        public SudokuDTO(string id, int difficulty) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = string.Empty;
             Possibles = new List<string>();
         }
-        public DTOSudoku(Guid id, int difficulty) : base(id)
+        public SudokuDTO(Guid id, int difficulty) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = string.Empty;
             Possibles = new List<string>();
         }
-        public DTOSudoku(string id, int difficulty, string boardValues) : base(id)
+        public SudokuDTO(string id, int difficulty, string boardValues) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = boardValues;
             Possibles = new List<string>();
         }
-        public DTOSudoku(Guid id, int difficulty, string boardValues) : base(id)
+        public SudokuDTO(Guid id, int difficulty, string boardValues) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = boardValues;
             Possibles = new List<string>();
         }
-        public DTOSudoku(string id, int difficulty, string boardValues, IEnumerable<string> possibles) : base(id)
+        public SudokuDTO(string id, int difficulty, string boardValues, IEnumerable<string> possibles) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = boardValues;
             Possibles = possibles;
         }
-        public DTOSudoku(Guid id, int difficulty, string boardValues, IEnumerable<string> possibles) : base(id)
+        public SudokuDTO(Guid id, int difficulty, string boardValues, IEnumerable<string> possibles) : base(id)
         {
             Difficulty = difficulty;
             BoardValues = boardValues;

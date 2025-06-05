@@ -1,50 +1,26 @@
 ﻿namespace WebSudoku_v0._0._7.Configuration
 {
-    public class PlayerSettings : GamePlaySettingsProperty
+    public class PlayerSettings
     {
-        private readonly ONOFFPowerMode? _solveNextCell;
-        [ConfigurationKeyName("SolveNextCell")]
-        public ONOFFPowerMode? SolveNextCell { get; set; }
+        public bool CellStatistics { get; set; }
+        public string CellDisplayValueType { get; set; }
+        public bool HiLiteSolvedCell { get; set; }
+        public bool SolveNextCell { get; set; }
+        public bool UseInGameTimer { get; set; }
+        public bool UseInGameScoring { get; set; }
+        public string CellValueChangeMode { get; set; }
 
-        private readonly ONOFFPowerMode? _useInGameTimer;
-        [ConfigurationKeyName("UseInGameTimer")]
-        public ONOFFPowerMode? UseInGameTimer { get; set; }
-
-        private readonly ONOFFPowerMode? _useInGameScoring;
-        [ConfigurationKeyName("UseInGameScoring")]
-        public ONOFFPowerMode? UseInGameScoring { get; set; }
-
-        private readonly CellValueChangeMode? _cellValueChangeType;
-        [ConfigurationKeyName("CellValueChangeType")]
-        public CellValueChangeMode? CellValueChangeType { get; set; }
-
-        public PlayerSettings() { }
-
-        public PlayerSettings(PuzzleSelectionMode? selection,
-            ONOFFPowerMode? cellStatisticsPowerMode,
-            CellDisplayValueMode? cellDisplayValueType,
-            ONOFFPowerMode? hiLiteSolvedCell) :
-            base(selection, cellStatisticsPowerMode, cellDisplayValueType, hiLiteSolvedCell)
+        private readonly IConfigurationSection _devSettings;
+        public PlayerSettings(IConfigurationSection devSettings)    
         {
-        }
-
-        public PlayerSettings(PuzzleSelectionMode? selection,
-            ONOFFPowerMode? cellStatisticsPowerMode,
-            CellDisplayValueMode? cellDisplayValueType,
-            ONOFFPowerMode? hiLiteSolvedCell,
-            ONOFFPowerMode? solveNextCell,
-            ONOFFPowerMode? usInGameTimer,
-            ONOFFPowerMode? useInGameScoring,
-            CellValueChangeMode? cellValueChangeType) :
-            base(selection,
-                cellStatisticsPowerMode,
-                cellDisplayValueType,
-                hiLiteSolvedCell)
-        {
-            SolveNextCell = solveNextCell;
-            UseInGameTimer = usInGameTimer;
-            UseInGameScoring = useInGameScoring;
-            CellValueChangeType = cellValueChangeType;
+            _devSettings = devSettings;
+            CellStatistics = _devSettings["Sudoku Settings:GamePlay:Player Settings:CellStatistics"].ToString() == "ON" ? true : false;
+            CellDisplayValueType = _devSettings["Sudoku Settings:GamePlay:Player Settings:CellDisplayValueType"].ToString();
+            HiLiteSolvedCell = _devSettings["Sudoku Settings:GamePlay:Player Settings:HiLiteSolvedCell"].ToString() == "ON" ? true : false;
+            SolveNextCell = _devSettings["Sudoku Settings:GamePlay:Player Settings:SolveNextCell"].ToString() == "ON" ? true : false;
+            UseInGameTimer = _devSettings["Sudoku Settings:GamePlay:Player Settings:UseInGameTimer"].ToString() == "ON" ? true : false;
+            UseInGameScoring = _devSettings["Sudoku Settings:GamePlay:Player Settings:UseInGameScoring"].ToString() == "ON" ? true : false;
+            CellValueChangeMode = _devSettings["Sudoku Settings:GamePlay:Player Settings:CellValueChangeMode"].ToString();
         }
     }
 }

@@ -2,59 +2,31 @@
 {
     public class SudokuSettings
     {
-        private readonly string[]? _modeOptions;
-        [ConfigurationKeyName("ModeOptions")]
-        public string[]? ModeOptions { get; set; }
+        public IEnumerable<int> BoardDimensions { get; set; }
+        public IEnumerable<string> ModeOptions { get; set; }
+        public string Mode { get; set; }
+        public IEnumerable<string> SelectionOptions { get; set; }
+        public IEnumerable<string> DisplayValueTypeOptions { get; set; }
+        public IEnumerable<string> SolvedCellValueOptions { get; set; }
+        public IEnumerable<string> CellValueChangeOptions { get; set; }
+        public IEnumerable<int> CellStatisticsInitial { get; set; }
+        public IEnumerable<int> CellStatisticsEmpty { get; set; }
+        public GamePlaySettings GamePlaySettings { get; set; }
 
-        private readonly string? _mode;
-        [ConfigurationKeyName("Mode")]
-        public string? Mode { get; set; }
-
-        private readonly string[]? _selectionOptions;
-        [ConfigurationKeyName("SelectionOptions")]
-        public string[]? SelectionOptions { get; set; }
-
-        private readonly string[]? _displayValueTypeOptions;
-        [ConfigurationKeyName("DisplayValueTypeOptions")]
-        public string[]? DisplayValueTypeOptions { get; set; }
-
-        private readonly string[]? _solvedCellValueOptions;
-        [ConfigurationKeyName("SolvedCellValueOptions")]
-        public string[]? SolvedCellValueOptions { get; set; }
-
-        private readonly string[]? _cellValueChangeOptions;
-        [ConfigurationKeyName("CellValueChangeOptions")]
-        public string[]? CellValueChangeOptions { get; set; }
-
-        private readonly string? _cellStatisticsInitial;
-        [ConfigurationKeyName("CellStatisticsInitial")]
-        public string? CellStatisticsInitial { get; set; }
-
-        private readonly GamePlaySettings? _gamePlay;
-        [ConfigurationKeyName("GamePlay")]
-        public GamePlaySettings? GamePlay { get; set; }
-
-        public SudokuSettings()
+        private readonly IConfigurationSection _devSettings;
+        public SudokuSettings(IConfigurationSection devSettings)
         {
-            
-        }
-
-        public SudokuSettings(
-            string[]? modeOptions, 
-            string? mode, 
-            string[]? selectionOptions, 
-            string[]? displayValueTypeOptions, 
-            string[]? solvedCellValueOptions, 
-            string[]? cellValueChangeOptions, 
-            string? cellStatisticsInitial)
-        {
-            ModeOptions = modeOptions;
-            Mode = mode;
-            SelectionOptions = selectionOptions;
-            DisplayValueTypeOptions = displayValueTypeOptions;
-            SolvedCellValueOptions = solvedCellValueOptions;
-            CellValueChangeOptions = cellValueChangeOptions;
-            CellStatisticsInitial = cellStatisticsInitial;
+            _devSettings = devSettings;
+            BoardDimensions = _devSettings["Sudoku Settings:Board Dimensions"].Split(',').Select(d => int.Parse(d));
+            ModeOptions = _devSettings["Sudoku Settings:ModeOptions"].Split(',');
+            Mode = _devSettings["Sudoku Settings:Mode"].ToString();
+            SelectionOptions = _devSettings["Sudoku Settings:SelectionOptions"].Split(',');
+            DisplayValueTypeOptions = _devSettings["Sudoku Settings:DisplayValueTypeOptions"].Split(',');
+            SolvedCellValueOptions = _devSettings["Sudoku Settings:SolvedCellValueOptions"].Split(',');
+            CellValueChangeOptions = _devSettings["Sudoku Settings:CellValueChangeOptions"].Split(',');
+            CellStatisticsInitial = _devSettings["Sudoku Settings:CellStatisticsInitial"].Split(',').Select(s => int.Parse(s));
+            CellStatisticsEmpty = _devSettings["Sudoku Settings:CellStatisticsEmpty"].Split(',').Select(s => int.Parse(s));
+            GamePlaySettings = new GamePlaySettings(_devSettings);
         }
     }
 }

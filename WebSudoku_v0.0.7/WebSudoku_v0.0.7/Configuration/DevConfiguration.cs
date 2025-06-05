@@ -1,4 +1,4 @@
-﻿namespace WebSudoku_v0._0._7.Classes
+﻿namespace WebSudoku_v0._0._7.Configuration
 {
     public class DevConfiguration
     {

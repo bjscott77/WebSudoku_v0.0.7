@@ -2,38 +2,18 @@
 {
     public class GamePlaySettings
     {
-        private readonly string[]? _newConfigPuzzles;
-        [ConfigurationKeyName("New Config Puzzles")]
-        public string[]? NewConfigPuzzles { get; set; } = new string[] { };
+        public PlaySettings PlaySettings { get; set; }
+        public SolveSettings SolveSettings { get; set; }
+        public PlayerSettings PlayerSettings { get; set; }
 
-        private readonly IGamePlaySettingsProperty? _playSettings;
-        [ConfigurationKeyName("Play Settings")]
-        public IGamePlaySettingsProperty? PlaySettings { get; set; }
-
-        private readonly IGamePlaySettingsProperty? _solveSettings;
-        [ConfigurationKeyName("Solve Settings")]
-        public IGamePlaySettingsProperty? SolveSettings { get; set; }
-
-        private readonly IGamePlaySettingsProperty? _playerSettings;
-        [ConfigurationKeyName("Player Settings")]
-        public IGamePlaySettingsProperty? PlayerSettings { get; set; }
-
-        public GamePlaySettings()
+        private readonly IConfigurationSection _devSettings;
+        public GamePlaySettings(IConfigurationSection devSettings)  
         {
+            _devSettings = devSettings;
+            PlaySettings = new PlaySettings(_devSettings);
+            SolveSettings = new SolveSettings(_devSettings);
+            PlayerSettings = new PlayerSettings(_devSettings);
 
-        }
-
-        public GamePlaySettings(
-            string[] newConfigPuzzles, 
-            IGamePlaySettingsProperty? playSettings, 
-            IGamePlaySettingsProperty? solveSettings,
-            IGamePlaySettingsProperty? playerSettings)
-        {
-            NewConfigPuzzles = newConfigPuzzles;
-            PlaySettings = playSettings;
-            SolveSettings = solveSettings;
-            PlayerSettings = playerSettings;
         }
     }
 }
-
