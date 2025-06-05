@@ -183,35 +183,7 @@ function solvePuzzle() {
 }
 
 function stepPuzzle() {
-    disableAll();
-
-    const rootElem = document.getElementById("root");
-    let puzzle = "";
-    for (let i = 0; i < rootElem.children.length; i++)
-        if (rootElem.children[i].innerHTML == "&nbsp;")
-            puzzle += "0";
-        else
-            puzzle += rootElem.children[i].innerHTML;
-
-    console.log("Step Puzzle", puzzle);
-
-    if (puzzle == null) {
-        modal("Please select a puzzle to solve it.");
-    } else {
-        fetch("api/sudoku/getsteppuzzle?puzzle=" + puzzle)
-            .then(res => res.json())
-            .then((rawData) => {
-                const data = translateResponseData(rawData);
-                if (data.StatusCode == 200)
-                    hydrateRootElem(data);
-                else
-                    modal("Not Ready: Single step solution is under construction.");
-                    //modal(data.Status + ": " + data.ErrorMessage);
-
-                enableAll();
-            })
-            .catch(err => console.log(err));
-    }
+    modal("Not Ready: Single step solution is under construction.");
 }
 
 function confirmDelete() {

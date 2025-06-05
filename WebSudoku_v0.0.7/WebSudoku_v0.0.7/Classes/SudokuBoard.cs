@@ -14,6 +14,7 @@
         {
             return Cells;
         }
+
         public void InitializeProbabilities()
         {
             var Cells = GetCells();

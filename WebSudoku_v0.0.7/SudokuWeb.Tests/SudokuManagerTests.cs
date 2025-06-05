@@ -225,8 +225,12 @@ namespace SudokuWeb.Tests
             Assert.Equal(devConfig.SudokuSettings.CellStatisticsEmpty, cells.List[0].CellPossibilities.List);
         }
 
-        [Fact]
-        public void ClearCellOdds_ZerosPossibilities_WhenCellHasValue()
+        [Theory]
+        [InlineData(1, 9)]
+        [InlineData(2, 9)]
+        [InlineData(3, 9)]
+        [InlineData(9, 9)]
+        public void ClearCellOdds_ZerosPossibilities_WhenCellHasValue(int value, int expected)
         {
             var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
             var manager = new SudokuManager(devConfig);
@@ -234,23 +238,24 @@ namespace SudokuWeb.Tests
             // Arrange: create a board with two cells
             var cell1 = new Cell(new CellLocation(1, 1, 1, 0))
             {
-                Value = 1,
+                Value = value,
                 hasValue = true,
                 isEnabled = true,
                 CellPossibilities = new CellPossibilities { List = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 } }
             };
             // Act
-            var result = (Cell)typeof(SudokuManager)
+            var result = (Cell?)typeof(SudokuManager)
                 .GetMethod("ClearCellOdds", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { cell1 });
 
             // Assert
-            Assert.Equal(result.CellPossibilities.List.Select(c => c == 0).Count(), 9);
-            Assert.Equal(result.CellPossibilities.List.Count(), 9);
+            Assert.Equal(expected, result?.CellPossibilities.List.Select(c => c == 0).Count());
+            Assert.Equal(expected, result?.CellPossibilities.List.Count());
         }
 
-        [Fact]
-        public void ClearCellOdds_IgnoresPossibilities_WhenCellHasNoValue()
+        [Theory]
+        [InlineData(0, 0, 9)]
+        public void ClearCellOdds_IgnoresPossibilities_WhenCellHasNoValue(int value, int zeroCount, int count)
         {
             var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
             var manager = new SudokuManager(devConfig);
@@ -258,19 +263,19 @@ namespace SudokuWeb.Tests
             // Arrange: create a board with two cells
             var cell1 = new Cell(new CellLocation(1, 1, 1, 0))
             {
-                Value = 0,
+                Value = value,
                 hasValue = false,
                 isEnabled = false,
                 CellPossibilities = new CellPossibilities { List = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9 } }
             };
             // Act
-            var result = (Cell)typeof(SudokuManager)
+            var result = (Cell?)typeof(SudokuManager)
                 .GetMethod("ClearCellOdds", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { cell1 });
 
             // Assert
-            Assert.Equal(result.CellPossibilities.List.Where(c => c == 0).Count(), 0);
-            Assert.Equal(result.CellPossibilities.List.Count(), 9);
+            Assert.Equal(result?.CellPossibilities.List.Where(c => c == 0).Count(), zeroCount);
+            Assert.Equal(result?.CellPossibilities.List.Count(), count);
         }
 
         [Fact]
@@ -286,7 +291,7 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
             var cells = board.Cells;
             // Act
-            var result = (List<Cell>)typeof(SudokuManager)
+            var result = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("DeepCopyCells", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(board.SudokuManager, new object[] { cells });
 
@@ -312,11 +317,11 @@ namespace SudokuWeb.Tests
             var previous = board.Cells.List;
 
             // Act
-            var current = (List<Cell>)typeof(SudokuManager)
+            var current = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("DeepCopyCells", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(board.SudokuManager, new object[] { board.Cells });
 
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("CompareBoardCells", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(board.SudokuManager, new object[] { previous, current });
 
@@ -338,14 +343,14 @@ namespace SudokuWeb.Tests
             var previous = board.Cells.List;
 
             // Act
-            var current = (List<Cell>)typeof(SudokuManager)
+            var current = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("DeepCopyCells", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(board.SudokuManager, new object[] { board.Cells });
 
             current[1].Value = 2;
             current[1].hasValue = true;
 
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("CompareBoardCells", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(board.SudokuManager, new object[] { previous, current });
 
@@ -368,14 +373,14 @@ namespace SudokuWeb.Tests
             var previous = board.Cells.List;
 
             // Act
-            var current = (List<Cell>)typeof(SudokuManager)
+            var current = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("DeepCopyCells", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(board.SudokuManager, new object[] { board.Cells });
 
             current[1].Value = 2;
             current[1].hasValue = true;
 
-            var result = (string)typeof(SudokuManager)
+            var result = (string?)typeof(SudokuManager)
                 .GetMethod("DifferenceBoardCells", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(board.SudokuManager, new object[] { current, previous });
 
@@ -397,7 +402,7 @@ namespace SudokuWeb.Tests
 
             // Act
             board.Cells.List[1].CellPossibilities.List = new List<int>() { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("HasCorruptedOdds", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells });
 
@@ -418,7 +423,7 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
 
             // Act
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("HasCorruptedOdds", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells });
 
@@ -455,7 +460,7 @@ namespace SudokuWeb.Tests
                 .Invoke(manager, new object[] { cells, cell2 });
 
             // Assert
-            Assert.True((bool)result);
+            Assert.True((bool?)result);
             Assert.True(cells.List[1].hasBackup);
         }
 
@@ -471,7 +476,7 @@ namespace SudokuWeb.Tests
                 .Invoke(manager, new object[] { null, null });
 
             // Assert
-            Assert.False((bool)result);
+            Assert.False((bool?)result);
         }
 
         [Fact]
@@ -503,7 +508,7 @@ namespace SudokuWeb.Tests
                 .Invoke(manager, new object[] { cells, dualOddsCell });
 
             // Assert
-            Assert.False((bool)result);
+            Assert.False((bool?)result);
         }
 
         [Fact]
@@ -527,7 +532,7 @@ namespace SudokuWeb.Tests
                 .Invoke(manager, new object[] { board.Cells, true });
 
             // Assert
-            Assert.False((bool)result);
+            Assert.False((bool?)result);
         }
 
         [Fact]
@@ -551,7 +556,7 @@ namespace SudokuWeb.Tests
                 .Invoke(manager, new object[] { board.Cells, false });
 
             // Assert
-            Assert.True((bool)result);
+            Assert.True((bool?)result);
         }
 
         [Theory]        
@@ -571,19 +576,19 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
 
             // Act
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("PlaceCellValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, index, value });
 
             // Assert
-            Assert.True((bool)result);
+            Assert.True(result);
             Assert.Equal(board.Cells.List[index].Value, expected);
         }
 
         [Theory]
-        [InlineData(-1, 6, 0)]
-        [InlineData(81, 5, 0)]
-        public void PlaceCellValue_DoesNotUpdateBoard_OnInvalidIndex(int index, int value, int expected)
+        [InlineData(-1, 6)]
+        [InlineData(81, 5)]
+        public void PlaceCellValue_DoesNotUpdateBoard_OnInvalidIndex(int index, int value)
         {
             var devConfig = _serviceProvider.GetRequiredService<DevConfiguration>();
             var manager = new SudokuManager(devConfig);
@@ -595,12 +600,12 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
 
             // Act
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("PlaceCellValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, index, value });
 
             // Assert
-            Assert.False((bool)result);
+            Assert.False(result);
         }
 
         [Theory]
@@ -618,12 +623,12 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
 
             // Act
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("PlaceCellValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, index, value });
 
             // Assert
-            Assert.False((bool)result);
+            Assert.False(result);
             Assert.Equal(board.Cells.List[index].Value, expected);
         }
 
@@ -644,7 +649,7 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
 
             // Act
-            var result = (List<List<Cell>>)typeof(SudokuManager)
+            var result = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, block });
 
@@ -667,12 +672,12 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
 
             // Act
-            var result = (List<List<Cell>>)typeof(SudokuManager)
+            var result = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, block });
 
             // Assert
-            Assert.True(!result.Any());
+            Assert.True(!result?.Any());
         }
 
         [Theory]
@@ -692,7 +697,7 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
 
             // Act
-            var result = (List<List<Cell>>)typeof(SudokuManager)
+            var result = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, block });
 
@@ -715,12 +720,12 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
 
             // Act
-            var result = (List<List<Cell>>)typeof(SudokuManager)
+            var result = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, block });
 
             // Assert
-            Assert.True(!result.Any());
+            Assert.True(!result?.Any());
         }
 
         [Fact]
@@ -736,11 +741,11 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
             var initialRow = new List<Cell>();
             // Act
-            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+            var blockRow = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, 5 });
 
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("FindInitialRowPattern", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { initialRow, blockRow[1] });
 
@@ -761,11 +766,11 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
             var initialRow = new List<Cell>();
             // Act
-            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+            var blockRow = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, 5 });
 
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("FindInitialRowPattern", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { initialRow, blockRow[1] });
 
@@ -786,11 +791,11 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
             var initialColumn = new List<Cell>();
             // Act
-            var blockColumn = (List<List<Cell>>)typeof(SudokuManager)
+            var blockColumn = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, 5 });
 
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("FindInitialColumnPattern", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { initialColumn, blockColumn[1] });
 
@@ -811,11 +816,11 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
             var initialColumn = new List<Cell>();
             // Act
-            var blockColumn = (List<List<Cell>>)typeof(SudokuManager)
+            var blockColumn = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, 5 });
 
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("FindInitialColumnPattern", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { initialColumn, blockColumn[1] });
 
@@ -840,21 +845,21 @@ namespace SudokuWeb.Tests
 
             List<List<List<Cell>>> blockRows = new List<List<List<Cell>>>();
             var finalRow = new List<Cell>();
-            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+            var blockRow = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, 1 });
             blockRows.Add(blockRow);
 
-            var filledRow = (List<Cell>)typeof(SudokuManager)
+            var filledRow = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("FindFilledRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { blockRows });
 
             // Assert
-            Assert.True(filledRow.Any());
-            Assert.True(filledRow.Count() == 3);
-            Assert.Equal(filledRow[0].Value, 7);
-            Assert.Equal(filledRow[1].Value, 4);
-            Assert.Equal(filledRow[2].Value, 3);
+            Assert.True(filledRow?.Any());
+            Assert.True(filledRow?.Count() == 3);
+            Assert.Equal(filledRow[0]?.Value, 7);
+            Assert.Equal(filledRow[1]?.Value, 4);
+            Assert.Equal(filledRow[2]?.Value, 3);
 
 
         }
@@ -876,25 +881,25 @@ namespace SudokuWeb.Tests
 
             List<List<List<Cell>>> blockRows = new List<List<List<Cell>>>();
             var finalRow = new List<Cell>();
-            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+            var blockRow = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, 1 });
             blockRows.Add(blockRow);
 
-            var filledRow = (List<Cell>)typeof(SudokuManager)
+            var filledRow = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("FindFilledRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { blockRows });
 
-            var opposingRow = (List<Cell>)typeof(SudokuManager)
+            var opposingRow = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("FindOpposingRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row });
 
             // Assert
-            Assert.True(opposingRow.Any());
-            Assert.True(opposingRow.Count() == 3);
-            Assert.Equal(opposingRow[0].Value, 5);
-            Assert.Equal(opposingRow[1].Value, 4);
-            Assert.Equal(opposingRow[2].Value, 7);
+            Assert.True(opposingRow?.Any());
+            Assert.True(opposingRow?.Count() == 3);
+            Assert.Equal(opposingRow[0]?.Value, 5);
+            Assert.Equal(opposingRow[1]?.Value, 4);
+            Assert.Equal(opposingRow[2]?.Value, 7);
         }
 
         [Fact]
@@ -914,20 +919,20 @@ namespace SudokuWeb.Tests
 
             List<List<List<Cell>>> blockRows = new List<List<List<Cell>>>();
             var finalRow = new List<Cell>();
-            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+            var blockRow = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, 1 });
             blockRows.Add(blockRow);
 
-            var filledRow = (List<Cell>)typeof(SudokuManager)
+            var filledRow = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("FindFilledRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { blockRows });
 
-            var opposingRow = (List<Cell>)typeof(SudokuManager)
+            var opposingRow = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("FindOpposingRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row });
 
-            var result = (int)typeof(SudokuManager)
+            var result = (int?)typeof(SudokuManager)
                 .GetMethod("FindPatternValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { filledRow, opposingRow });
 
@@ -953,13 +958,13 @@ namespace SudokuWeb.Tests
             board.InitializeProbabilities();
 
             List<List<List<Cell>>> blockColumns = new List<List<List<Cell>>>();
-            var blockColumn = (List<List<Cell>>)typeof(SudokuManager)
+            var blockColumn = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, 5 });
             blockColumns.Add(blockColumn);
 
             // Act
-            var result = (List<Cell>)typeof(SudokuManager)
+            var result = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("FindFilledColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { blockColumns });
 
@@ -982,16 +987,16 @@ namespace SudokuWeb.Tests
             var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
             var cells = board.Cells;
 
-            // Arrange: board with valid puzzle
+            // Arrange
             var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
             board.createSudokuBoard(validPuzzle);
             board.InitializeProbabilities();
 
             // Arrange: 1.Get list of block columns
-            List<List<List<Cell>>> blockColumns = null;
+            List<List<List<Cell>>>? blockColumns = null;
 
             // Act
-            var result = typeof(SudokuManager)
+            var result = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("FindFilledColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { blockColumns });
 
@@ -1010,7 +1015,7 @@ namespace SudokuWeb.Tests
             var board = new SudokuBoard(devConfig) { Dimensions = manager.Dimensions };
             var cells = board.Cells;
 
-            // Arrange: board with valid puzzle
+            // Arrange
             var validPuzzle = "108007090000098000060000700000086000370915082000370000009000060000420000030700104";
             board.createSudokuBoard(validPuzzle);
             board.InitializeProbabilities();
@@ -1023,11 +1028,8 @@ namespace SudokuWeb.Tests
             board.Cells.List[21].isHighlighted = true;
             board.Cells.List[22].isHighlighted = true;
 
-            // Arrange: 1.Get list of block columns
-            List<List<List<Cell>>> blockColumns = null;
-
             // Act
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("ProcessHighlights", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, value });
 
@@ -1058,11 +1060,8 @@ namespace SudokuWeb.Tests
             board.Cells.List[21].isHighlighted = true;
             board.Cells.List[22].isHighlighted = true;
 
-            // Arrange: 1.Get list of block columns
-            List<List<List<Cell>>> blockColumns = null;
-
             // Act
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("ProcessHighlights", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, value });
 
@@ -1087,25 +1086,25 @@ namespace SudokuWeb.Tests
 
             List<List<List<Cell>>> blockRows = new List<List<List<Cell>>>();
             var finalRow = new List<Cell>();
-            var blockRow = (List<List<Cell>>)typeof(SudokuManager)
+            var blockRow = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, 1 });
             blockRows.Add(blockRow);
 
-            var filledRow = (List<Cell>)typeof(SudokuManager)
+            var filledRow = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("FindFilledRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { blockRows });
 
-            var opposingRow = (List<Cell>)typeof(SudokuManager)
+            var opposingRow = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("FindOpposingRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { blockRows, filledRow[0].Location.Block, filledRow[0].Location.Row });
 
-            var value = (int)typeof(SudokuManager)
+            var value = (int?)typeof(SudokuManager)
                 .GetMethod("FindPatternValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { filledRow, opposingRow });
 
             // Act
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("FindSingleEmptyRow", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { finalRow, board.Cells, blockRows, filledRow, opposingRow, value });
 
@@ -1131,25 +1130,25 @@ namespace SudokuWeb.Tests
 
             List<List<List<Cell>>> blockColumns = new List<List<List<Cell>>>();
             var finalColumn = new List<Cell>();
-            var blockColumn = (List<List<Cell>>)typeof(SudokuManager)
+            var blockColumn = (List<List<Cell>>?)typeof(SudokuManager)
                 .GetMethod("GetBlockColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { board.Cells, 1 });
             blockColumns.Add(blockColumn);
 
-            var filledColumn = (List<Cell>)typeof(SudokuManager)
+            var filledColumn = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("FindFilledColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { blockColumns });
 
-            var opposingColumn = (List<Cell>)typeof(SudokuManager)
+            var opposingColumn = (List<Cell>?)typeof(SudokuManager)
                 .GetMethod("FindOpposingColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { blockColumns, filledColumn[0].Location.Block, filledColumn[0].Location.Column });
 
-            var value = (int)typeof(SudokuManager)
+            var value = (int?)typeof(SudokuManager)
                 .GetMethod("FindPatternValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { filledColumn, opposingColumn });
 
             // Act
-            var result = (bool)typeof(SudokuManager)
+            var result = (bool?)typeof(SudokuManager)
                 .GetMethod("FindSingleEmptyColumn", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 .Invoke(manager, new object[] { finalColumn, board.Cells, blockColumns, filledColumn, opposingColumn, value });
 
