@@ -39,6 +39,17 @@
 	<div id="root" class="container">
 	</div>
 
+	<div id="puzzleToolsSection" style="display: none;">
+		<div id="puzzleMode"></div>
+		<div id="selectedCell">Selected Cell: <span></span></div>
+		<div id="selectedCellPossibles">Possibles: <span></span></div>
+		Marked Cells:
+		<ul id="markedCellsList">
+		</ul>
+		<button type="button" id="markCell" class="btn" onclick="markCell();">Mark Cell</button>
+		<button type="button" id="unMarkCell" class="btn" onclick="unMarkLastCell();">Remove Last Unmarked</button>
+	</div>
+
 	<div id="customModal" class="modal">
 		<div class="modal-content">
 			<span class="close">&times;</span>

@@ -4,6 +4,7 @@ using System.Text.Json;
 using WebSudoku_v0._0._7.Models;
 using WebSudoku_v0._0._7.Repositories;
 using WebSudoku_v0._0._7.Configuration;
+using WebSudoku_v0._0._7.Classes;
 
 namespace WebSudoku_v0._0._7.Controllers
 {
@@ -15,12 +16,14 @@ namespace WebSudoku_v0._0._7.Controllers
         private readonly ILogger<SudokuController> _debugLogger;
         private readonly ISudokuRepository _sudokuRepo;
         private readonly DevConfiguration _devConfig;
+        private readonly SudokuAPIHelpers _helpers;
 
         public SudokuController(ISudokuRepository sudokuRepo, DevConfiguration devConfig, ILogger<SudokuController> logger)
         {
             _debugLogger = logger;
             _sudokuRepo = sudokuRepo;
             _devConfig = devConfig;
+            _helpers = new SudokuAPIHelpers(_devConfig);
         }
 
         [HttpGet("GetAllPuzzles")]
@@ -40,7 +43,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 }
 
                 var successResponse = new SudokuResponse(model, 200, "OK", string.Empty);
-                successResponse.CellDisplayValueType = _devConfig.SudokuSettings.GamePlaySettings.SolveSettings.CellDisplayValueType;
+                successResponse = _helpers.AttachSettings(successResponse);
                 var json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }
@@ -79,7 +82,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 }
 
                 var successResponse = new SudokuResponse(model, 200, "OK", string.Empty);
-                successResponse.CellDisplayValueType = _devConfig.SudokuSettings.GamePlaySettings.SolveSettings.CellDisplayValueType;
+                successResponse = _helpers.AttachSettings(successResponse);
                 var json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }

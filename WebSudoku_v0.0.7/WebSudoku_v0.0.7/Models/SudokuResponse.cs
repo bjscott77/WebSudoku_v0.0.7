@@ -7,6 +7,8 @@
         public string? Status { get; set; } = "OK";
         public string? ErrorMessage { get; set; } = string.Empty;
         public string? CellDisplayValueType { get; set; }
+        public string? PuzzleMode { get; set; }
+
         public SudokuResponse()
         {
         }

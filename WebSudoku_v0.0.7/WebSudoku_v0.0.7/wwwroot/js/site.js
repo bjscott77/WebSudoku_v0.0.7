@@ -36,11 +36,14 @@ function getAllPuzzles() {
         .then(res => res.json())
         .then((rawData) => {
             const data = translateResponseData(rawData);
-            if (data.StatusCode == 200) 
+            if (data.StatusCode == 200) {
                 hydrateAll(data);
-            else
+                if (data.PuzzleMode == "PLAY")
+                    document.getElementById("puzzleToolsSection").style.display = 'block';
+                document.getElementById("puzzleMode").innerHTML = "Mode: "+data.PuzzleMode;
+            } else {
                 modal(data.Status + ": " + data.ErrorMessage);
-            
+            }
         })
         .catch(err => {
             console.log(err);
@@ -66,7 +69,11 @@ function getPuzzle(puzzle) {
             .then((rawData) => {
                 const data = translateResponseData(rawData);
                 if (data.StatusCode == 200) {
-                    hydrateRootElem(data);
+                    if (data.PuzzleMode == "SOLVE") {
+                        hydrateRootElem(data);
+                    } else {
+                        hydrateRootElemPlay(data);
+                    }
                     hydrateRatingElem(data);
                 } else {
                     modal(data.Status + ": " + data.ErrorMessage);
@@ -350,7 +357,11 @@ function translateResponseData(puzzles) {
 function hydrateAll(puzzles) {
     hydrateSelectElem(puzzles);
     hydrateRatingElem(puzzles);
-    hydrateRootElem(puzzles);
+    if (puzzles.PuzzleMode == "SOLVE") {
+        hydrateRootElem(puzzles);
+    } else {
+        hydrateRootElemPlay(puzzles);
+    }
 }
 
 function hydrateRatingElem(puzzles) {
@@ -388,6 +399,7 @@ function hydrateRootElem(puzzles) {
 
     root.innerHTML = rootInnerHTML;
 
+    /*
     for (let i = 0; i < root.children.length; i++) {
         root.children[i].addEventListener("click", function (event) {
             let value = 0;
@@ -406,6 +418,85 @@ function hydrateRootElem(puzzles) {
             getPuzzle(current);
         });
     }
+    */
+}
+
+function hydrateRootElemPlay(puzzles) {
+    const select = document.getElementById("puzzleSelect").value;
+    const root = document.getElementById("root");
+    let rootInnerHTML = "";
+    const puzzle = puzzles.Payload[0].boardValues;
+
+    for (let i = 0; i < puzzle.length; i++) {
+        let possible = puzzles.Payload[0].possibles[i] != undefined ? puzzles.Payload[0].possibles[i] : "";
+        if (possible == "") {
+            rootInnerHTML += `<div class="cell">${puzzle[i]}</div>`;
+        } else {
+            rootInnerHTML += `<div class="cell" data-title=${possible}>${puzzle[i]}</div>`;
+        }
+    }
+
+    if (puzzles.CellDisplayValueType == "SPACE") {
+        rootInnerHTML = rootInnerHTML.replaceAll("0", "&nbsp");
+    }
+
+    root.innerHTML = rootInnerHTML;
+
+    for (let i = 0; i < root.children.length; i++) {
+        root.children[i].addEventListener("click", function (event) {
+            let value = 0;
+            if (event.target.innerHTML == "&nbsp;") {
+                value++;
+            } else {
+                value = +event.target.innerHTML;
+                value++;
+            }
+
+            if (value > 9)
+                value = "&nbsp;";
+
+            event.target.innerHTML = value;
+            let current = getCurrentPuzzle();
+            getPuzzle(current);
+        });
+
+        root.children[i].index = i;
+        root.children[i].possibles = puzzles.Payload[0].possibles[i];
+        root.children[i].addEventListener("contextmenu", function (event) {
+            event.preventDefault();
+            document.getElementById("selectedCell").children[0].innerHTML = event.target.index;
+            document.getElementById("selectedCellPossibles").children[0].innerHTML = event.target.possibles;
+        });
+    }
+}
+
+function markCell() {
+    const index = document.getElementById("selectedCell").children[0].innerHTML;
+    const possibles = document.getElementById("selectedCellPossibles").children[0].innerHTML;
+
+    if (index == "" || possibles == "") {
+        modal("Must have a cell index and possibles selected to mark the info.");
+        return;
+    }
+
+    let list = document.getElementById("markedCellsList");
+
+    for (let i = 0; i < list.children.length; i++) {
+        if (list.children[i].innerHTML.includes(`Cell: ${index} Possibles: ${possibles}`)) {
+            modal("This cell is already in the marked list.");
+            return;
+        }
+    }
+
+    const node = document.createElement("li");
+    const text = document.createTextNode(`Cell: ${index} Possibles: ${possibles}`);
+    node.appendChild(text);
+    list.appendChild(node);
+}
+
+function unMarkLastCell() {
+    let list = document.getElementById("markedCellsList");
+    list.removeChild(list.lastElementChild);
 }
 
 function modal(message) {

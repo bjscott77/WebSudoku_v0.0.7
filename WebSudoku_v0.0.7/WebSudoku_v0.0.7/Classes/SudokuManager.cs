@@ -1086,6 +1086,7 @@ namespace WebSudoku_v0._0._7.Classes
         public Cells RunSolution(Cells board)
         {
             bool solved = false;
+            const bool RELOAD = true;
             int turns = 1;
             int maxTurns = DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.MaxAttempts;
             bool progressMade = false;
@@ -1105,8 +1106,7 @@ namespace WebSudoku_v0._0._7.Classes
                 var previousBoard = DeepCopyCells(board);
                 if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine();
+                    Console.WriteLine(); Console.WriteLine();
                     Console.WriteLine($"Turn: {turns}");
                     Console.WriteLine("Updates Made:");
                 }
@@ -1130,14 +1130,14 @@ namespace WebSudoku_v0._0._7.Classes
                 {
                     if (IsBoardValid(board, HasCorruptedOdds(board)))
                     {
-                        if (!ProcessDualOdds(ref board) && IsBoardValid(board, HasCorruptedOdds(board)))
+                        if (!ProcessDualOdds(ref board))
                             if (DualOddsBackups.Any())
-                                ProcessDualOdds(ref board, true);
+                                ProcessDualOdds(ref board, RELOAD);
                     }
                     else
                     {
                         if (DualOddsBackups.Any())
-                            ProcessDualOdds(ref board, true);
+                            ProcessDualOdds(ref board, RELOAD);
                         else
                             ProcessDualOdds(ref board);
                     }
