@@ -607,6 +607,9 @@ function modalCellValueInput() {
                 if (document.getElementById("resetPuzzle").disabled)
                     document.getElementById("resetPuzzle").disabled = false;
 
+                if (document.getElementById("savePlayState").disabled)
+                    document.getElementById("savePlayState").disabled = false;
+
                 let current = getCurrentPuzzle();
                 getPuzzle(current);
                 resolve(true);
@@ -692,4 +695,15 @@ function revertToLastMarked() {
     }
 
     unMarkLastCell(true);
+}
+
+let savedState = "";
+function savePlayState() {
+    savedState = getCurrentPuzzle();
+    if (document.getElementById("loadPlayState").disabled)
+        document.getElementById("loadPlayState").disabled = false;
+}
+
+function loadPlayState() {
+    getPuzzle(savedState);
 }
