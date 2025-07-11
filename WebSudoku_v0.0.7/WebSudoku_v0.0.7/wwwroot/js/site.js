@@ -465,7 +465,6 @@ function hydrateRootElemPlay(puzzles) {
         root.children[i].index = i;
         root.children[i].addEventListener("click", function (event) {
             currentIndex = event.target.index;
-            moveRecord.push(currentIndex);
             document.getElementById("selectedCell").children[0].innerHTML = currentIndex;
             modalCellValueInput();
         });
@@ -500,14 +499,14 @@ function markCell() {
     document.getElementById("markedUndo").disabled = false;
 }
 
-function unMarkLastCell() {
+function unMarkLastCell(bypass = false) {
     let list = document.getElementById("markedCellsList");
     if (list.children.length == 0)
         return;
 
     const lastMarked = list.lastElementChild;
     const index = lastMarked.innerHTML.split(" ")[1];
-    if (currentIndex != index)
+    if (currentIndex != index && !bypass)
         return;
 
     list.removeChild(list.lastElementChild);
@@ -593,6 +592,8 @@ function modalCellValueInput() {
                 resolve(false);
                 modal.style.display = 'none';
             } else if (input.value >= 0 && input.value <= 9) {
+                moveRecord.push(currentIndex);
+
                 if (document.getElementById("inputMark").checked) {
                     markCell();
                     document.getElementById("inputMark").checked = false;
@@ -652,11 +653,21 @@ function enableAll() {
 
 function undoLastMove() {
     let cells = document.getElementById("root").children;
-    const index = moveRecord.pop();
+    let index = -1;
+    if (moveRecord.length > 0)
+        index = moveRecord.pop();
+    else
+        return;
+
     cells[index].innerHTML = "&nbsp;";
 
-    if (moveRecord.length == 0)
+    if (moveRecord.length == 0) {
         document.getElementById("undo").disabled = true;
+        document.getElementById("markedUndo").disabled = true;
+        document.getElementById("resetPuzzle").disabled = true;
+        document.getElementById("unMarkCell").disabled = true;
+        document.getElementById("markedCellsList").innerHTML = "";
+    }
 
     let current = getCurrentPuzzle();
     getPuzzle(current);
@@ -666,15 +677,21 @@ function revertToLastMarked() {
     if (moveRecord.length == 0)
         return;
 
-    const list = document.getElementById("markedCellsList");
-    const index = list.lastElementChild.innerHTML.split(" ")[1];
-    let found = false;
-    for (let i = moveRecord.length - 1; i >= 0; i--) {
-        if (moveRecord[i] != index) {
+    const elemList = document.getElementById("markedCellsList");
+    const cellIndex = elemList.lastElementChild.innerHTML.split(" ")[1];
+    const list = Array.from(elemList.children);
+    const start = moveRecord.length - 1;
+    let record = moveRecord[start];
+    for (let i = start; i >= 0; i--) {
+        if (record != cellIndex) {
             undoLastMove();
-        } else {
+            record = moveRecord[moveRecord.length - 1];
+        }
+        else {
+            undoLastMove();
             break;
         }
     }
-    undoLastMove();
+
+    unMarkLastCell(true);
 }
