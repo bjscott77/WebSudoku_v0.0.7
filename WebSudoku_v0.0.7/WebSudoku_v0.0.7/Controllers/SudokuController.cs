@@ -16,14 +16,12 @@ namespace WebSudoku_v0._0._7.Controllers
         private readonly ILogger<SudokuController> _debugLogger;
         private readonly ISudokuRepository _sudokuRepo;
         private readonly DevConfiguration _devConfig;
-        private readonly SudokuAPIHelpers _helpers;
 
         public SudokuController(ISudokuRepository sudokuRepo, DevConfiguration devConfig, ILogger<SudokuController> logger)
         {
             _debugLogger = logger;
             _sudokuRepo = sudokuRepo;
             _devConfig = devConfig;
-            _helpers = new SudokuAPIHelpers(_devConfig);
         }
 
         [HttpGet("GetAllPuzzles")]
@@ -43,7 +41,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 }
 
                 var successResponse = new SudokuResponse(model, 200, "OK", string.Empty);
-                successResponse = _helpers.AttachSettings(successResponse);
+                successResponse = _sudokuRepo.UpdateSettings(successResponse, model[0].BoardValues);
                 var json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }
@@ -82,7 +80,7 @@ namespace WebSudoku_v0._0._7.Controllers
                 }
 
                 var successResponse = new SudokuResponse(model, 200, "OK", string.Empty);
-                successResponse = _helpers.AttachSettings(successResponse);
+                successResponse = _sudokuRepo.UpdateSettings(successResponse, model[0].BoardValues);
                 var json = JsonSerializer.Serialize(successResponse);
                 return new JsonResult(json);
             }

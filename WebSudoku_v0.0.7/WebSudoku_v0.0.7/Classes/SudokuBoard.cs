@@ -31,6 +31,7 @@ namespace WebSudoku_v0._0._7.Classes
 
         public void createSudokuBoard(string puzzle)
         {
+            this.Cells.List.Clear();
             SudokuManager = new SudokuManager(_devConfig);
             
             var dims = _devConfig.SudokuSettings.BoardDimensions;

@@ -12,12 +12,14 @@ namespace WebSudoku_v0._0._7.Repositories
         private readonly ISudokuBoard _sudokuBoard;
         private readonly DevConfiguration _devConfig;
         private readonly ILogger<SudokuRepository> _debugLogger;
-        public SudokuRepository(ApplicationDbContext appDbContext, ISudokuBoard sudokuBoard, DevConfiguration devConfig, ILogger<SudokuRepository> logger)
+        private readonly SudokuAPIHelpers _helpers;
+        public SudokuRepository(ApplicationDbContext appDbContext, ISudokuBoard sudokuBoard, DevConfiguration devConfig, ILogger<SudokuRepository> logger, SudokuAPIHelpers helpers)
         {
             _appDbContext = appDbContext;
             _sudokuBoard = sudokuBoard;
             _devConfig = devConfig;
             _debugLogger = logger;
+            _helpers = helpers;
         }
         public async Task<List<SudokuDTO>>? AddPuzzleAsync(SudokuDTO? puzzle)
         {
@@ -227,6 +229,11 @@ namespace WebSudoku_v0._0._7.Repositories
                 Difficulty = int.MinValue,
                 BoardValues = string.Empty
             };
+        }
+
+        public SudokuResponse UpdateSettings(SudokuResponse response, string puzzle)
+        {            
+            return _helpers.AttachSettings(response, puzzle);
         }
     }
 }

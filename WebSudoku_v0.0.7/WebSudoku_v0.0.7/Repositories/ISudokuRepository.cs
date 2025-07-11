@@ -12,5 +12,6 @@ namespace WebSudoku_v0._0._7.Repositories
         public Task<List<SudokuDTO>>? DeletePuzzleAsync(string puzzle);     
         public List<SudokuDTO> GetEmptyListReturnModel();
         public SudokuDTO GetEmptyReturnModel();
+        public SudokuResponse UpdateSettings(SudokuResponse response, string puzzle);
     }
 }

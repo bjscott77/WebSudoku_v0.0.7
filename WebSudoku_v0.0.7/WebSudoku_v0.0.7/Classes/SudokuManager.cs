@@ -16,13 +16,14 @@ namespace WebSudoku_v0._0._7.Classes
 {
     public class SudokuManager : ISudokuManager
     {
-        #region Declarations
+        #region Properties
         private Stack<(List<Cell> Cells, Cell Cell)> DualOddsBackups = new Stack<(List<Cell>, Cell)>();
         
         private List<(int Attempt, int Index, int Value, int AlternateValue)> DualOddsRecord = new List<(int, int, int, int)>();
 
         public SudokuDimensions Dimensions { get; set; } = null;
-        public DevConfiguration DevConfig { get; set; } 
+        public DevConfiguration DevConfig { get; set; }
+        public bool isSolved { get; set; } = false;
         public SudokuManager(DevConfiguration devConfig)
         {
             DevConfig = devConfig;
@@ -304,7 +305,7 @@ namespace WebSudoku_v0._0._7.Classes
             return corrupt;
         }
 
-        private bool CompleteBoard(Cells cells)
+        public bool CompleteBoard(Cells cells)
         {
             return cells.List.All(c => c.hasValue);
         }
@@ -1085,7 +1086,6 @@ namespace WebSudoku_v0._0._7.Classes
         ///                 
         public Cells RunSolution(Cells board)
         {
-            bool solved = false;
             const bool RELOAD = true;
             int turns = 1;
             int maxTurns = DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.MaxAttempts;
@@ -1101,7 +1101,7 @@ namespace WebSudoku_v0._0._7.Classes
                 Console.WriteLine("Debug Info: DISABLED");
             }
 
-            while (!solved)
+            while (!isSolved)
             {
                 var previousBoard = DeepCopyCells(board);
                 if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
@@ -1121,7 +1121,7 @@ namespace WebSudoku_v0._0._7.Classes
 
                 if (CompleteBoard(board))
                 {
-                    solved = true;
+                    isSolved = true;
                     if (DevConfig.SudokuSettings.GamePlaySettings.SolveSettings.ShowDebugInfo)
                         Console.WriteLine($"Found Solution: Turns: {turns}");
 

@@ -33,7 +33,10 @@
 			<button type="button" id="stepPuzzle" class="inner-btn" onclick="stepPuzzle();">Next</button>
 		</div>
 
-		<button type="button" id="resetPuzzle" class="btn" onclick="getPuzzle();">Reset</button>
+		<button type="button" id="place" class="btn" onclick="placeValue();" disabled>Set Value</button>
+		<button type="button" id="undo" class="btn" onclick="undoLastMove();" disabled>Undo</button>
+		<button type="button" id="markedUndo" class="btn" onclick="revertToLastMarked();" disabled>Reset to Marked</button>
+		<button type="button" id="resetPuzzle" class="btn" onclick="getPuzzle();" disabled>Reset</button>
 	</div>
 	<br />
 	<div id="root" class="container">
@@ -42,14 +45,13 @@
 	<div id="puzzleToolsSection" style="display: none;">
 		<div id="puzzleMode"></div>
 		<div id="selectedCell">Selected Cell: <span></span></div>
-		<div id="selectedCellPossibles">Possibles: <span></span></div>
 		Marked Cells:
 		<ul id="markedCellsList">
 		</ul>
-		<button type="button" id="markCell" class="btn" onclick="markCell();">Mark Cell</button>
-		<button type="button" id="unMarkCell" class="btn" onclick="unMarkLastCell();">Remove Last Unmarked</button>
+		<button type="button" id="markCell" class="btn" onclick="markCell();" disabled>Add</button>
+		<button type="button" id="unMarkCell" class="btn" onclick="unMarkLastCell();" disabled>Remove</button>
 	</div>
-
+		
 	<div id="customModal" class="modal">
 		<div class="modal-content">
 			<span class="close">&times;</span>

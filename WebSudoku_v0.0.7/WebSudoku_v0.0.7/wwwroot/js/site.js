@@ -59,6 +59,19 @@ function getPuzzle(puzzle) {
             if (selectElem[i].value == id)
                 puzzle = selectElem[i].innerHTML;
         }
+        document.getElementById("resetPuzzle").disabled = true;
+        document.getElementById("undo").disabled = true;
+        moveRecord = [];
+        let currentIndex = 0;
+        let cellLock = {
+            on: false,
+            index: -1
+        };
+        document.getElementById("markedCellsList").innerHTML = "";
+        document.getElementById("selectedCell").children[0].innerHTML = "";
+        document.getElementById("unMarkCell").disabled = true;
+        document.getElementById("markedUndo").disabled = true;
+        document.getElementById("markCell").disabled = true;
     }
 
     if (puzzle == null) {
@@ -75,6 +88,9 @@ function getPuzzle(puzzle) {
                         hydrateRootElemPlay(data);
                     }
                     hydrateRatingElem(data);
+                } else if (data.Solved) {
+                    modal("Congratulations, you win!");
+                    return;
                 } else {
                     modal(data.Status + ": " + data.ErrorMessage);
                 }
@@ -358,8 +374,15 @@ function hydrateAll(puzzles) {
     hydrateSelectElem(puzzles);
     hydrateRatingElem(puzzles);
     if (puzzles.PuzzleMode == "SOLVE") {
+        document.getElementById("place").style.display = 'none';
+        document.getElementById("undo").style.display = 'none';
+        document.getElementById("markedUndo").style.display = 'none';
         hydrateRootElem(puzzles);
     } else {
+        document.getElementById("addNew").style.display = 'none';
+        document.getElementById("updatePuzzle").style.display = 'none';
+        document.getElementById("deletePuzzle").style.display = 'none';
+        document.getElementById("solvePuzzle").style.display = 'none';
         hydrateRootElemPlay(puzzles);
     }
 }
@@ -421,6 +444,12 @@ function hydrateRootElem(puzzles) {
     */
 }
 
+let moveRecord = [];
+let currentIndex = 0;
+let cellLock = {
+    on: false,
+    index: -1
+};
 function hydrateRootElemPlay(puzzles) {
     const select = document.getElementById("puzzleSelect").value;
     const root = document.getElementById("root");
@@ -444,6 +473,19 @@ function hydrateRootElemPlay(puzzles) {
 
     for (let i = 0; i < root.children.length; i++) {
         root.children[i].addEventListener("click", function (event) {
+            event.preventDefault();
+            if (!cellLock.on && cellLock.index == -1) {
+                cellLock.on = true;
+                cellLock.index = event.target.index;
+            }
+
+            if (cellLock.on && event.target.index != cellLock.index) {
+                modal("You cannot update another cell until you set the current cell value.");
+                return;
+            }
+            document.getElementById("root").children[cellLock.index].style.backgroundColor = "yellow";
+            document.getElementById("root").children[cellLock.index].style.color = "black";
+            document.getElementById("place").disabled = false;
             let value = 0;
             if (event.target.innerHTML == "&nbsp;") {
                 value++;
@@ -456,23 +498,23 @@ function hydrateRootElemPlay(puzzles) {
                 value = "&nbsp;";
 
             event.target.innerHTML = value;
-            let current = getCurrentPuzzle();
-            getPuzzle(current);
+            currentIndex = event.target.index;
         });
 
         root.children[i].index = i;
         root.children[i].possibles = puzzles.Payload[0].possibles[i];
         root.children[i].addEventListener("contextmenu", function (event) {
             event.preventDefault();
+            document.getElementById("markCell").disabled = false;
             document.getElementById("selectedCell").children[0].innerHTML = event.target.index;
-            document.getElementById("selectedCellPossibles").children[0].innerHTML = event.target.possibles;
         });
     }
 }
 
 function markCell() {
     const index = document.getElementById("selectedCell").children[0].innerHTML;
-    const possibles = document.getElementById("selectedCellPossibles").children[0].innerHTML;
+    const cells = document.getElementById("root").children;
+    const possibles = cells[index].getAttribute('data-title');
 
     if (index == "" || possibles == "") {
         modal("Must have a cell index and possibles selected to mark the info.");
@@ -492,11 +534,20 @@ function markCell() {
     const text = document.createTextNode(`Cell: ${index} Possibles: ${possibles}`);
     node.appendChild(text);
     list.appendChild(node);
+    
+    document.getElementById("unMarkCell").disabled = false;
+    document.getElementById("markedUndo").disabled = false;
 }
 
 function unMarkLastCell() {
     let list = document.getElementById("markedCellsList");
     list.removeChild(list.lastElementChild);
+    document.getElementById("selectedCell").children[0].innerHTML = "";
+    if (list.children.length == 0) {
+        document.getElementById("markCell").disabled = true;
+        document.getElementById("unMarkCell").disabled = true;
+        document.getElementById("markedUndo").disabled = true;
+    }
 }
 
 function modal(message) {
@@ -576,4 +627,51 @@ function enableAll() {
     document.getElementById("deletePuzzle").disabled = false;
     document.getElementById("showPuzzle").disabled = false;
     document.getElementById("resetPuzzle").disabled = false;
+}
+
+function undoLastMove() {
+    let cells = document.getElementById("root").children;
+    const index = moveRecord.pop();
+    cells[index].innerHTML = "&nbsp;";
+
+    if (moveRecord.length == 0)
+        document.getElementById("undo").disabled = true;
+
+    let current = getCurrentPuzzle();
+    getPuzzle(current);
+}
+
+function revertToLastMarked() {
+    if (moveRecord.length == 0)
+        return;
+
+    const list = document.getElementById("markedCellsList");
+    const index = list.lastElementChild.innerHTML.split(" ")[1];
+    let found = false;
+    for (let i = moveRecord.length - 1; i >= 0; i--) {
+        if (moveRecord[i] != index) {
+            undoLastMove();
+        } else {
+            break;
+        }
+    }
+    undoLastMove();
+}
+
+function placeValue() {
+    moveRecord.push(currentIndex);
+    document.getElementById("root").children[cellLock.index].style.backgroundColor = "black";
+    document.getElementById("root").children[cellLock.index].style.color = "#7d9b9a";
+    cellLock.on = false;
+    cellLock.index = -1;
+
+    if (document.getElementById("undo").disabled)
+        document.getElementById("undo").disabled = false;
+
+    if (document.getElementById("resetPuzzle").disabled)
+        document.getElementById("resetPuzzle").disabled = false;
+
+    document.getElementById("place").disabled = true;
+    let current = getCurrentPuzzle();
+    getPuzzle(current);
 }

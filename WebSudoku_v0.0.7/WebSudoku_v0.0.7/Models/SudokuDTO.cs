@@ -17,7 +17,7 @@ namespace WebSudoku_v0._0._7.Models
         [Display(Name = "Board Values")]
         [JsonPropertyName("boardValues")]
         [StringLength(81, ErrorMessage = "Board values must be 81 characters long.")]
-        [RegularExpression(@"^[0-9\]{81}$", ErrorMessage = "Board values must be a string of 81 characters, using digits 0-9.")]
+        [RegularExpression(@"^[0-9]{81}$", ErrorMessage = "Board values must be a string of 81 characters, using digits 0-9.")]
         public string BoardValues { get; set; }
 
         [Required]

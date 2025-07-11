@@ -38,6 +38,7 @@ builder.Services.AddSingleton<DevConfiguration>(devConfig);
 builder.Services.AddScoped<ISudokuBoard, SudokuBoard>();
 builder.Services.AddScoped<ISudokuRepository,SudokuRepository>();
 builder.Services.AddScoped<ISudokuManager, SudokuManager>();
+builder.Services.AddScoped<SudokuAPIHelpers>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

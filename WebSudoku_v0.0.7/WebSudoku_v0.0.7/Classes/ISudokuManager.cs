@@ -8,6 +8,10 @@
 
         void SetCellProbabilities(ref Cells cells, int index);
 
+        bool CompleteBoard(Cells cells);
+
+        bool IsBoardValid(Cells cells, bool corrupt);
+
         Cells RunSolution(Cells board);  
     }
 }
