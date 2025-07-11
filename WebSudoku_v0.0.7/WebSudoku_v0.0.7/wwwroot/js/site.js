@@ -67,7 +67,6 @@ function getPuzzle(puzzle) {
         document.getElementById("selectedCell").children[0].innerHTML = "";
         document.getElementById("unMarkCell").disabled = true;
         document.getElementById("markedUndo").disabled = true;
-        document.getElementById("markCell").disabled = true;
     }
 
     if (puzzle == null) {
@@ -468,7 +467,6 @@ function hydrateRootElemPlay(puzzles) {
             currentIndex = event.target.index;
             moveRecord.push(currentIndex);
             document.getElementById("selectedCell").children[0].innerHTML = currentIndex;
-            document.getElementById("markCell").disabled = false;
             modalCellValueInput();
         });
     }
@@ -504,10 +502,17 @@ function markCell() {
 
 function unMarkLastCell() {
     let list = document.getElementById("markedCellsList");
+    if (list.children.length == 0)
+        return;
+
+    const lastMarked = list.lastElementChild;
+    const index = lastMarked.innerHTML.split(" ")[1];
+    if (currentIndex != index)
+        return;
+
     list.removeChild(list.lastElementChild);
     document.getElementById("selectedCell").children[0].innerHTML = "";
     if (list.children.length == 0) {
-        document.getElementById("markCell").disabled = true;
         document.getElementById("unMarkCell").disabled = true;
         document.getElementById("markedUndo").disabled = true;
     }
@@ -588,8 +593,12 @@ function modalCellValueInput() {
                 resolve(false);
                 modal.style.display = 'none';
             } else if (input.value >= 0 && input.value <= 9) {
-                if (document.getElementById("inputMark").checked)
+                if (document.getElementById("inputMark").checked) {
                     markCell();
+                    document.getElementById("inputMark").checked = false;
+                } else {
+                    unMarkLastCell();
+                }
 
                 let cell = document.getElementById("root").children[currentIndex];
                 cell.innerHTML = input.value;
