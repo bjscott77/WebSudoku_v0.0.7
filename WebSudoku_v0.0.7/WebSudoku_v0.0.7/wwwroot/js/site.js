@@ -65,7 +65,6 @@ function getPuzzle(puzzle) {
         let currentIndex = 0;
         document.getElementById("markedCellsList").innerHTML = "";
         document.getElementById("selectedCell").children[0].innerHTML = "";
-        document.getElementById("unMarkCell").disabled = true;
         document.getElementById("markedUndo").disabled = true;
     }
 
@@ -495,7 +494,6 @@ function markCell() {
     node.appendChild(text);
     list.appendChild(node);
     
-    document.getElementById("unMarkCell").disabled = false;
     document.getElementById("markedUndo").disabled = false;
 }
 
@@ -512,7 +510,6 @@ function unMarkLastCell(bypass = false) {
     list.removeChild(list.lastElementChild);
     document.getElementById("selectedCell").children[0].innerHTML = "";
     if (list.children.length == 0) {
-        document.getElementById("unMarkCell").disabled = true;
         document.getElementById("markedUndo").disabled = true;
     }
 }
@@ -593,7 +590,7 @@ function modalCellValueInput() {
                 modal.style.display = 'none';
             } else if (input.value >= 0 && input.value <= 9) {
                 moveRecord.push(currentIndex);
-
+                console.log(moveRecord.join(", "));
                 if (document.getElementById("inputMark").checked) {
                     markCell();
                     document.getElementById("inputMark").checked = false;
@@ -665,7 +662,6 @@ function undoLastMove() {
         document.getElementById("undo").disabled = true;
         document.getElementById("markedUndo").disabled = true;
         document.getElementById("resetPuzzle").disabled = true;
-        document.getElementById("unMarkCell").disabled = true;
         document.getElementById("markedCellsList").innerHTML = "";
     }
 
@@ -685,10 +681,12 @@ function revertToLastMarked() {
     for (let i = start; i >= 0; i--) {
         if (record != cellIndex) {
             undoLastMove();
+            console.log(`undo: ${moveRecord.join(", ")}`);
             record = moveRecord[moveRecord.length - 1];
         }
         else {
             undoLastMove();
+            console.log(`undo: ${moveRecord.join(", ")}`);
             break;
         }
     }
