@@ -33,7 +33,6 @@
 			<button type="button" id="stepPuzzle" class="inner-btn" onclick="stepPuzzle();">Next</button>
 		</div>
 
-		<button type="button" id="place" class="btn" onclick="placeValue();" disabled>Set Value</button>
 		<button type="button" id="undo" class="btn" onclick="undoLastMove();" disabled>Undo</button>
 		<button type="button" id="markedUndo" class="btn" onclick="revertToLastMarked();" disabled>Reset to Marked</button>
 		<button type="button" id="resetPuzzle" class="btn" onclick="getPuzzle();" disabled>Reset</button>
@@ -65,6 +64,17 @@
 			<p></p>
 			<button id="modalConfirm" class="inner-btn">Confirm</button>
 			<button id="modalCancel" class="inner-btn">Cancel</button>
+		</div>
+	</div>
+
+	<div id="customInputModal" class="modal">
+		<div class="modal-content">
+			<span class="close">&times;</span>
+			<input id="value" type="number" min="0" max="9" placeholder="Enter a cell value..." />
+			<label for="mark">Mark Cell</label>
+			<input id="inputMark" type="checkbox" name="mark" />
+			<button id="inputConfirm" class="inner-btn btn-primary">Confirm</button>
+			<button id="inputCancel" class="inner-btn">Cancel</button>
 		</div>
 	</div>
 </div>

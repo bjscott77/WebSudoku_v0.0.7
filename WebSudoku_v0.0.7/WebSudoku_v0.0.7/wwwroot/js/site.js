@@ -63,10 +63,6 @@ function getPuzzle(puzzle) {
         document.getElementById("undo").disabled = true;
         moveRecord = [];
         let currentIndex = 0;
-        let cellLock = {
-            on: false,
-            index: -1
-        };
         document.getElementById("markedCellsList").innerHTML = "";
         document.getElementById("selectedCell").children[0].innerHTML = "";
         document.getElementById("unMarkCell").disabled = true;
@@ -374,7 +370,6 @@ function hydrateAll(puzzles) {
     hydrateSelectElem(puzzles);
     hydrateRatingElem(puzzles);
     if (puzzles.PuzzleMode == "SOLVE") {
-        document.getElementById("place").style.display = 'none';
         document.getElementById("undo").style.display = 'none';
         document.getElementById("markedUndo").style.display = 'none';
         hydrateRootElem(puzzles);
@@ -446,10 +441,6 @@ function hydrateRootElem(puzzles) {
 
 let moveRecord = [];
 let currentIndex = 0;
-let cellLock = {
-    on: false,
-    index: -1
-};
 function hydrateRootElemPlay(puzzles) {
     const select = document.getElementById("puzzleSelect").value;
     const root = document.getElementById("root");
@@ -472,41 +463,13 @@ function hydrateRootElemPlay(puzzles) {
     root.innerHTML = rootInnerHTML;
 
     for (let i = 0; i < root.children.length; i++) {
-        root.children[i].addEventListener("click", function (event) {
-            event.preventDefault();
-            if (!cellLock.on && cellLock.index == -1) {
-                cellLock.on = true;
-                cellLock.index = event.target.index;
-            }
-
-            if (cellLock.on && event.target.index != cellLock.index) {
-                modal("You cannot update another cell until you set the current cell value.");
-                return;
-            }
-            document.getElementById("root").children[cellLock.index].style.backgroundColor = "yellow";
-            document.getElementById("root").children[cellLock.index].style.color = "black";
-            document.getElementById("place").disabled = false;
-            let value = 0;
-            if (event.target.innerHTML == "&nbsp;") {
-                value++;
-            } else {
-                value = +event.target.innerHTML;
-                value++;
-            }
-
-            if (value > 9)
-                value = "&nbsp;";
-
-            event.target.innerHTML = value;
-            currentIndex = event.target.index;
-        });
-
         root.children[i].index = i;
-        root.children[i].possibles = puzzles.Payload[0].possibles[i];
-        root.children[i].addEventListener("contextmenu", function (event) {
-            event.preventDefault();
+        root.children[i].addEventListener("click", function (event) {
+            currentIndex = event.target.index;
+            moveRecord.push(currentIndex);
+            document.getElementById("selectedCell").children[0].innerHTML = currentIndex;
             document.getElementById("markCell").disabled = false;
-            document.getElementById("selectedCell").children[0].innerHTML = event.target.index;
+            modalCellValueInput();
         });
     }
 }
@@ -597,6 +560,55 @@ function modalConfirm(message) {
     });
 }
 
+function modalCellValueInput() {
+    return new Promise((resolve, reject) => {
+        const modal = document.getElementById('customInputModal');
+        const cancelBtn = modal.querySelector('#inputCancel');
+        const confirmBtn = modal.querySelector('#inputConfirm');
+        modal.style.display = 'block';
+        let input = document.getElementById("value");
+        input.value = "";
+        input.focus();
+        input.oninput = function (event) {
+            confirmBtn.focus(); 
+        }
+
+        modal.querySelector('.close').onclick = function () {
+            resolve(false);
+            modal.style.display = 'none';
+        };
+
+        cancelBtn.onclick = function (event) {
+            resolve(false);
+            modal.style.display = 'none';
+        };
+
+        confirmBtn.onclick = function (event) {
+            if (input.value < 0 || input.value > 9 || input.value == "") {
+                resolve(false);
+                modal.style.display = 'none';
+            } else if (input.value >= 0 && input.value <= 9) {
+                if (document.getElementById("inputMark").checked)
+                    markCell();
+
+                let cell = document.getElementById("root").children[currentIndex];
+                cell.innerHTML = input.value;
+
+                if (document.getElementById("undo").disabled)
+                    document.getElementById("undo").disabled = false;
+
+                if (document.getElementById("resetPuzzle").disabled)
+                    document.getElementById("resetPuzzle").disabled = false;
+
+                let current = getCurrentPuzzle();
+                getPuzzle(current);
+                resolve(true);
+                modal.style.display = 'none';
+            }
+        };
+    });
+}
+
 function getCurrentPuzzle() {
     const rootElem = document.getElementById("root");
     let puzzle = "";
@@ -656,22 +668,4 @@ function revertToLastMarked() {
         }
     }
     undoLastMove();
-}
-
-function placeValue() {
-    moveRecord.push(currentIndex);
-    document.getElementById("root").children[cellLock.index].style.backgroundColor = "black";
-    document.getElementById("root").children[cellLock.index].style.color = "#7d9b9a";
-    cellLock.on = false;
-    cellLock.index = -1;
-
-    if (document.getElementById("undo").disabled)
-        document.getElementById("undo").disabled = false;
-
-    if (document.getElementById("resetPuzzle").disabled)
-        document.getElementById("resetPuzzle").disabled = false;
-
-    document.getElementById("place").disabled = true;
-    let current = getCurrentPuzzle();
-    getPuzzle(current);
 }
